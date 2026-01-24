@@ -304,7 +304,7 @@
 
             <!-- Детали -->
             <div class="space-y-2 mb-3">
-              <!-- Получатели -->
+              <!-- "Получатели" -->
               <div
                 v-if="
                   broadcast.target_users === 'selected' &&
@@ -323,9 +323,8 @@
                     clip-rule="evenodd"
                   />
                 </svg>
-                Выбрано пользователей: {{ broadcast.selected_user_ids.length }}
+                Выбрано пользователей: {{ getSelectedUsersCount(broadcast) }}
               </div>
-
               <!-- Расписание -->
               <div
                 v-if="broadcast.scheduled_at"
@@ -578,6 +577,26 @@ export default {
         this.broadcasts = [];
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    getSelectedUsersCount(broadcast) {
+      try {
+        // Если это уже массив, возвращаем длину
+        if (Array.isArray(broadcast.selected_user_ids)) {
+          return broadcast.selected_user_ids.length;
+        }
+
+        // Если это строка, пытаемся распарсить как JSON
+        if (typeof broadcast.selected_user_ids === "string") {
+          const parsed = JSON.parse(broadcast.selected_user_ids);
+          return Array.isArray(parsed) ? parsed.length : 0;
+        }
+
+        return 0;
+      } catch (error) {
+        console.error("Ошибка при парсинге selected_user_ids:", error);
+        return 0;
       }
     },
 

@@ -930,9 +930,9 @@ export const lotteryAPI = {
       method: "GET",
     }),
 
-  exportTicketsTelegram: (adminTelegramId) =>
+  exportTicketsTelegram: (telegramId) =>
     apiRequest(
-      `/api/v1/admin/lottery/tickets/export-telegram?admin_telegram_id=${adminTelegramId}`,
+      `/api/v1/admin/lottery/tickets/export-telegram?admin_telegram_id=${telegramId}`,
       {
         method: "POST",
       }
@@ -961,9 +961,9 @@ export const lotteryAPI = {
       method: "GET",
     }),
 
-  exportPrizesTelegram: (adminTelegramId) =>
+  exportPrizesTelegram: (telegramId) =>
     apiRequest(
-      `/api/v1/admin/lottery/prizes/export-telegram?admin_telegram_id=${adminTelegramId}`,
+      `/api/v1/admin/lottery/prizes/export-telegram?admin_telegram_id=${telegramId}`,
       {
         method: "POST",
       }

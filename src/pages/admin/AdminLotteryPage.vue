@@ -552,11 +552,32 @@
                   Экспорт участников
                 </h4>
                 <button
-                  @click="openExportTelegramModal('tickets')"
-                  :disabled="tickets.length === 0"
-                  class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                  @click="exportTickets()"
+                  :disabled="tickets.length === 0 || isExportingTickets"
+                  class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg
+                    v-if="isExportingTickets"
+                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <svg
+                    v-else
                     class="w-5 h-5 mr-2"
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -567,7 +588,7 @@
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Telegram
+                  {{ isExportingTickets ? "Экспорт..." : "Telegram" }}
                 </button>
               </div>
 
@@ -577,11 +598,32 @@
                   Экспорт призов
                 </h4>
                 <button
-                  @click="openExportTelegramModal('prizes')"
-                  :disabled="prizes.length === 0"
-                  class="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+                  @click="exportPrizes()"
+                  :disabled="prizes.length === 0 || isExportingPrizes"
+                  class="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 px-4 py-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg
+                    v-if="isExportingPrizes"
+                    class="animate-spin -ml-1 mr-2 h-4 w-4 text-purple-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <svg
+                    v-else
                     class="w-5 h-5 mr-2"
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -592,7 +634,7 @@
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Telegram
+                  {{ isExportingPrizes ? "Экспорт..." : "Telegram" }}
                 </button>
               </div>
             </div>
@@ -627,23 +669,15 @@
       @close="showGenerateCodesModal = false"
       @generated="onCodesGenerated"
     />
-
-    <ExportTelegramModal
-      v-if="showExportTelegramModal"
-      :exportType="exportType"
-      @close="showExportTelegramModal = false"
-      @export="handleTelegramExport"
-    />
   </div>
 </template>
 
 <script>
-import { lotteryAPI } from "@/utils/api";
+import { lotteryAPI, authAPI } from "@/utils/api";
 import LotteryInstructionsModal from "@/components/admin/lottery/LotteryInstructionsModal.vue";
 import ConductDrawModal from "@/components/admin/lottery/ConductDrawModal.vue";
 import SettingsModal from "@/components/admin/lottery/SettingsModal.vue";
 import GenerateCodesModal from "@/components/admin/lottery/GenerateCodesModal.vue";
-import ExportTelegramModal from "@/components/admin/lottery/ExportTelegramModal.vue";
 
 export default {
   name: "AdminLotteryPage",
@@ -652,7 +686,6 @@ export default {
     ConductDrawModal,
     SettingsModal,
     GenerateCodesModal,
-    ExportTelegramModal,
   },
   data() {
     return {
@@ -675,6 +708,9 @@ export default {
 
       // Состояния
       isImporting: false,
+      isExportingTickets: false,
+      isExportingPrizes: false,
+      adminUser: null,
 
       // Файлы
       selectedTicketsFile: null,
@@ -685,8 +721,6 @@ export default {
       showConductDrawModal: false,
       showSettingsModal: false,
       showGenerateCodesModal: false,
-      showExportTelegramModal: false,
-      exportType: "tickets",
     };
   },
   computed: {
@@ -700,7 +734,10 @@ export default {
         this.isLoading = true;
         this.error = null;
 
-        // Загружаем все данные параллельно
+        // Сначала загружаем данные администратора
+        await this.loadCurrentUser();
+
+        // Затем загружаем все данные лотереи параллельно
         await Promise.all([
           this.loadSettings(),
           this.loadStats(),
@@ -715,6 +752,26 @@ export default {
         this.error = error.message || "Не удалось загрузить данные лотереи";
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    async loadCurrentUser() {
+      try {
+        // Получаем текущего пользователя (администратора)
+        this.adminUser = await authAPI.getCurrentUser();
+        if (this.adminUser && this.adminUser.telegram_id) {
+          console.log("Данные администратора загружены:", {
+            id: this.adminUser.id,
+            telegram_id: this.adminUser.telegram_id,
+            username: this.adminUser.username,
+            admin: this.adminUser.admin,
+          });
+        } else {
+          console.warn("Администратор не найден или нет telegram_id");
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке данных администратора:", error);
+        this.adminUser = null;
       }
     },
 
@@ -879,27 +936,93 @@ export default {
       }
     },
 
-    openExportTelegramModal(type) {
-      this.exportType = type;
-      this.showExportTelegramModal = true;
+    async exportTickets() {
+      if (this.tickets.length === 0) {
+        alert("Нет данных для экспорта участников");
+        return;
+      }
+
+      // Проверяем, есть ли данные администратора
+      if (!this.adminUser || !this.adminUser.telegram_id) {
+        alert(
+          "❌ Не удалось получить Telegram ID администратора. Пожалуйста, обновите страницу."
+        );
+        return;
+      }
+
+      const confirmed = confirm(
+        `Вы уверены, что хотите экспортировать список участников (${this.tickets.length} записей)?\n\nФайл будет отправлен в Telegram администратора (ID: ${this.adminUser.telegram_id})`
+      );
+
+      if (confirmed) {
+        try {
+          this.isExportingTickets = true;
+
+          // Отправляем Telegram ID администратора как query параметр
+          await lotteryAPI.exportTicketsTelegram(this.adminUser.telegram_id);
+
+          alert(
+            `✅ Список участников (${this.tickets.length} записей) успешно экспортирован!\nФайл отправлен в Telegram администратора (ID: ${this.adminUser.telegram_id}).`
+          );
+        } catch (error) {
+          console.error("Ошибка при экспорте участников:", error);
+
+          let errorMessage = "❌ Ошибка при экспорте участников";
+          if (error.message.includes("HTTP error")) {
+            errorMessage += ". Проверьте настройки сервера.";
+          } else {
+            errorMessage += ": " + error.message;
+          }
+
+          alert(errorMessage);
+        } finally {
+          this.isExportingTickets = false;
+        }
+      }
     },
 
-    async handleTelegramExport(adminTelegramId) {
-      try {
-        this.error = null;
+    async exportPrizes() {
+      if (this.prizes.length === 0) {
+        alert("Нет данных для экспорта призов");
+        return;
+      }
 
-        if (this.exportType === "tickets") {
-          await lotteryAPI.exportTicketsTelegram(adminTelegramId);
-          alert("Билеты экспортированы и отправлены в Telegram!");
-        } else {
-          await lotteryAPI.exportPrizesTelegram(adminTelegramId);
-          alert("Призы экспортированы и отправлены в Telegram!");
+      // Проверяем, есть ли данные администратора
+      if (!this.adminUser || !this.adminUser.telegram_id) {
+        alert(
+          "❌ Не удалось получить Telegram ID администратора. Пожалуйста, обновите страницу."
+        );
+        return;
+      }
+
+      const confirmed = confirm(
+        `Вы уверены, что хотите экспортировать список призов (${this.prizes.length} записей)?\n\nФайл будет отправлен в Telegram администратора (ID: ${this.adminUser.telegram_id})`
+      );
+
+      if (confirmed) {
+        try {
+          this.isExportingPrizes = true;
+
+          // Отправляем Telegram ID администратора как query параметр
+          await lotteryAPI.exportPrizesTelegram(this.adminUser.telegram_id);
+
+          alert(
+            `✅ Список призов (${this.prizes.length} записей) успешно экспортирован!\nФайл отправлен в Telegram администратора (ID: ${this.adminUser.telegram_id}).`
+          );
+        } catch (error) {
+          console.error("Ошибка при экспорте призов:", error);
+
+          let errorMessage = "❌ Ошибка при экспорте призов";
+          if (error.message.includes("HTTP error")) {
+            errorMessage += ". Проверьте настройки сервера.";
+          } else {
+            errorMessage += ": " + error.message;
+          }
+
+          alert(errorMessage);
+        } finally {
+          this.isExportingPrizes = false;
         }
-
-        this.showExportTelegramModal = false;
-      } catch (error) {
-        console.error("Ошибка при экспорте в Telegram:", error);
-        alert("Ошибка при экспорте в Telegram: " + error.message);
       }
     },
 
