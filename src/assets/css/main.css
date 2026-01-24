@@ -1,0 +1,306 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Минималистичные стили для карточек */
+  .card {
+    background-color: #faf8f5;
+    border-radius: 0.5rem;
+    border: 1px solid #e8dfd1;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+  }
+
+  .card:hover {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Минималистичные стили для кнопок */
+  .btn-primary {
+    width: 100%;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    background-color: #9a7442;
+  }
+
+  .btn-primary:hover {
+    background-color: #7c5c34;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #7c5c34;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
+    background-color: #7c5c34;
+    color: #ffffff;
+  }
+
+  .btn-secondary:hover {
+    background-color: #604729;
+    border-color: #604729;
+  }
+
+  .btn-back {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    transition: color 0.2s;
+    color: #000000;
+  }
+
+  .btn-back:hover {
+    color: #000000;
+  }
+
+  .btn-wood {
+    width: 100%;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #9a7442;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
+    background-color: #9a7442;
+    color: white;
+  }
+
+  .btn-wood:hover {
+    background-color: #7c5c34;
+    border-color: #7c5c34;
+  }
+
+  /* Стили для заголовков */
+  .page-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #4a3728;
+    padding: 1rem 1rem 0.5rem 1rem;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #5c4a3a;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Минималистичные стили для навигации */
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: #9a8675;
+    transition: color 0.2s;
+  }
+
+  .nav-item:hover {
+    color: #6b5b4d;
+  }
+
+  .nav-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Стили для списка элементов */
+  .list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f5f1eb;
+  }
+
+  .list-item:last-child {
+    border-bottom: 0;
+  }
+
+  /* Стили для карточек программ */
+  .program-card {
+    background-color: #faf8f5;
+    border-radius: 0.5rem;
+    border: 1px solid #e8dfd1;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s;
+  }
+
+  .program-card:hover {
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.1),
+      0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  /* Стили для профиля */
+  .profile-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f5f1eb;
+  }
+
+  .profile-field:last-child {
+    border-bottom: 0;
+  }
+
+  .profile-label {
+    color: #000000;
+  }
+
+  .profile-value {
+    color: #000000;
+    font-weight: 500;
+  }
+
+  /* Стили для формы */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b5b4d;
+    margin-bottom: 0.25rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d4c5b0;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .form-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #9a7442;
+    border-color: #9a7442;
+  }
+
+  /* Стили для модальных окон */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(26, 32, 44, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    background-color: #faf8f5;
+    border-radius: 0.75rem;
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 28rem;
+    padding: 1.5rem;
+  }
+
+  /* Дополнительные минималистичные стили */
+  .text-content {
+    color: #6b5b4d;
+    line-height: 1.625;
+  }
+
+  .bg-gradient-header {
+    background: linear-gradient(to right, #9a7442, #4a7c59);
+    color: white;
+    padding: 1.5rem;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+  }
+
+  .shadow-card {
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.1),
+      0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s;
+  }
+
+  .shadow-card:hover {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .border-light {
+    border: 1px solid #e8dfd1;
+  }
+
+  .rounded-container {
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .text-accent {
+    color: #8b6f47;
+  }
+
+  .bg-accent-light {
+    background-color: #f5f1eb;
+  }
+
+  .text-muted {
+    color: #4a3728;
+  }
+
+  /* Создание новых классов для более контрастного текста */
+  .text-wood-darker {
+    color: #4a3728;
+  }
+
+  .text-gray-darker {
+    color: #1a202c;
+  }
+}
+
+/* Основные стили приложения */
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+}
