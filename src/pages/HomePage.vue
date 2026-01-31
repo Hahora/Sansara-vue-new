@@ -1,427 +1,566 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-    <!-- Приветственный баннер с выбором филиала -->
-    <div
-      class="relative overflow-hidden bg-gradient-to-br from-[#4e5d51] via-[#5a6d5e] to-[#4e5d51] text-white"
-    >
-      <!-- Декоративные элементы -->
-      <div
-        class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"
-      ></div>
-      <div
-        class="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"
-      ></div>
-
-      <div class="relative px-5 py-8">
-        <!-- Верхняя строка с заголовком и выбором филиала -->
-        <div class="flex justify-between items-start mb-3">
+  <div class="min-h-screen bg-[#edeae6]">
+    <!-- Шапка -->
+    <div class="relative overflow-hidden bg-[#202c27] text-white">
+      <div class="relative px-5 pt-6 pb-8">
+        <!-- Верхняя строка с логотипом -->
+        <div class="flex justify-between items-start mb-6">
+          <!-- Логотип - только изображение -->
           <div class="flex items-center">
-            <span class="text-4xl mr-3">🌿</span>
-            <h1
-              class="text-2xl font-bold leading-tight"
-              v-html="welcomeTitle"
-            ></h1>
+            <!-- Если лого цветное и нужно сделать белым -->
+            <img
+              :src="logo"
+              alt="САНСАРА"
+              class="h-12 w-auto filter brightness-0 invert opacity-95"
+            />
           </div>
 
           <!-- Кнопка выбора филиала -->
           <div class="relative">
             <button
               @click.stop="toggleBranchSelect"
-              class="bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-1.5 text-sm flex items-center transition-all"
+              class="group bg-[#c2a886]/90 hover:bg-[#c2a886] backdrop-blur-sm border border-[#c2a886]/40 rounded-xl px-4 py-2.5 text-sm flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span class="max-w-[120px] truncate">
+              <MapPin class="h-4 w-4 text-white mr-2" />
+              <span class="max-w-[100px] truncate text-white font-medium">
                 {{
                   selectedBranch?.short_name || selectedBranch?.name || "Филиал"
                 }}
               </span>
-              <svg
-                class="w-3 h-3 ml-1.5 transition-transform"
+              <ChevronDown
+                class="h-4 w-4 text-white/80 ml-1.5 transition-transform duration-200 group-hover:rotate-180"
                 :class="{ 'rotate-180': showBranchSelect }"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                />
-              </svg>
+              />
             </button>
 
             <!-- Dropdown с филиалами -->
-            <div
-              v-if="showBranchSelect"
-              class="absolute right-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 z-50 max-h-80 overflow-y-auto"
+            <transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="opacity-0 translate-y-2"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-2"
             >
-              <!-- ДОБАВИТЬ индикатор загрузки -->
-              <div v-if="isLoading" class="p-4 flex justify-center">
+              <div
+                v-if="showBranchSelect"
+                class="absolute right-0 top-full mt-2 w-72 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/50 z-50 max-h-80 overflow-y-auto"
+              >
+                <!-- Загрузка -->
                 <div
-                  class="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-600"
-                ></div>
-              </div>
-              <div v-else class="p-2 space-y-1">
-                <div
-                  v-for="branch in branches"
-                  :key="branch.id"
-                  @click="handleSelectBranch(branch)"
-                  class="px-3 py-2.5 rounded-md hover:bg-gray-50 cursor-pointer"
-                  :class="{
-                    'bg-blue-50 text-blue-700':
-                      selectedBranch?.id === branch.id,
-                  }"
+                  v-if="isLoading"
+                  class="p-6 flex flex-col items-center justify-center"
                 >
-                  <div class="font-medium text-gray-900">{{ branch.name }}</div>
-                  <div class="text-xs text-gray-500 mt-0.5 truncate">
-                    {{ branch.address }}
+                  <Loader2 class="h-8 w-8 text-[#c2a886] animate-spin mb-3" />
+                  <p class="text-sm text-gray-500">Загружаем филиалы...</p>
+                </div>
+
+                <!-- Список филиалов -->
+                <div v-else class="py-2">
+                  <div class="px-4 py-2 mb-1">
+                    <p
+                      class="text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Выберите филиал
+                    </p>
+                  </div>
+                  <div class="space-y-0.5">
+                    <div
+                      v-for="branch in branches"
+                      :key="branch.id"
+                      @click="handleSelectBranch(branch)"
+                      class="px-4 py-3 mx-2 rounded-lg hover:bg-gray-50/80 cursor-pointer transition-all duration-200 hover:pl-5"
+                      :class="{
+                        'bg-[#c2a886]/10 border-l-2 border-[#c2a886]':
+                          selectedBranch?.id === branch.id,
+                      }"
+                    >
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                          <div
+                            class="h-8 w-8 rounded-full bg-[#202c27]/5 flex items-center justify-center"
+                          >
+                            <MapPin class="h-3.5 w-3.5 text-[#202c27]" />
+                          </div>
+                        </div>
+                        <div class="ml-3 flex-1 min-w-0">
+                          <div class="font-medium text-gray-900 text-sm">
+                            {{ branch.name }}
+                          </div>
+                          <div class="text-xs text-gray-500 mt-0.5 truncate">
+                            {{ branch.address }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+              </div>
+            </transition>
+          </div>
+        </div>
+
+        <!-- Анимированная загрузка контента -->
+        <div v-if="isLoadingContent" class="space-y-4">
+          <!-- Анимированный заголовок -->
+          <div class="space-y-3">
+            <div
+              class="h-8 bg-gradient-to-r from-[#c2a886]/20 to-[#c2a886]/10 rounded-lg animate-pulse w-3/4"
+            ></div>
+            <div class="h-px w-16 bg-[#c2a886]/30"></div>
+          </div>
+
+          <!-- Анимированный текст -->
+          <div class="space-y-2">
+            <div
+              class="h-4 bg-gradient-to-r from-white/10 to-white/5 rounded-full animate-pulse"
+            ></div>
+            <div
+              class="h-4 bg-gradient-to-r from-white/10 to-white/5 rounded-full animate-pulse w-5/6"
+            ></div>
+            <div
+              class="h-4 bg-gradient-to-r from-white/10 to-white/5 rounded-full animate-pulse w-4/6"
+            ></div>
+          </div>
+
+          <!-- Анимированный привет пользователя -->
+          <div class="pt-4 mt-4 border-t border-white/10">
+            <div class="flex items-center">
+              <div class="h-8 w-8 rounded-full bg-white/10 animate-pulse"></div>
+              <div class="ml-3 space-y-2">
+                <div
+                  class="h-3 bg-white/10 rounded-full w-24 animate-pulse"
+                ></div>
+                <div
+                  class="h-2 bg-white/5 rounded-full w-32 animate-pulse"
+                ></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Остальной контент баннера -->
-        <div class="space-y-2.5 text-sm leading-relaxed">
-          <p class="opacity-95" v-html="welcomeSubtitle"></p>
+        <!-- Контент после загрузки -->
+        <div v-else class="space-y-4">
+          <!-- Заголовок из API -->
+          <div>
+            <h2
+              class="text-2xl md:text-3xl font-light text-white leading-tight tracking-wide"
+              v-html="welcomeTitle"
+            ></h2>
+            <div class="h-px w-16 bg-[#c2a886] mt-3 opacity-80"></div>
+          </div>
+
+          <!-- Описание из API -->
           <p
-            v-if="user"
-            class="opacity-100 font-medium mt-4 pt-3 border-t border-white border-opacity-20"
-          >
-            👋 Здравствуйте, {{ user.first_name || user.username || "гость" }}!
-          </p>
+            class="text-sm text-white/80 leading-relaxed font-light max-w-2xl"
+            v-html="welcomeSubtitle"
+          ></p>
+
+          <!-- Приветствие пользователя -->
+          <div v-if="user" class="pt-4 mt-4 border-t border-white/10">
+            <div class="flex items-center">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/20 flex items-center justify-center"
+              >
+                <div
+                  class="h-5 w-5 rounded-full bg-[#c2a886] flex items-center justify-center"
+                >
+                  <span class="text-xs font-bold text-white">👤</span>
+                </div>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm font-medium text-white">
+                  {{ user.first_name || user.username || "Дорогой гость" }}
+                </p>
+                <p class="text-xs text-white/60 mt-0.5">
+                  Рады видеть вас в нашем ретрит-центре
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Ошибка -->
-    <div
-      v-if="error"
-      class="mx-4 mt-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 shadow-sm"
+    <transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2"
     >
-      <div class="flex items-start">
-        <svg
-          class="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <div class="flex-1">
-          <p class="text-sm text-red-800">{{ error }}</p>
+      <div
+        v-if="error"
+        class="mx-4 mt-4 bg-red-50/90 backdrop-blur-sm border border-red-200 rounded-xl p-4 shadow-lg"
+      >
+        <div class="flex items-start">
+          <AlertCircle class="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
+          <div class="flex-1">
+            <p class="text-sm text-red-800 font-medium">{{ error }}</p>
+            <p class="text-xs text-red-600 mt-1">
+              Попробуйте обновить страницу
+            </p>
+          </div>
+          <button
+            @click="clearError"
+            class="text-red-500 hover:text-red-700 ml-3 flex-shrink-0 transition-colors"
+          >
+            <X class="h-5 w-5" />
+          </button>
         </div>
-        <button
-          @click="clearError"
-          class="text-red-500 hover:text-red-700 ml-3 flex-shrink-0"
+      </div>
+    </transition>
+
+    <!-- Заголовок раздела с цветом кнопки -->
+    <div class="px-5 py-6">
+      <div class="mb-6">
+        <div class="flex items-center">
+          <div
+            class="h-px flex-1 bg-gradient-to-r from-transparent to-[#c2a886]/30"
+          ></div>
+          <h2 class="mx-4 text-lg font-light text-gray-900 tracking-wide">
+            Программы и услуги
+          </h2>
+          <div
+            class="h-px flex-1 bg-gradient-to-l from-transparent to-[#c2a886]/30"
+          ></div>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-2">
+          Выберите формат, который подходит именно вам
+        </p>
+      </div>
+
+      <!-- Анимированная загрузка карточек -->
+      <div v-if="isLoadingContent" class="grid grid-cols-1 gap-4">
+        <div
+          v-for="n in 8"
+          :key="n"
+          class="bg-white/50 rounded-2xl p-5 animate-pulse"
         >
-          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fill-rule="evenodd"
-              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </button>
+          <div class="flex items-center">
+            <div class="w-14 h-14 bg-gray-200 rounded-xl"></div>
+            <div class="ml-4 flex-1 space-y-2">
+              <div class="h-4 bg-gray-200 rounded-full w-3/4"></div>
+              <div class="h-3 bg-gray-100 rounded-full w-full"></div>
+              <div class="h-3 bg-gray-100 rounded-full w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Карточки программ после загрузки -->
+      <div v-else class="space-y-4">
+        <!-- Мальчишники и девичники -->
+        <router-link
+          to="/bachelor"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <PartyPopper class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Мальчишники и девичники
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Отпразднуйте важное событие в особенной атмосфере бани
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Я первый раз -->
+        <router-link
+          to="/first-time"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <Star class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Я первый раз
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Особое предложение и знакомство с банными традициями для новых
+                гостей
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Лотерея -->
+        <router-link
+          to="/lottery"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <Ticket class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Лотерея
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Участвуйте в розыгрышах и выигрывайте специальные призы
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Клубные мероприятия -->
+        <router-link
+          to="/club-events"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <Castle class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Клубные мероприятия
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Регулярные встречи единомышленников в особом банном формате
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Коллективные программы -->
+        <router-link
+          to="/collective-programs"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <UsersRound class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Коллективные программы
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Тепло, живой пар, общее действие и единение в кругу близких
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Авторские программы -->
+        <router-link
+          to="/author-programs"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <Wand2 class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Авторские программы
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Уникальные техники, глубокие состояния, работа с телом и
+                энергией
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Корпоративные программы -->
+        <router-link
+          to="/corporate"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <Briefcase class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Корпоративные программы
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                «Отдых, после которого не нужен отдых» для вашей команды
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Система лояльности -->
+        <router-link
+          to="/loyalty"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <Award class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Лояльность и промокоды
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Актуальные скидки и специальные предложения для постоянных
+                гостей
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
+
+        <!-- Подарочные сертификаты -->
+        <router-link
+          to="/certificates"
+          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 mb-8 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <div class="flex items-center">
+            <div
+              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+            >
+              <Gift class="h-7 w-7 text-[#c2a886]" />
+            </div>
+            <div class="ml-4 flex-1 min-w-0">
+              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+                Подарочные сертификаты
+              </h3>
+              <p
+                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+              >
+                Подарите заботу, счастье и ресурсное состояние близким людям
+              </p>
+            </div>
+            <div class="ml-2">
+              <div
+                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
+              >
+                <ChevronRight
+                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                />
+              </div>
+            </div>
+          </div>
+        </router-link>
       </div>
     </div>
 
-    <!-- Карточки меню -->
-    <div v-else class="px-4 py-5 space-y-3">
-      <!-- Мальчишники и девичники -->
-      <router-link
-        to="/bachelor"
-        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">🎉</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">
-              Мальчишники и девичники
-            </h3>
-            <p class="text-sm text-gray-500 mt-0.5 line-clamp-2">
-              Отпразднуйте важное событие в особенной атмосфере!
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- Я первый раз -->
-      <router-link
-        to="/first-time"
-        class="block bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl shadow-sm border-2 border-yellow-200 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">🌟</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">Я первый раз</h3>
-            <p class="text-sm text-gray-600 mt-0.5 truncate">
-              Особое предложение для новых гостей
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- 🎟️ Лотерея -->
-      <router-link
-        to="/lottery"
-        class="block bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl shadow-sm border-2 border-blue-200 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">🎟️</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">Лотерея</h3>
-            <p class="text-sm text-gray-600 mt-0.5 truncate">
-              Участвуйте и выигрывайте призы!
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- Клубные мероприятия -->
-      <router-link
-        to="/club-events"
-        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">🏛</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">
-              Клубные мероприятия
-            </h3>
-            <p class="text-sm text-gray-500 mt-0.5 line-clamp-2">
-              Регулярные встречи единомышленников в банном формате
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- Коллективные программы -->
-      <router-link
-        to="/collective-programs"
-        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">👥</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">
-              Коллективные программы
-            </h3>
-            <p class="text-sm text-gray-500 mt-0.5 line-clamp-2">
-              Тепло, живой пар, общее действие и единение
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- Авторские программы -->
-      <router-link
-        to="/author-programs"
-        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">✨</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">
-              Авторские программы
-            </h3>
-            <p class="text-sm text-gray-500 mt-0.5 line-clamp-2">
-              Уникальные техники, глубокие состояния, работа с телом и энергией
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- Корпоративные программы -->
-      <router-link
-        to="/corporate"
-        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">🏢</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">
-              Корпоративные программы
-            </h3>
-            <p class="text-sm text-gray-500 mt-0.5 truncate">
-              «Отдых, после которого не нужен отдых»
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- Система лояльности -->
-      <router-link
-        to="/loyalty"
-        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-red-50 to-red-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">🎁</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">
-              Лояльность и промокоды
-            </h3>
-            <p class="text-sm text-gray-500 mt-0.5 truncate">
-              Актуальные скидки и специальные предложения
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
-
-      <!-- Подарочные сертификаты -->
-      <router-link
-        to="/certificates"
-        class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 transition-all duration-200 active:scale-98 hover:shadow-md"
-      >
-        <div class="flex items-center">
-          <div
-            class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-rose-50 to-rose-100 rounded-xl flex items-center justify-center"
-          >
-            <span class="text-2xl">🎁</span>
-          </div>
-          <div class="ml-4 flex-1 min-w-0">
-            <h3 class="font-semibold text-gray-900 text-base">
-              Подарочные сертификаты
-            </h3>
-            <p class="text-sm text-gray-500 mt-0.5 line-clamp-2">
-              Подарите заботу, счастье и ресурсное состояние
-            </p>
-          </div>
-          <svg
-            class="h-5 w-5 text-gray-400 flex-shrink-0 ml-2"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      </router-link>
+    <!-- Декоративный элемент внизу -->
+    <div class="relative h-12">
+      <div class="absolute inset-x-0 bottom-0 flex justify-center">
+        <div
+          class="h-px w-32 bg-gradient-to-r from-transparent via-[#c2a886]/40 to-transparent"
+        ></div>
+      </div>
     </div>
   </div>
 </template>
@@ -429,12 +568,19 @@
 <script>
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
+import icons from "@/utils/icons";
+import logo from "@/assets/logo.svg";
 
 export default {
   name: "HomePage",
+  components: {
+    ...icons,
+  },
   data() {
     return {
       showBranchSelect: false,
+      isLoadingContent: true,
+      logo,
     };
   },
   computed: {
@@ -447,27 +593,17 @@ export default {
       "selectedBranch",
     ]),
 
-    // Получаем контент для главной страницы
     homeContent() {
-      // contentData - это объект с ключами, например: {"HOME": {title: "...", content: "..."}}
       return this.contentData?.["HOME"];
     },
 
-    // Заголовок: используем title из API или fallback
     welcomeTitle() {
       if (this.homeContent?.title) {
-        const title = this.homeContent.title;
-        // Если в title есть "Добро пожаловать", добавляем <br/>
-        if (title.includes("Добро пожаловать")) {
-          return title.replace("Добро пожаловать", "Добро пожаловать<br/>");
-        }
-        return title;
+        return this.homeContent.title;
       }
-      // Fallback заголовок
-      return "Добро пожаловать<br/>в САНСАРУ";
+      return "Добро пожаловать";
     },
 
-    // Подзаголовок: используем content из API или fallback
     welcomeSubtitle() {
       return (
         this.homeContent?.content ||
@@ -484,41 +620,34 @@ export default {
       "clearError",
     ]),
 
-    // ДОБАВИТЬ этот метод вместо кнопки @click
     async toggleBranchSelect() {
       this.showBranchSelect = !this.showBranchSelect;
 
-      // Если открываем dropdown, загружаем актуальный список филиалов
       if (this.showBranchSelect) {
         try {
-          console.log("Opening branch dropdown, loading branches...");
-          // force: true - всегда загружать заново
           await this.loadBranches(true);
-          console.log("Branches loaded:", this.branches?.length);
         } catch (error) {
           console.error("Failed to load branches:", error);
           this.showBranchSelect = false;
-          this.setError("Не удалось загрузить список филиалов");
         }
       }
     },
 
     async handleSelectBranch(branch) {
-      console.log("Selecting branch:", branch.name);
       this.showBranchSelect = false;
+      this.isLoadingContent = true;
 
       try {
-        // 1. Сохраняем выбранный филиал в store
         await this.selectBranch(branch);
+        await this.loadSiteContent("HOME", true);
 
-        // 2. Перезагружаем контент с новым branch_id
-        console.log("Loading content for new branch:", branch.name);
-        await this.loadSiteContent("HOME", true); // force reload
-
-        console.log("Content updated for branch:", branch.name);
+        // Небольшая задержка для плавности
+        setTimeout(() => {
+          this.isLoadingContent = false;
+        }, 300);
       } catch (error) {
         console.error("Error selecting branch:", error);
-        this.setError(error.message || "Ошибка при выборе филиала");
+        this.isLoadingContent = false;
       }
     },
 
@@ -529,29 +658,21 @@ export default {
     },
   },
   async created() {
-    console.log("HomePage created");
-
     try {
-      // 1. Сначала аутентификация
       await this.authenticate();
-      console.log("Аутентификация успешна");
-
-      // 2. Загружаем филиалы
       await this.loadBranches();
-      console.log("Филиалы загружены");
-
-      // 3. Загружаем контент для главной страницы
-      // Если есть выбранный филиал, он будет использован автоматически в loadSiteContent
       await this.loadSiteContent("HOME");
-      console.log("Контент загружен");
 
-      console.log("Все данные загружены успешно");
+      // Имитация загрузки для плавности
+      setTimeout(() => {
+        this.isLoadingContent = false;
+      }, 500);
     } catch (error) {
       console.error("Ошибка при загрузке данных:", error);
+      this.isLoadingContent = false;
     }
   },
   mounted() {
-    // Закрытие dropdown при клике вне его
     document.addEventListener("click", this.handleClickOutside);
   },
   beforeUnmount() {
@@ -561,14 +682,40 @@ export default {
 </script>
 
 <style scoped>
-.active\:scale-98:active {
-  transform: scale(0.98);
-}
-
+/* Анимации */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Стили для скроллбара */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(194, 168, 136, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(194, 168, 136, 0.7);
+}
+
+/* Плавные переходы для карточек */
+.group {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Эффект нажатия */
+.active\:scale-\[0\.99\]:active {
+  transform: scale(0.99);
 }
 </style>

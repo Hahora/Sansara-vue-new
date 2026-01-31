@@ -1,6 +1,6 @@
 <template>
-  <div class="relative min-h-screen bg-white">
-    <main class="pb-16">
+  <div class="relative min-h-screen bg-[#edeae6]">
+    <main class="pb-20">
       <RouterView />
     </main>
 
@@ -59,8 +59,9 @@ onMounted(() => {
     const tg = window.Telegram?.WebApp;
 
     if (tg) {
-      tg.setHeaderColor("#4e5d51");
-      tg.setBackgroundColor("#ffffff");
+      // Устанавливаем цвета из нового дизайна
+      tg.setHeaderColor("#202c27");
+      tg.setBackgroundColor("#edeae6");
 
       if (tg.BackButton) {
         tg.BackButton.hide();
@@ -69,11 +70,7 @@ onMounted(() => {
       tg.enableClosingConfirmation();
       tg.expand();
 
-      console.log("Telegram WebApp configured:", {
-        headerColor: tg.headerColor,
-        backgroundColor: tg.backgroundColor,
-        themeParams: tg.themeParams,
-      });
+      console.log("Telegram WebApp configured with new colors");
     }
   } catch (error) {
     console.warn("Failed to configure Telegram buttons:", error);
@@ -95,3 +92,47 @@ onMounted(() => {
   updateNavigationVisibility();
 });
 </script>
+
+<style>
+/* Глобальные стили для премиум дизайна */
+body {
+  background-color: #edeae6;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    sans-serif;
+}
+
+/* Плавные переходы для всех интерактивных элементов */
+* {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    opacity 0.3s ease;
+}
+
+/* Улучшение скроллбара для всего приложения */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(32, 44, 39, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(194, 168, 136, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(194, 168, 136, 0.5);
+}
+</style>
