@@ -21,6 +21,15 @@ import {
   PenTool,
   Building2,
   Loader2,
+  // Иконки для навигации
+  Home,
+  CalendarDays,
+  CheckCircle,
+  User,
+  Settings,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-vue-next";
 
 export default {
@@ -45,4 +54,13 @@ export default {
   PenTool,
   Building2,
   Loader2,
+  // Иконки для навигации
+  Home,
+  CalendarDays,
+  CheckCircle,
+  UserIcon: User,
+  Settings,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
 };
