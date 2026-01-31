@@ -261,7 +261,8 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <PartyPopper class="h-7 w-7 text-[#c2a886]" />
+              <!-- Только иконка темная -->
+              <PartyPopper class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -277,8 +278,9 @@
               <div
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
+                <!-- Стрелочка тоже темная -->
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -294,7 +296,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <Star class="h-7 w-7 text-[#c2a886]" />
+              <Star class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -312,7 +314,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -328,7 +330,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <Ticket class="h-7 w-7 text-[#c2a886]" />
+              <Ticket class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -345,7 +347,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -361,7 +363,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <Castle class="h-7 w-7 text-[#c2a886]" />
+              <Castle class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -378,7 +380,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -394,7 +396,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <UsersRound class="h-7 w-7 text-[#c2a886]" />
+              <UsersRound class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -411,7 +413,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -427,7 +429,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <Wand2 class="h-7 w-7 text-[#c2a886]" />
+              <Wand2 class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -445,7 +447,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -461,7 +463,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <Briefcase class="h-7 w-7 text-[#c2a886]" />
+              <Briefcase class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -478,7 +480,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -494,7 +496,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <Award class="h-7 w-7 text-[#c2a886]" />
+              <Award class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -512,7 +514,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
@@ -528,7 +530,7 @@
             <div
               class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
             >
-              <Gift class="h-7 w-7 text-[#c2a886]" />
+              <Gift class="h-7 w-7 text-[#202c27]" />
             </div>
             <div class="ml-4 flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 text-base tracking-tight">
@@ -545,7 +547,7 @@
                 class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
               >
                 <ChevronRight
-                  class="h-4 w-4 text-[#c2a886] transition-transform group-hover:translate-x-0.5"
+                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
                 />
               </div>
             </div>
