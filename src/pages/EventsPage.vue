@@ -456,7 +456,7 @@ export default {
 
     getEventIcon(eventKey) {
       const iconMap = {
-        BACHELOR: "Castle",
+        BACHELOR: "User",
         BACHELORETTE: "Flower2",
         BATH_CLUB: "Sparkles",
         BUSINESS_BATH: "Briefcase",
