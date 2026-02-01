@@ -92,7 +92,7 @@
                   {{ program.short_description }}
                 </p>
               </div>
-              <ChevronRight class="h-5 w-5 text-gray-400 flex-shrink-0" />
+              <ChevronRight class="h-5 w-5 text-[#c2a886] flex-shrink-0" />
             </div>
           </div>
         </div>
@@ -103,10 +103,10 @@
           </p>
         </div>
 
-        <div class="px-4 py-3 bg-[#d9cebc]/60 border-t border-[#c2a886]/20">
+        <div class="px-4 py-3 bg-[#d9cebc]/80 border-t border-[#c2a886]/30">
           <router-link
             to="/collective-programs"
-            class="text-[#c2a886] text-sm font-semibold hover:text-[#b5976e] transition-colors flex items-center justify-center gap-1"
+            class="text-[#8b6f47] text-sm font-bold hover:text-[#6d5435] transition-colors flex items-center justify-center gap-1.5"
           >
             <span>Посмотреть все коллективные программы</span>
             <ChevronRight class="h-4 w-4" />
@@ -119,7 +119,7 @@
         class="bg-[#e3ded3] rounded-2xl border border-[#c2a886]/20 overflow-hidden shadow-lg"
       >
         <div
-          class="px-5 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+          class="px-5 py-4 bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white"
         >
           <div class="flex items-center">
             <div
@@ -158,7 +158,7 @@
                   {{ program.short_description }}
                 </p>
               </div>
-              <ChevronRight class="h-5 w-5 text-gray-400 flex-shrink-0" />
+              <ChevronRight class="h-5 w-5 text-[#c2a886] flex-shrink-0" />
             </div>
           </div>
         </div>
@@ -169,10 +169,10 @@
           </p>
         </div>
 
-        <div class="px-4 py-3 bg-amber-50 border-t border-amber-200">
+        <div class="px-4 py-3 bg-[#d9cebc]/80 border-t border-[#c2a886]/30">
           <router-link
             to="/author-programs"
-            class="text-amber-700 text-sm font-semibold hover:text-amber-800 transition-colors flex items-center justify-center gap-1"
+            class="text-[#8b6f47] text-sm font-bold hover:text-[#6d5435] transition-colors flex items-center justify-center gap-1.5"
           >
             <span>Посмотреть все авторские программы</span>
             <ChevronRight class="h-4 w-4" />
@@ -285,5 +285,9 @@ export default {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.active\:scale-\[0\.98\]:active {
+  transform: scale(0.98);
 }
 </style>

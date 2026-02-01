@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useAppStore } from "@/stores/appStore";
 import BookingModal from "@/components/BookingModal.vue";
@@ -31,15 +31,24 @@ import {
 } from "@/utils/telegram.js";
 import { bookingModalState } from "@/utils/eventBus";
 
-const showNavigation = ref(true);
 const route = useRoute();
 const store = useAppStore();
 
-const hideNavigationOnPages = ["booking"];
+// Страницы без навигации
+const hideNavigationOnPages = ["booking", "TelegramRequired", "PrivacyPolicy"];
 
-const updateNavigationVisibility = () => {
-  showNavigation.value = !hideNavigationOnPages.includes(route.name);
-};
+// Показывать навигацию?
+const showNavigation = computed(() => {
+  // Скрываем на определённых страницах
+  if (hideNavigationOnPages.includes(route.name)) {
+    return false;
+  }
+  // Скрываем на публичных страницах (meta.public)
+  if (route.meta?.public) {
+    return false;
+  }
+  return true;
+});
 
 const handleCloseModal = () => {
   bookingModalState.value = {
@@ -50,8 +59,6 @@ const handleCloseModal = () => {
   };
 };
 
-watch(() => route.name, updateNavigationVisibility);
-
 onMounted(() => {
   initTelegramWebApp();
 
@@ -59,7 +66,6 @@ onMounted(() => {
     const tg = window.Telegram?.WebApp;
 
     if (tg) {
-      // Устанавливаем цвета из нового дизайна
       tg.setHeaderColor("#202c27");
       tg.setBackgroundColor("#edeae6");
 
@@ -88,8 +94,6 @@ onMounted(() => {
       "No valid Telegram data available - application must be run through Telegram"
     );
   }
-
-  updateNavigationVisibility();
 });
 </script>
 

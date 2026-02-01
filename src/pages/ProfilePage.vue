@@ -291,27 +291,28 @@
         </button>
       </div>
 
-      <!-- Информационный блок -->
-      <div
-        class="bg-[#d9cebc]/60 backdrop-blur-sm border border-[#c2a886]/30 rounded-xl p-4"
+      <!-- Политика конфиденциальности -->
+      <button
+        @click="$router.push('/privacy-policy')"
+        class="w-full bg-[#d9cebc]/60 backdrop-blur-sm border border-[#c2a886]/30 rounded-xl p-4 text-left transition-all duration-300 active:scale-[0.98]"
       >
-        <div class="flex items-start gap-3">
+        <div class="flex items-center gap-3">
           <div
             class="h-8 w-8 rounded-lg bg-[#c2a886]/20 flex items-center justify-center flex-shrink-0"
           >
             <Shield class="h-4 w-4 text-[#202c27]" />
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="text-[13px] font-semibold text-gray-900 mb-1">
-              Ваши данные в безопасности
+            <h3 class="text-[13px] font-semibold text-gray-900">
+              Политика конфиденциальности
             </h3>
-            <p class="text-[12px] text-gray-700 leading-relaxed">
-              Мы используем ваши данные только для бронирования и улучшения
-              сервиса. Все данные защищены и не передаются третьим лицам.
+            <p class="text-[11px] text-gray-500 mt-0.5">
+              Как мы защищаем ваши данные
             </p>
           </div>
+          <ChevronRight class="h-5 w-5 text-gray-400 flex-shrink-0" />
         </div>
-      </div>
+      </button>
     </div>
 
     <!-- Декоративный элемент внизу -->
