@@ -771,7 +771,7 @@ export default {
 
     getEventTypeName(eventKey) {
       const types = {
-        BACHELOR: "Мальчишник",
+        BACHELOR: "Коллективная баня",
         BACHELORETTE: "Девичник",
         BATH_CLUB: "Банный клуб",
         BUSINESS_BATH: "Бизнес-баня",

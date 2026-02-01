@@ -91,8 +91,8 @@
               "
               class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-300 flex items-center gap-2"
             >
-              <Castle class="h-4 w-4" />
-              <span>Мальчишник</span>
+              <User class="h-4 w-4" />
+              <span>Коллективная баня</span>
             </button>
             <button
               @click="selectedFilter = 'BACHELORETTE'"
@@ -446,7 +446,7 @@ export default {
 
     getEventTypeName(eventKey) {
       const types = {
-        BACHELOR: "Мальчишник",
+        BACHELOR: "Коллективная баня",
         BACHELORETTE: "Девичник",
         BATH_CLUB: "Банный клуб",
         BUSINESS_BATH: "Бизнес-баня",
