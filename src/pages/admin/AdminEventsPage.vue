@@ -121,7 +121,7 @@
         </div>
       </div>
 
-      <!-- Тип события -->
+      <!-- Статус -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">Статус</h3>
         <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
@@ -392,6 +392,27 @@
                 {{ formatDuration(event.duration_minutes) }}
               </div>
 
+              <!-- Занятость мест -->
+              <div
+                v-if="event.max_participants"
+                class="flex items-center text-sm text-gray-600"
+              >
+                <svg
+                  class="w-4 h-4 mr-2 text-gray-500 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"
+                  />
+                </svg>
+                Мест: {{ event.occupied_slots || 0 }} /
+                {{ event.max_participants }}
+                <span class="ml-2 text-xs" :class="getOccupancyColor(event)">
+                  (свободно: {{ getAvailableSlots(event) }})
+                </span>
+              </div>
+
               <!-- Повторяющееся событие -->
               <div
                 v-if="
@@ -461,6 +482,12 @@
                 🗑️ Удалить
               </button>
               <button
+                @click="openSlotsManagement(event)"
+                class="bg-purple-50 hover:bg-purple-100 text-purple-700 px-3 py-2 rounded-lg text-xs font-medium transition-colors col-span-2"
+              >
+                👥 Управление местами
+              </button>
+              <button
                 @click="toggleEventStatus(event)"
                 :class="
                   event.is_active
@@ -514,6 +541,13 @@
       @close="editingEvent = null"
       @saved="onEventSaved"
     />
+
+    <SlotsManagementModal
+      v-if="managingSlotsEvent"
+      :event="managingSlotsEvent"
+      @close="managingSlotsEvent = null"
+      @updated="onSlotsUpdated"
+    />
   </div>
 </template>
 
@@ -523,12 +557,14 @@ import { mapState } from "pinia";
 import { useAppStore } from "@/stores/appStore";
 import CreateEventModal from "@/components/CreateEventModal.vue";
 import EditEventModal from "@/components/EditEventModal.vue";
+import SlotsManagementModal from "@/components/SlotsManagementModal.vue";
 
 export default {
   name: "AdminEventsPage",
   components: {
     CreateEventModal,
     EditEventModal,
+    SlotsManagementModal,
   },
   data() {
     return {
@@ -545,6 +581,7 @@ export default {
       },
       showCreateModal: false,
       editingEvent: null,
+      managingSlotsEvent: null,
       openMenuId: null,
     };
   },
@@ -575,16 +612,13 @@ export default {
 
         console.log("Загрузка событий с фильтрами:", this.filters);
 
-        // Загружаем все события
         const data = await eventCalendarAPI.adminGetAll({});
 
         if (Array.isArray(data)) {
-          // Сортируем по дате начала (новые сверху)
           this.allEvents = data.sort(
             (a, b) => new Date(b.start_date) - new Date(a.start_date)
           );
 
-          // Применяем локальные фильтры
           this.applyLocalFilters();
 
           this.totalEvents = this.allEvents.length;
@@ -606,7 +640,7 @@ export default {
 
     getEventTypeLabel(eventKey) {
       const labels = {
-        BACHELOR: "МАЛЬЧИШНИК",
+        BACHELOR: "КОЛЛЕКТИВНАЯ БАНЯ",
         BACHELORETTE: "ДЕВИЧНИК",
         BATH_CLUB: "БАННЫЙ КЛУБ С. ХАЧАТУРЬЯН",
         BUSINESS_BATH: "Бизнес-баня МОСТ",
@@ -618,21 +652,18 @@ export default {
     applyLocalFilters() {
       let filtered = this.allEvents;
 
-      // Фильтр по филиалу
       if (this.filters.branch_id !== null) {
         filtered = filtered.filter(
           (event) => event.branch_id === this.filters.branch_id
         );
       }
 
-      // Фильтр по статусу
       if (this.filters.is_active !== null) {
         filtered = filtered.filter(
           (event) => event.is_active === this.filters.is_active
         );
       }
 
-      // Фильтр по дате "от"
       if (this.filters.date_from) {
         const dateFrom = new Date(this.filters.date_from);
         filtered = filtered.filter(
@@ -640,10 +671,8 @@ export default {
         );
       }
 
-      // Фильтр по дате "до"
       if (this.filters.date_to) {
         const dateTo = new Date(this.filters.date_to);
-        // Добавляем один день, чтобы включить события на всю дату "до"
         dateTo.setDate(dateTo.getDate() + 1);
         filtered = filtered.filter(
           (event) => new Date(event.start_date) < dateTo
@@ -717,13 +746,11 @@ export default {
           updateData
         );
 
-        // Обновляем локально
         const eventIndex = this.events.findIndex((e) => e.id === event.id);
         if (eventIndex !== -1) {
           this.events[eventIndex].is_active = newStatus;
         }
 
-        // Обновляем в allEvents тоже
         const allEventIndex = this.allEvents.findIndex(
           (e) => e.id === event.id
         );
@@ -750,6 +777,55 @@ export default {
       console.log("Событие обновлено:", updatedEvent);
       this.editingEvent = null;
       await this.loadEvents();
+    },
+
+    // Управление местами
+    getOccupancyColor(event) {
+      const percentage = this.getOccupancyPercentage(event);
+      if (percentage >= 100) return "text-red-600 font-semibold";
+      if (percentage >= 80) return "text-orange-600";
+      if (percentage >= 50) return "text-yellow-600";
+      return "text-green-600";
+    },
+
+    getOccupancyPercentage(event) {
+      if (!event.max_participants) return 0;
+      const occupied = event.occupied_slots || 0;
+      return Math.round((occupied / event.max_participants) * 100);
+    },
+
+    getAvailableSlots(event) {
+      if (!event.max_participants) return 0;
+      const occupied = event.occupied_slots || 0;
+      return Math.max(event.max_participants - occupied, 0);
+    },
+
+    openSlotsManagement(event) {
+      // Устанавливаем значения по умолчанию если их нет
+      const eventCopy = {
+        ...event,
+        max_participants: event.max_participants || 10,
+        occupied_slots: event.occupied_slots || 0,
+      };
+      this.managingSlotsEvent = eventCopy;
+      this.openMenuId = null;
+    },
+
+    onSlotsUpdated(updatedEvent) {
+      console.log("Места обновлены:", updatedEvent);
+
+      const eventIndex = this.events.findIndex((e) => e.id === updatedEvent.id);
+      if (eventIndex !== -1) {
+        this.events[eventIndex].occupied_slots = updatedEvent.occupied_slots;
+      }
+
+      const allEventIndex = this.allEvents.findIndex(
+        (e) => e.id === updatedEvent.id
+      );
+      if (allEventIndex !== -1) {
+        this.allEvents[allEventIndex].occupied_slots =
+          updatedEvent.occupied_slots;
+      }
     },
 
     formatDateTime(dateString) {
@@ -816,7 +892,6 @@ export default {
   async created() {
     console.log("AdminEventsPage created");
 
-    // Загружаем филиалы если не загружены
     const store = useAppStore();
     if (!store.areBranchesLoaded) {
       try {

@@ -1,39 +1,28 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
-    <!-- Шапка -->
-    <div
-      class="bg-gradient-to-br from-[#4e5d51] via-[#5a6d5e] to-[#4e5d51] text-white px-5 py-6"
-    >
+  <div class="min-h-screen bg-[#edeae6] pb-20">
+    <!-- Шапка - статичная -->
+    <div class="bg-[#202c27] text-white px-5 py-6">
       <div class="flex items-center mb-4">
         <button
           @click="$router.go(-1)"
-          class="flex items-center text-white hover:text-gray-200 transition-colors"
+          class="flex items-center text-white/80 hover:text-white transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <span class="font-medium">Назад</span>
+          <ChevronLeft class="h-6 w-6 mr-1" />
+          <span class="font-light">Назад</span>
         </button>
       </div>
 
       <div class="flex items-center">
         <div
-          class="w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center text-3xl border-2 border-white border-opacity-30"
+          class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center border-2 border-white/10 backdrop-blur-sm"
         >
-          🎁
+          <Tag class="h-8 w-8 text-white" />
         </div>
         <div class="ml-4 flex-1">
-          <h1 class="text-2xl font-bold">Лояльность и промокоды</h1>
-          <p class="text-white text-opacity-90 text-sm mt-1">
+          <h1 class="text-2xl font-light tracking-wide">
+            Лояльность и промокоды
+          </h1>
+          <p class="text-white/70 text-sm mt-1 font-light">
             Программа лояльности и специальные предложения
           </p>
         </div>
@@ -41,70 +30,53 @@
     </div>
 
     <!-- Индикатор загрузки -->
-    <div v-if="isLoading" class="flex justify-center items-center py-16">
-      <div class="relative">
-        <div class="rounded-full h-12 w-12 border-4 border-gray-200"></div>
-        <div
-          class="rounded-full h-12 w-12 border-4 border-[#4e5d51] border-t-transparent absolute top-0 left-0"
-        ></div>
-      </div>
+    <div
+      v-if="isLoading"
+      class="flex flex-col justify-center items-center py-16 px-5"
+    >
+      <Loader2 class="h-12 w-12 text-[#c2a886] animate-spin mb-4" />
+      <p class="text-sm text-gray-600 font-light">Загружаем информацию...</p>
     </div>
 
     <!-- Ошибка -->
     <div
       v-else-if="error"
-      class="mx-4 mt-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 shadow-sm"
+      class="mx-5 mt-5 bg-red-50/90 backdrop-blur-sm border border-red-200 rounded-xl p-4 shadow-sm"
     >
-      <div class="flex items-start">
-        <svg
-          class="h-5 w-5 text-red-500 mt-0.5 mr-3"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clip-rule="evenodd"
-          />
-        </svg>
+      <div class="flex items-start gap-3">
+        <AlertCircle class="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
         <p class="text-sm text-red-800">{{ error }}</p>
       </div>
     </div>
 
     <!-- Контент страницы -->
-    <div v-else class="px-4 py-5">
+    <div v-else class="px-5 py-5">
       <!-- Переключатель вкладок -->
-      <div
-        class="flex bg-white rounded-xl shadow-sm border border-gray-200 p-1 mb-6"
-      >
+      <div class="flex rounded-xl bg-[#d9cebc]/60 p-1 mb-5">
         <button
           @click="activeTab = 'loyalty'"
           :class="[
-            'flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all',
+            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'loyalty'
-              ? 'bg-[#4e5d51] text-white shadow-sm'
-              : 'text-gray-600 hover:text-gray-900',
+              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
+              : 'text-gray-700 hover:bg-white/50',
           ]"
         >
-          <div class="flex items-center justify-center">
-            <span class="text-lg mr-2">👑</span>
-            <span>Система лояльности</span>
-          </div>
+          <Crown class="h-4 w-4" />
+          <span>Лояльность</span>
         </button>
 
         <button
           @click="activeTab = 'promo'"
           :class="[
-            'flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all',
+            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'promo'
-              ? 'bg-[#4e5d51] text-white shadow-sm'
-              : 'text-gray-600 hover:text-gray-900',
+              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
+              : 'text-gray-700 hover:bg-white/50',
           ]"
         >
-          <div class="flex items-center justify-center">
-            <span class="text-lg mr-2">🏷️</span>
-            <span>Промокоды ({{ promoCodes.length }})</span>
-          </div>
+          <Tag class="h-4 w-4" />
+          <span>Промокоды ({{ promoCodes.length }})</span>
         </button>
       </div>
 
@@ -115,13 +87,17 @@
           <!-- Если нет данных о лояльности -->
           <div
             v-if="!loyaltyInfo"
-            class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center"
+            class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-8 text-center"
           >
-            <div class="text-4xl mb-4">👑</div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            <div
+              class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <Crown class="h-8 w-8 text-[#c2a886]" />
+            </div>
+            <h3 class="text-base font-semibold text-gray-900 mb-2">
               Система лояльности
             </h3>
-            <p class="text-gray-600">
+            <p class="text-sm text-gray-600 leading-relaxed">
               Информация о системе лояльности скоро появится
             </p>
           </div>
@@ -130,15 +106,19 @@
           <div v-else class="space-y-4">
             <!-- Основная информация о лояльности -->
             <div
-              class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
             >
-              <div
-                class="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100"
-              >
-                <div class="flex items-center">
-                  <span class="text-3xl mr-3">👑</span>
-                  <div class="flex-1">
-                    <h2 class="font-bold text-gray-900 text-lg">
+              <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="h-12 w-12 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0"
+                  >
+                    <Crown class="h-6 w-6 text-white" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h2
+                      class="font-semibold text-gray-900 text-base leading-tight"
+                    >
                       {{ loyaltyInfo.title || "Система лояльности" }}
                     </h2>
                   </div>
@@ -146,16 +126,44 @@
               </div>
 
               <div class="p-4">
-                <!-- Контент из API -->
+                <!-- Контент из API с разворачиванием -->
                 <div
                   v-if="loyaltyInfo.content"
-                  class="prose prose-sm max-w-none"
+                  class="bg-[#d9cebc]/40 rounded-xl p-4"
                 >
-                  <div v-html="formatContent(loyaltyInfo.content)"></div>
+                  <div
+                    :class="[
+                      'text-sm text-gray-700 leading-relaxed prose-content transition-all duration-300',
+                      !expandedLoyalty && isContentLong(loyaltyInfo.content)
+                        ? 'line-clamp-4'
+                        : '',
+                    ]"
+                    v-html="formatContent(loyaltyInfo.content)"
+                  ></div>
+
+                  <!-- Кнопка развернуть/свернуть -->
+                  <button
+                    v-if="isContentLong(loyaltyInfo.content)"
+                    @click="expandedLoyalty = !expandedLoyalty"
+                    class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
+                  >
+                    <span>{{
+                      expandedLoyalty ? "Свернуть" : "Развернуть"
+                    }}</span>
+                    <ChevronDown
+                      :class="[
+                        'h-4 w-4 transition-transform duration-300',
+                        expandedLoyalty ? 'rotate-180' : '',
+                      ]"
+                    />
+                  </button>
                 </div>
 
                 <!-- Если контента нет -->
-                <div v-else class="text-gray-500 italic text-center py-4">
+                <div
+                  v-else
+                  class="text-gray-500 text-sm text-center py-4 bg-[#d9cebc]/40 rounded-xl"
+                >
                   Описание программы лояльности скоро появится
                 </div>
               </div>
@@ -167,78 +175,84 @@
         <div v-else>
           <!-- Статистика промокодов -->
           <div
-            class="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+            class="mb-5 bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-4"
           >
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">
+            <h3
+              class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2"
+            >
+              <BarChart3 class="h-4 w-4 text-[#c2a886]" />
               Статистика промокодов
             </h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-[#d9cebc]/40 rounded-xl p-3 text-center">
+                <div class="text-2xl font-semibold text-gray-900">
                   {{ promoCodes.length }}
                 </div>
-                <div class="text-xs text-gray-500">Всего</div>
+                <div class="text-xs text-gray-600 mt-1">Всего</div>
               </div>
 
-              <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">
+              <div class="bg-[#d9cebc]/40 rounded-xl p-3 text-center">
+                <div class="text-2xl font-semibold text-[#c2a886]">
                   {{ firstVisitPromosCount }}
                 </div>
-                <div class="text-xs text-gray-500">Для первого визита</div>
+                <div class="text-xs text-gray-600 mt-1">Первый визит</div>
               </div>
             </div>
           </div>
 
           <!-- Список промокодов -->
-          <div v-if="promoCodes && promoCodes.length > 0" class="space-y-4">
+          <div v-if="promoCodes && promoCodes.length > 0" class="space-y-3">
             <!-- Карточка промокода -->
             <div
               v-for="promo in promoCodes"
               :key="promo.id"
-              class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
             >
               <!-- Цветная полоска -->
               <div :class="getPromoColorClass(promo)" class="h-1"></div>
 
               <!-- Заголовок промокода -->
               <div class="px-4 py-4">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                      <h2 class="font-bold text-gray-900 text-lg">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                      <h2 class="font-bold text-gray-900 text-base font-mono">
                         {{ promo.code }}
                       </h2>
-                      <span class="text-sm text-gray-500"
+                      <span class="text-xs text-gray-500"
                         >ID: {{ promo.id }}</span
                       >
                     </div>
 
                     <!-- Статусы -->
-                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <div class="flex flex-wrap items-center gap-2">
                       <span
                         v-if="promo.is_active"
-                        class="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded border border-green-200"
+                        class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-lg border border-green-200 flex items-center gap-1"
                       >
+                        <CheckCircle class="h-3 w-3" />
                         Активен
                       </span>
                       <span
                         v-else
-                        class="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded border border-red-200"
+                        class="text-xs bg-red-50 text-red-700 px-2 py-1 rounded-lg border border-red-200 flex items-center gap-1"
                       >
+                        <XCircle class="h-3 w-3" />
                         Неактивен
                       </span>
                       <span
                         v-if="promo.for_first_visit_only"
-                        class="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-200"
+                        class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-lg border border-purple-200 flex items-center gap-1"
                       >
-                        Только первый визит
+                        <Sparkles class="h-3 w-3" />
+                        Первый визит
                       </span>
                     </div>
                   </div>
 
                   <!-- Скидка -->
                   <div
-                    class="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-semibold"
+                    class="px-3 py-2 bg-gradient-to-br from-[#c2a886] to-[#b5976e] text-white rounded-xl text-sm font-bold shadow-md flex-shrink-0"
                   >
                     -{{ promo.discount_percent }}%
                   </div>
@@ -248,17 +262,20 @@
               <div class="px-4 pb-4 space-y-3">
                 <!-- Типы программ -->
                 <div>
-                  <div class="text-xs font-medium text-gray-700 mb-2">
+                  <div
+                    class="text-xs font-medium text-gray-700 mb-2 flex items-center gap-1"
+                  >
+                    <Target class="h-3 w-3 text-[#c2a886]" />
                     Применяется к:
                   </div>
                   <div
                     v-if="promo.program_types && promo.program_types.length > 0"
-                    class="flex flex-wrap gap-1"
+                    class="flex flex-wrap gap-1.5"
                   >
                     <span
                       v-for="type in promo.program_types"
                       :key="type"
-                      class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded border"
+                      class="text-xs bg-[#d9cebc]/60 text-gray-700 px-2 py-1 rounded-lg border border-[#c2a886]/20"
                     >
                       {{ getProgramTypeLabel(type) }}
                     </span>
@@ -269,37 +286,32 @@
                 </div>
 
                 <!-- Информация о создании -->
-                <div class="pt-3 border-t border-gray-100">
-                  <div class="flex items-center text-xs text-gray-500">
-                    <svg
-                      class="w-3 h-3 mr-1"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                <div class="pt-3 border-t border-[#c2a886]/20">
+                  <div class="flex items-center text-xs text-gray-600">
+                    <Calendar class="h-3 w-3 mr-1.5 text-[#c2a886]" />
                     Создан: {{ formatDateTime(promo.created_at) }}
                   </div>
                 </div>
 
                 <!-- Как использовать -->
-                <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                  <div class="text-xs font-medium text-gray-700 mb-1">
+                <div
+                  class="bg-[#d9cebc]/60 rounded-xl p-3 border border-[#c2a886]/30"
+                >
+                  <div
+                    class="text-xs font-medium text-gray-900 mb-1.5 flex items-center gap-1"
+                  >
+                    <Info class="h-3 w-3 text-[#c2a886]" />
                     Как использовать:
                   </div>
-                  <p class="text-xs text-gray-600">
+                  <p class="text-xs text-gray-700 leading-relaxed">
                     При оформлении записи введите промокод
-                    <span class="font-mono font-bold text-blue-700">{{
+                    <span class="font-mono font-bold text-[#c2a886]">{{
                       promo.code
                     }}</span>
                     в поле "Промокод".
                     <span
                       v-if="promo.for_first_visit_only"
-                      class="text-blue-600 font-medium"
+                      class="text-purple-700 font-medium"
                     >
                       Доступно только для первого визита.
                     </span>
@@ -312,13 +324,19 @@
           <!-- Если нет промокодов -->
           <div
             v-else
-            class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center"
+            class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-8 text-center"
           >
-            <div class="text-4xl mb-4">🏷️</div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            <div
+              class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <Tag class="h-8 w-8 text-[#c2a886]" />
+            </div>
+            <h3 class="text-base font-semibold text-gray-900 mb-2">
               Активные промокоды
             </h3>
-            <p class="text-gray-600">Сейчас нет доступных промокодов</p>
+            <p class="text-sm text-gray-600 leading-relaxed">
+              Сейчас нет доступных промокодов
+            </p>
           </div>
         </div>
       </div>
@@ -330,22 +348,26 @@
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
 import { loyaltyAPI } from "@/utils/api";
+import icons from "@/utils/icons";
 
 export default {
   name: "LoyaltyPage",
+  components: {
+    ...icons,
+  },
   data() {
     return {
-      isLoading: false,
+      isLoading: true,
       error: null,
-      loyaltyInfo: null, // Информация о лояльности из LOYALTY
-      promoCodes: [], // Промокоды из API
+      loyaltyInfo: null,
+      promoCodes: [],
       activeTab: "loyalty",
+      expandedLoyalty: false,
     };
   },
   computed: {
     ...mapState(useAppStore, ["selectedBranch", "contentData"]),
 
-    // Статистика промокодов
     activePromosCount() {
       return this.promoCodes.filter((promo) => promo.is_active).length;
     },
@@ -365,7 +387,6 @@ export default {
   methods: {
     ...mapActions(useAppStore, ["loadSiteContent"]),
 
-    // Форматирование контента
     formatContent(content) {
       if (!content) return "";
       return content
@@ -374,7 +395,13 @@ export default {
         .replace(/\r\n/g, "<br>");
     },
 
-    // Форматирование даты
+    isContentLong(content) {
+      if (!content) return false;
+      const textLength = content.replace(/<[^>]*>/g, "").length;
+      const lineBreaks = (content.match(/\n|<br>/gi) || []).length;
+      return textLength > 200 || lineBreaks > 3;
+    },
+
     formatDate(dateString) {
       if (!dateString) return "";
       try {
@@ -389,7 +416,6 @@ export default {
       }
     },
 
-    // Форматирование даты и времени
     formatDateTime(dateString) {
       if (!dateString) return "";
       try {
@@ -406,7 +432,6 @@ export default {
       }
     },
 
-    // Получение процента использования
     getUsagePercentage(promo) {
       if (!promo.max_uses || promo.max_uses === 0) return 0;
       return Math.min(
@@ -415,27 +440,24 @@ export default {
       );
     },
 
-    // Получение цвета для промокода
     getPromoColorClass(promo) {
       if (!promo.is_active) return "bg-gray-400";
-      if (promo.for_first_visit_only) return "bg-purple-500";
+      if (promo.for_first_visit_only)
+        return "bg-gradient-to-r from-purple-500 to-purple-600";
 
-      // Проверяем срок действия
       if (promo.valid_until) {
         const now = new Date();
         const validUntil = new Date(promo.valid_until);
         if (validUntil < now) return "bg-red-500";
       }
 
-      // Проверяем использование
       if (promo.max_uses && promo.current_uses >= promo.max_uses) {
         return "bg-red-500";
       }
 
-      return "bg-green-500";
+      return "bg-gradient-to-r from-[#c2a886] to-[#b5976e]";
     },
 
-    // Получение названия типа программы
     getProgramTypeLabel(type) {
       const labels = {
         COLLECTIVE: "Коллективные программы",
@@ -447,7 +469,6 @@ export default {
       return labels[type] || type;
     },
 
-    // Загрузка данных о лояльности из contentData
     async loadLoyaltyInfo() {
       try {
         await this.loadSiteContent("LOYALTY", true);
@@ -467,25 +488,20 @@ export default {
       }
     },
 
-    // Загрузка промокодов из API
     async loadPromoCodes() {
       try {
         const promos = await loyaltyAPI.getPromos();
         console.log("Получены промокоды из API:", promos);
 
         if (Array.isArray(promos)) {
-          // Сохраняем все промокоды (без фильтрации по дате)
           this.promoCodes = promos.sort((a, b) => {
-            // Сначала активные, потом неактивные
             if (a.is_active !== b.is_active) {
               return a.is_active ? -1 : 1;
             }
-            // Новые сверху
             return new Date(b.created_at) - new Date(a.created_at);
           });
 
           console.log("Загружено промокодов:", this.promoCodes.length);
-          console.log("Пример промокода:", this.promoCodes[0]);
         } else {
           this.promoCodes = [];
           console.log("Промокоды не найдены или не в формате массива");
@@ -496,23 +512,16 @@ export default {
       }
     },
 
-    // Основная загрузка данных
     async loadData() {
       try {
-        this.isLoading = true;
-        this.error = null;
-
         console.log("Загрузка данных для страницы лояльности");
 
-        // Параллельно загружаем обе части
         await Promise.all([this.loadLoyaltyInfo(), this.loadPromoCodes()]);
 
         console.log("Все данные загружены успешно");
       } catch (error) {
         console.error("Ошибка при загрузке данных:", error);
         this.error = error.message || "Не удалось загрузить информацию";
-      } finally {
-        this.isLoading = false;
       }
     },
   },
@@ -525,10 +534,11 @@ export default {
     } catch (error) {
       console.error("Ошибка при загрузке страницы лояльности:", error);
       this.error = error.message || "Ошибка при загрузке страницы";
+    } finally {
+      this.isLoading = false;
     }
   },
 
-  // Следим за изменением филиала
   watch: {
     "selectedBranch.id": {
       handler(newBranchId) {
@@ -541,22 +551,31 @@ export default {
 </script>
 
 <style scoped>
-.prose :deep(p) {
+/* Line clamp для сворачивания текста */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Стили для контента из API */
+.prose-content :deep(p) {
   margin-bottom: 0.75em;
 }
 
-.prose :deep(ul) {
+.prose-content :deep(ul) {
   margin-bottom: 0.75em;
   padding-left: 1.5em;
   list-style-type: disc;
 }
 
-.prose :deep(li) {
+.prose-content :deep(li) {
   margin-bottom: 0.25em;
 }
 
-.prose :deep(strong) {
+.prose-content :deep(strong) {
   font-weight: 600;
-  color: #111827;
+  color: #202c27;
 }
 </style>

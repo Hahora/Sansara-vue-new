@@ -1004,7 +1004,7 @@ export const lotteryAPI = {
 };
 
 // ============================================
-// EVENT CALENDAR API
+// EVENT CALENDAR API (ОБНОВЛЕННАЯ ВЕРСИЯ)
 // ============================================
 export const eventCalendarAPI = {
   // Admin endpoints
@@ -1048,6 +1048,38 @@ export const eventCalendarAPI = {
       method: "POST",
       body: JSON.stringify(data),
     });
+  },
+
+  // ========== НОВЫЕ МЕТОДЫ: Управление занятыми местами ==========
+
+  // Увеличить занятые места
+  increaseSlots: (eventId, amount = 1) => {
+    return apiRequest(
+      `/api/v1/admin/events-calendar/${eventId}/slots/increase?amount=${amount}`,
+      {
+        method: "PATCH",
+      }
+    );
+  },
+
+  // Уменьшить занятые места
+  decreaseSlots: (eventId, amount = 1) => {
+    return apiRequest(
+      `/api/v1/admin/events-calendar/${eventId}/slots/decrease?amount=${amount}`,
+      {
+        method: "PATCH",
+      }
+    );
+  },
+
+  // Установить конкретное значение занятых мест
+  setSlots: (eventId, occupiedSlots) => {
+    return apiRequest(
+      `/api/v1/admin/events-calendar/${eventId}/slots/set?occupied_slots=${occupiedSlots}`,
+      {
+        method: "PATCH",
+      }
+    );
   },
 };
 

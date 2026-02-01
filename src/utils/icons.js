@@ -30,9 +30,34 @@ import {
   ChevronLeft,
   ChevronsLeft,
   ChevronsRight,
+  // Иконки для профиля
+  Phone,
+  Shield,
+  // Новые иконки для страницы мальчишников/девичников
+  FileText,
+  Images,
+  Wallet,
+  CalendarCheck,
+  Flower2,
+  Camera,
+  Video,
+  // Иконки для страниц
+  Layout,
+  List,
+  Crown,
+  Tag,
+  BarChart3,
+  XCircle,
+  Target,
+  Info,
+  // ЕЩЁ НЕДОСТАЮЩИЕ:
+  Moon, // <- Для LotteryPage (лотерея не активна)
+  RefreshCw, // <- Для LotteryPage (кнопка обновить)
 } from "lucide-vue-next";
 
 export default {
+  Camera,
+  Video,
   MapPin,
   ChevronDown,
   X,
@@ -54,7 +79,6 @@ export default {
   PenTool,
   Building2,
   Loader2,
-  // Иконки для навигации
   Home,
   CalendarDays,
   CheckCircle,
@@ -63,4 +87,23 @@ export default {
   ChevronLeft,
   ChevronsLeft,
   ChevronsRight,
+  Phone,
+  Shield,
+  FileText,
+  Images,
+  Wallet,
+  CalendarCheck,
+  Flower2,
+  Layout,
+  List,
+  Crown,
+  Tag,
+  BarChart3,
+  XCircle,
+  Target,
+  Info,
+  // ЕЩЁ НЕДОСТАЮЩИЕ:
+  Moon,
+  RefreshCw,
+  User, // <- Добавляем отдельно для использования как User (не UserIcon)
 };

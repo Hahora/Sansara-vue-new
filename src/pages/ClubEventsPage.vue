@@ -1,118 +1,98 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
-    <!-- Шапка -->
-    <div
-      class="bg-gradient-to-br from-[#4e5d51] via-[#5a6d5e] to-[#4e5d51] text-white px-5 py-6"
-    >
+  <div class="min-h-screen bg-[#edeae6] pb-20">
+    <!-- Шапка - статичная -->
+    <div class="bg-[#202c27] text-white px-5 py-6">
       <div class="flex items-center mb-4">
         <button
           @click="$router.go(-1)"
-          class="flex items-center text-white hover:text-gray-200 transition-colors"
+          class="flex items-center text-white/80 hover:text-white transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <span class="font-medium">Назад</span>
+          <ChevronLeft class="h-6 w-6 mr-1" />
+          <span class="font-light">Назад</span>
         </button>
       </div>
 
       <div class="flex items-center">
         <div
-          class="w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center text-3xl border-2 border-white border-opacity-30"
+          class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center border-2 border-white/10 backdrop-blur-sm"
         >
-          🏛
+          <Castle class="h-8 w-8 text-white" />
         </div>
         <div class="ml-4 flex-1">
-          <h1 class="text-2xl font-bold">{{ pageTitle }}</h1>
+          <h1 class="text-2xl font-light tracking-wide">Клубные мероприятия</h1>
         </div>
       </div>
     </div>
 
     <!-- Переключатель вкладок -->
-    <div class="px-4 py-3 border-b border-gray-200 bg-white">
-      <div class="flex rounded-lg bg-gray-100 p-1">
+    <div class="px-5 py-3 bg-[#e3ded3] border-b border-[#c2a886]/20">
+      <div class="flex rounded-xl bg-[#d9cebc]/60 p-1">
         <button
           @click="activeTab = 'info'"
           :class="[
-            'flex-1 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200',
+            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'info'
-              ? 'bg-white shadow-sm text-[#4e5d51]'
-              : 'text-gray-600 hover:text-gray-900',
+              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
+              : 'text-gray-700 hover:bg-white/50',
           ]"
         >
-          📋 Основная информация
+          <FileText class="h-4 w-4" />
+          <span>Информация</span>
         </button>
         <button
           @click="activeTab = 'gallery'"
           :class="[
-            'flex-1 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200',
+            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'gallery'
-              ? 'bg-white shadow-sm text-[#4e5d51]'
-              : 'text-gray-600 hover:text-gray-900',
+              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
+              : 'text-gray-700 hover:bg-white/50',
           ]"
         >
-          📸 Галерея
+          <Images class="h-4 w-4" />
+          <span>Галерея</span>
         </button>
       </div>
     </div>
 
     <!-- Индикатор загрузки -->
-    <div v-if="isLoading" class="flex justify-center items-center py-16">
-      <div class="relative">
-        <div
-          class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200"
-        ></div>
-        <div
-          class="animate-spin rounded-full h-12 w-12 border-4 border-[#4e5d51] border-t-transparent absolute top-0 left-0"
-        ></div>
-      </div>
+    <div
+      v-if="isLoading"
+      class="flex flex-col justify-center items-center py-16 px-5"
+    >
+      <Loader2 class="h-12 w-12 text-[#c2a886] animate-spin mb-4" />
+      <p class="text-sm text-gray-600 font-light">Загружаем информацию...</p>
     </div>
 
     <!-- Ошибка -->
     <div
       v-else-if="error"
-      class="mx-4 mt-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 shadow-sm"
+      class="mx-5 mt-5 bg-red-50/90 backdrop-blur-sm border border-red-200 rounded-xl p-4 shadow-sm"
     >
-      <div class="flex items-start">
-        <svg
-          class="h-5 w-5 text-red-500 mt-0.5 mr-3"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clip-rule="evenodd"
-          />
-        </svg>
+      <div class="flex items-start gap-3">
+        <AlertCircle class="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
         <p class="text-sm text-red-800">{{ error }}</p>
       </div>
     </div>
 
     <!-- Контент: Основная информация -->
-    <div v-else-if="activeTab === 'info'" class="px-4 py-5">
+    <div v-else-if="activeTab === 'info'" class="px-5 py-5">
       <!-- Если нет программ -->
       <div
         v-if="
           (!bathClubContent || !bathClubContent.title) &&
           (!businessBathContent || !businessBathContent.title)
         "
-        class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center"
+        class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-8 text-center"
       >
-        <div class="text-4xl mb-4">🏛</div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+        <div
+          class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <Castle class="h-8 w-8 text-[#c2a886]" />
+        </div>
+        <h3 class="text-base font-semibold text-gray-900 mb-2">
           Клубные мероприятия
         </h3>
-        <p class="text-gray-600">
+        <p class="text-sm text-gray-600 leading-relaxed">
           Скоро здесь появится информация о клубных мероприятиях
         </p>
       </div>
@@ -122,18 +102,23 @@
         <!-- Банный клуб С. Хачатурьяна -->
         <div
           v-if="bathClubContent && bathClubContent.title"
-          class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+          class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
         >
-          <div
-            class="px-4 py-4 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-100"
-          >
-            <div class="flex items-center">
-              <span class="text-3xl mr-3">♨️</span>
-              <div class="flex-1">
-                <h2 class="font-bold text-gray-900 text-lg">
+          <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
+            <div class="flex items-center gap-3">
+              <div
+                class="h-12 w-12 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <Sparkles class="h-6 w-6 text-white" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="font-semibold text-gray-900 text-[15px] truncate">
                   {{ bathClubContent.title }}
                 </h2>
-                <p v-if="bathClubSubtitle" class="text-sm text-gray-600 mt-0.5">
+                <p
+                  v-if="bathClubSubtitle"
+                  class="text-sm text-gray-600 mt-0.5 truncate"
+                >
                   {{ bathClubSubtitle }}
                 </p>
               </div>
@@ -144,52 +129,70 @@
             <!-- Цена -->
             <div v-if="bathClubContent.price" class="flex items-center">
               <div
-                class="bg-green-50 text-green-800 px-4 py-2 rounded-lg border border-green-200"
+                class="bg-[#d9cebc] px-4 py-2.5 rounded-xl border border-[#c2a886]/30 flex items-center gap-2"
               >
-                <div class="flex items-center">
-                  <span class="font-bold text-lg">{{
-                    formatPrice(bathClubContent.price)
-                  }}</span>
-                  <span class="text-sm ml-2 text-green-600">/ с участника</span>
+                <div
+                  class="h-8 w-8 bg-[#c2a886]/30 rounded-lg flex items-center justify-center"
+                >
+                  <Wallet class="h-4 w-4 text-[#202c27]" />
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900 text-base">
+                    {{ formatPrice(bathClubContent.price) }}
+                  </div>
+                  <div class="text-xs text-gray-600">с участника</div>
                 </div>
               </div>
             </div>
 
-            <!-- Контент из API -->
+            <!-- Контент из API с разворачиванием -->
             <div
               v-if="bathClubContent.content"
-              class="prose prose-sm max-w-none"
+              class="bg-[#d9cebc]/40 rounded-xl p-4"
             >
-              <div v-html="formatContent(bathClubContent.content)"></div>
+              <div
+                :class="[
+                  'text-sm text-gray-700 leading-relaxed prose-content transition-all duration-300',
+                  !expandedBathClub && isContentLong(bathClubContent.content)
+                    ? 'line-clamp-4'
+                    : '',
+                ]"
+                v-html="formatContent(bathClubContent.content)"
+              ></div>
+
+              <!-- Кнопка развернуть/свернуть -->
+              <button
+                v-if="isContentLong(bathClubContent.content)"
+                @click="expandedBathClub = !expandedBathClub"
+                class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
+              >
+                <span>{{ expandedBathClub ? "Свернуть" : "Развернуть" }}</span>
+                <ChevronDown
+                  :class="[
+                    'h-4 w-4 transition-transform duration-300',
+                    expandedBathClub ? 'rotate-180' : '',
+                  ]"
+                />
+              </button>
             </div>
 
             <!-- Если контента нет -->
             <div
               v-else
-              class="bg-gray-50 rounded-lg p-3 text-center text-gray-500 italic"
+              class="bg-[#d9cebc]/40 rounded-xl p-4 text-center text-gray-500 text-sm"
             >
               Информация о банном клубе скоро появится
             </div>
 
-            <!-- Кнопка записи - ИЗМЕНЕНО: используем тот же подход, что и в мальчишниках -->
+            <!-- Кнопка записи -->
             <button
               @click="
                 openBooking('BATH_CLUB', bathClubContent.title || 'Банный клуб')
               "
-              class="w-full bg-[#4e5d51] hover:bg-[#3d4a40] text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm active:scale-98"
+              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] hover:from-[#b5976e] hover:to-[#a68a5f] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                <path
-                  d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-                />
-              </svg>
-              Записаться на клуб
+              <CalendarCheck class="h-5 w-5 mr-2" />
+              <span class="text-[15px]">Записаться</span>
             </button>
           </div>
         </div>
@@ -197,15 +200,17 @@
         <!-- Бизнес-баня с клубом МОСТ -->
         <div
           v-if="businessBathContent && businessBathContent.title"
-          class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+          class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
         >
-          <div
-            class="px-4 py-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-100"
-          >
-            <div class="flex items-center">
-              <span class="text-3xl mr-3">💼</span>
-              <div class="flex-1">
-                <h2 class="font-bold text-gray-900 text-lg">
+          <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
+            <div class="flex items-center gap-3">
+              <div
+                class="h-12 w-12 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0"
+              >
+                <Briefcase class="h-6 w-6 text-white" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="font-semibold text-gray-900 text-[15px] truncate">
                   {{ businessBathContent.title }}
                 </h2>
               </div>
@@ -216,34 +221,65 @@
             <!-- Цена -->
             <div v-if="businessBathContent.price" class="flex items-center">
               <div
-                class="bg-green-50 text-green-800 px-4 py-2 rounded-lg border border-green-200"
+                class="bg-[#d9cebc] px-4 py-2.5 rounded-xl border border-[#c2a886]/30 flex items-center gap-2"
               >
-                <div class="flex items-center">
-                  <span class="font-bold text-lg">{{
-                    formatPrice(businessBathContent.price)
-                  }}</span>
-                  <span class="text-sm ml-2 text-green-600">/ с участника</span>
+                <div
+                  class="h-8 w-8 bg-[#c2a886]/30 rounded-lg flex items-center justify-center"
+                >
+                  <Wallet class="h-4 w-4 text-[#202c27]" />
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900 text-base">
+                    {{ formatPrice(businessBathContent.price) }}
+                  </div>
+                  <div class="text-xs text-gray-600">с участника</div>
                 </div>
               </div>
             </div>
 
-            <!-- Контент из API -->
+            <!-- Контент из API с разворачиванием -->
             <div
               v-if="businessBathContent.content"
-              class="prose prose-sm max-w-none"
+              class="bg-[#d9cebc]/40 rounded-xl p-4"
             >
-              <div v-html="formatContent(businessBathContent.content)"></div>
+              <div
+                :class="[
+                  'text-sm text-gray-700 leading-relaxed prose-content transition-all duration-300',
+                  !expandedBusinessBath &&
+                  isContentLong(businessBathContent.content)
+                    ? 'line-clamp-4'
+                    : '',
+                ]"
+                v-html="formatContent(businessBathContent.content)"
+              ></div>
+
+              <!-- Кнопка развернуть/свернуть -->
+              <button
+                v-if="isContentLong(businessBathContent.content)"
+                @click="expandedBusinessBath = !expandedBusinessBath"
+                class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
+              >
+                <span>{{
+                  expandedBusinessBath ? "Свернуть" : "Развернуть"
+                }}</span>
+                <ChevronDown
+                  :class="[
+                    'h-4 w-4 transition-transform duration-300',
+                    expandedBusinessBath ? 'rotate-180' : '',
+                  ]"
+                />
+              </button>
             </div>
 
             <!-- Если контента нет -->
             <div
               v-else
-              class="bg-gray-50 rounded-lg p-3 text-center text-gray-500 italic"
+              class="bg-[#d9cebc]/40 rounded-xl p-4 text-center text-gray-500 text-sm"
             >
               Информация о бизнес-бане скоро появится
             </div>
 
-            <!-- Кнопка записи - ИЗМЕНЕНО: используем тот же подход, что и в мальчишниках -->
+            <!-- Кнопка записи -->
             <button
               @click="
                 openBooking(
@@ -251,20 +287,10 @@
                   businessBathContent.title || 'Бизнес-баня'
                 )
               "
-              class="w-full bg-[#4e5d51] hover:bg-[#3d4a40] text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm active:scale-98"
+              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] hover:from-[#b5976e] hover:to-[#a68a5f] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                <path
-                  d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-                />
-              </svg>
-              Записаться на бизнес-баню
+              <CalendarCheck class="h-5 w-5 mr-2" />
+              <span class="text-[15px]">Записаться</span>
             </button>
           </div>
         </div>
@@ -285,21 +311,25 @@
 <script>
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
-import { openBookingModal } from "@/utils/eventBus"; // Добавляем импорт, как в мальчишниках
+import { openBookingModal } from "@/utils/eventBus";
 import MediaGallery from "@/components/MediaGallery.vue";
+import icons from "@/utils/icons";
 
 export default {
   name: "ClubEventsPage",
   components: {
     MediaGallery,
+    ...icons,
   },
   data() {
     return {
-      isLoading: false,
+      isLoading: true,
       error: null,
-      bathClubContent: null, // БАННЫЙ КЛУБ С. ХАЧАТУРЬЯН
-      businessBathContent: null, // Бизнес-баня МОСТ
-      activeTab: "info", // 'info' или 'gallery'
+      bathClubContent: null,
+      businessBathContent: null,
+      activeTab: "info",
+      expandedBathClub: false,
+      expandedBusinessBath: false,
     };
   },
   computed: {
@@ -349,20 +379,21 @@ export default {
       return priceNumber.toLocaleString("ru-RU") + " ₽";
     },
 
-    // НОВЫЙ МЕТОД - такой же как в мальчишниках
+    isContentLong(content) {
+      if (!content) return false;
+      // Проверяем длину контента (более 200 символов) или количество переносов строк (более 3)
+      const textLength = content.replace(/<[^>]*>/g, "").length;
+      const lineBreaks = (content.match(/\n|<br>/gi) || []).length;
+      return textLength > 200 || lineBreaks > 3;
+    },
+
     openBooking(eventKey, title) {
       console.log("ClubEventsPage: Opening booking", { eventKey, title });
       openBookingModal(null, eventKey, title);
     },
 
-    // Убрали метод findProgramForBooking, так как больше не нужен
-    // Поиск программы теперь будет происходить в модальном окне бронирования
-
     async loadClubEvents() {
       try {
-        this.isLoading = true;
-        this.error = null;
-
         console.log("Загрузка контента для страницы клубных мероприятий");
         console.log("Выбранный филиал:", this.selectedBranch?.id);
 
@@ -398,8 +429,6 @@ export default {
       } catch (error) {
         console.error("Ошибка при загрузке контента:", error);
         this.error = error.message || "Не удалось загрузить информацию";
-      } finally {
-        this.isLoading = false;
       }
     },
   },
@@ -407,13 +436,13 @@ export default {
     console.log("ClubEventsPage created");
 
     try {
-      // Загружаем контент для страницы
       await this.loadClubEvents();
-
       console.log("Страница загружена успешно");
     } catch (error) {
       console.error("Ошибка при загрузке страницы:", error);
       this.error = error.message || "Ошибка при загрузке страницы";
+    } finally {
+      this.isLoading = false;
     }
   },
 
@@ -429,26 +458,31 @@ export default {
 </script>
 
 <style scoped>
-.active\:scale-98:active {
-  transform: scale(0.98);
-}
-
-.prose :deep(p) {
+/* Стили для контента из API */
+.prose-content :deep(p) {
   margin-bottom: 0.75em;
 }
 
-.prose :deep(ul) {
+.prose-content :deep(ul) {
   margin-bottom: 0.75em;
   padding-left: 1.5em;
   list-style-type: disc;
 }
 
-.prose :deep(li) {
+.prose-content :deep(li) {
   margin-bottom: 0.25em;
 }
 
-.prose :deep(strong) {
+.prose-content :deep(strong) {
   font-weight: 600;
-  color: #111827;
+  color: #202c27;
+}
+
+/* Line clamp для сворачивания текста */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

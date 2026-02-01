@@ -359,7 +359,17 @@
                     <span class="text-gray-600">
                       {{
                         tier.min_guests === tier.max_guests
-                          ? `${tier.min_guests} гость${tier.min_guests === 1 ? "" : tier.min_guests < 5 ? "я" : "ей"}`
+                          ? tier.min_guests +
+                            " " +
+                            (tier.min_guests % 100 >= 11 &&
+                            tier.min_guests % 100 <= 14
+                              ? "гостей"
+                              : tier.min_guests % 10 === 1
+                                ? "гость"
+                                : tier.min_guests % 10 >= 2 &&
+                                    tier.min_guests % 10 <= 4
+                                  ? "гостя"
+                                  : "гостей")
                           : `${tier.min_guests}-${tier.max_guests} гостей`
                       }}
                     </span>

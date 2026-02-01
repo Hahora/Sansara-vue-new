@@ -1,23 +1,51 @@
 <template>
-  <div class="media-gallery">
+  <div class="media-gallery bg-[#edeae6]">
     <!-- Фильтры по категориям -->
     <div
       v-if="categories && categories.length > 1"
-      class="px-4 py-3 bg-white border-b border-gray-100"
+      class="px-5 py-3 bg-[#e3ded3] border-b border-[#c2a886]/20"
     >
-      <div class="flex space-x-2 overflow-x-auto pb-1 no-scrollbar">
+      <div class="flex space-x-2 overflow-x-scroll pb-1 scrollbar-thin">
         <button
           v-for="category in categories"
           :key="category.value"
           @click="selectCategory(category.value)"
           :class="[
-            'px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 flex items-center',
+            'px-4 py-2 rounded-xl whitespace-nowrap transition-all duration-300 flex items-center text-sm font-medium flex-shrink-0',
             selectedCategory === category.value
-              ? 'bg-[#4e5d51] text-white font-medium'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white shadow-md'
+              : 'bg-[#d9cebc] text-gray-700 hover:bg-[#c2a886]/30',
           ]"
         >
-          <span v-if="category.icon" class="mr-2">{{ category.icon }}</span>
+          <!-- Иконки вместо эмодзи -->
+          <Users v-if="category.icon === 'BACHELOR'" class="h-4 w-4 mr-2" />
+          <Flower2
+            v-else-if="category.icon === 'BACHELORETTE'"
+            class="h-4 w-4 mr-2"
+          />
+          <UsersRound
+            v-else-if="category.icon === 'COLLECTIVE'"
+            class="h-4 w-4 mr-2"
+          />
+          <Wand2 v-else-if="category.icon === 'AUTHOR'" class="h-4 w-4 mr-2" />
+          <Gift
+            v-else-if="category.icon === 'CERTIFICATE'"
+            class="h-4 w-4 mr-2"
+          />
+          <Sparkles
+            v-else-if="category.icon === 'BATH_CLUB'"
+            class="h-4 w-4 mr-2"
+          />
+          <Briefcase
+            v-else-if="category.icon === 'BUSINESS_BATH'"
+            class="h-4 w-4 mr-2"
+          />
+          <Star
+            v-else-if="category.icon === 'FIRST_TIME'"
+            class="h-4 w-4 mr-2"
+          />
+          <Award v-else-if="category.icon === 'LOYALTY'" class="h-4 w-4 mr-2" />
+
           {{ category.label }}
         </button>
       </div>
@@ -26,16 +54,16 @@
     <!-- Типы медиа (фото/видео) -->
     <div
       v-if="showMediaTypeFilter && currentMedia.length > 0"
-      class="px-4 py-2 bg-gray-50 border-b border-gray-200"
+      class="px-5 py-2.5 bg-[#d9cebc]/60 border-b border-[#c2a886]/20"
     >
       <div class="flex space-x-2">
         <button
           @click="selectedMediaType = 'all'"
           :class="[
-            'px-3 py-1.5 rounded-full text-sm transition-all duration-200',
+            'px-3 py-1.5 rounded-lg text-sm transition-all duration-300 font-medium',
             selectedMediaType === 'all'
-              ? 'bg-[#4e5d51] text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400',
+              ? 'bg-[#c2a886] text-white shadow-sm'
+              : 'bg-white/60 text-gray-700 border border-[#c2a886]/20 hover:bg-white',
           ]"
         >
           Все
@@ -44,50 +72,46 @@
           v-if="hasPhotos"
           @click="selectedMediaType = 'PHOTO'"
           :class="[
-            'px-3 py-1.5 rounded-full text-sm transition-all duration-200',
+            'px-3 py-1.5 rounded-lg text-sm transition-all duration-300 font-medium flex items-center gap-1.5',
             selectedMediaType === 'PHOTO'
-              ? 'bg-blue-500 text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400',
+              ? 'bg-[#c2a886] text-white shadow-sm'
+              : 'bg-white/60 text-gray-700 border border-[#c2a886]/20 hover:bg-white',
           ]"
         >
-          📸 Фото
+          <Camera class="h-3.5 w-3.5" /> Фото
         </button>
         <button
           v-if="hasVideos"
           @click="selectedMediaType = 'VIDEO'"
           :class="[
-            'px-3 py-1.5 rounded-full text-sm transition-all duration-200',
+            'px-3 py-1.5 rounded-lg text-sm transition-all duration-300 font-medium flex items-center gap-1.5',
             selectedMediaType === 'VIDEO'
-              ? 'bg-red-500 text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400',
+              ? 'bg-[#c2a886] text-white shadow-sm'
+              : 'bg-white/60 text-gray-700 border border-[#c2a886]/20 hover:bg-white',
           ]"
         >
-          🎬 Видео
+          <Video class="h-3.5 w-3.5" /> Видео
         </button>
       </div>
     </div>
 
     <!-- Индикатор загрузки -->
     <div v-if="isLoading" class="flex justify-center items-center py-16">
-      <div class="relative">
-        <div
-          class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200"
-        ></div>
-        <div
-          class="animate-spin rounded-full h-12 w-12 border-4 border-[#4e5d51] border-t-transparent absolute top-0 left-0"
-        ></div>
+      <div class="flex flex-col items-center">
+        <Loader2 class="h-12 w-12 text-[#c2a886] animate-spin mb-3" />
+        <p class="text-sm text-gray-600 font-light">Загружаем галерею...</p>
       </div>
     </div>
 
-    <!-- Галлерея -->
-    <div v-else-if="filteredMedia.length > 0" class="p-2">
+    <!-- Галерея -->
+    <div v-else-if="filteredMedia.length > 0" class="p-3">
       <!-- Сетка медиа -->
-      <div class="grid grid-cols-3 gap-1">
+      <div class="grid grid-cols-3 gap-2">
         <div
           v-for="(item, index) in filteredMedia"
           :key="item.id"
           @click="openLightbox(index)"
-          class="aspect-square bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity duration-200 relative group"
+          class="aspect-square bg-[#d9cebc] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 relative group hover:shadow-lg active:scale-95"
         >
           <!-- Фото -->
           <img
@@ -102,21 +126,17 @@
           <!-- Видео превью -->
           <div
             v-else-if="item.media_type === 'VIDEO'"
-            class="w-full h-full bg-black flex items-center justify-center relative"
+            class="w-full h-full bg-gradient-to-br from-[#202c27] to-[#2a3a34] flex items-center justify-center relative"
           >
-            <div
-              class="w-full h-full bg-gradient-to-br from-gray-800 to-black"
-            ></div>
-
             <!-- Иконка воспроизведения -->
             <div
-              class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-20 transition-all duration-200"
+              class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-all duration-300"
             >
               <div
-                class="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-200"
+                class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 shadow-lg"
               >
                 <svg
-                  class="w-6 h-6 text-gray-800 ml-1"
+                  class="w-6 h-6 text-[#202c27] ml-1"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -128,23 +148,24 @@
 
           <!-- Индикатор типа медиа -->
           <div
-            class="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5 rounded"
+            class="absolute top-2 right-2 bg-[#202c27]/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg font-medium flex items-center gap-1"
           >
-            {{ item.media_type === "VIDEO" ? "🎬" : "📸" }}
+            <Video v-if="item.media_type === 'VIDEO'" class="h-3 w-3" />
+            <Camera v-else class="h-3 w-3" />
           </div>
 
           <!-- Заголовок при наведении -->
           <div
             v-if="item.title"
-            class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black to-transparent text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#202c27] via-[#202c27]/90 to-transparent text-white p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           >
-            <p class="text-xs truncate">{{ item.title }}</p>
+            <p class="text-xs font-light truncate">{{ item.title }}</p>
           </div>
         </div>
       </div>
 
       <!-- Количество медиа -->
-      <div class="text-center py-4 text-sm text-gray-600">
+      <div class="text-center py-4 text-sm text-gray-600 font-light">
         Показано {{ filteredMedia.length }} из {{ currentMedia.length }}
         <span v-if="selectedMediaType !== 'all'">
           {{ selectedMediaType === "PHOTO" ? "фотографий" : "видео" }}
@@ -153,80 +174,50 @@
     </div>
 
     <!-- Сообщение, если медиа нет -->
-    <div v-else class="text-center py-12">
-      <div class="text-5xl mb-4">📸</div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">
-        Медиа скоро появятся
+    <div v-else class="text-center py-12 px-5">
+      <div
+        class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <Images class="h-8 w-8 text-[#c2a886]" />
+      </div>
+      <h3 class="text-base font-semibold text-gray-900 mb-2">
+        Галерея скоро появится
       </h3>
-      <p class="text-gray-600">Мы работаем над наполнением галереи</p>
+      <p class="text-sm text-gray-600 leading-relaxed">
+        Мы работаем над наполнением фотографиями и видео
+      </p>
     </div>
 
     <!-- Лайтбокс -->
     <div
       v-if="showLightbox"
-      class="fixed inset-0 bg-black bg-opacity-95 z-[100] overflow-y-auto flex items-center justify-center"
+      class="fixed inset-0 bg-[#202c27]/95 backdrop-blur-sm z-[100] overflow-y-auto flex items-center justify-center"
       @click.self="closeLightbox"
     >
       <div class="relative w-full h-full flex items-center justify-center">
         <!-- Кнопка закрытия -->
         <button
           @click="closeLightbox"
-          class="absolute top-4 right-4 text-white z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200"
+          class="absolute top-4 right-4 text-white z-10 p-3 bg-[#202c27]/60 hover:bg-[#202c27]/80 backdrop-blur-sm rounded-full transition-all duration-300 border border-white/10"
         >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X class="w-6 h-6" />
         </button>
 
         <!-- Навигация -->
         <button
           v-if="filteredMedia.length > 1"
           @click="prevMedia"
-          class="absolute left-4 text-white z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200"
+          class="absolute left-4 text-white z-10 p-3 bg-[#202c27]/60 hover:bg-[#202c27]/80 backdrop-blur-sm rounded-full transition-all duration-300 border border-white/10"
         >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <ChevronLeft class="w-6 h-6" />
         </button>
 
         <button
           v-if="filteredMedia.length > 1"
           @click="nextMedia"
-          class="absolute right-4 text-white z-10 p-3 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full transition-all duration-200"
+          class="absolute right-4 text-white z-10 p-3 bg-[#202c27]/60 hover:bg-[#202c27]/80 backdrop-blur-sm rounded-full transition-all duration-300 border border-white/10"
         >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
+          <ChevronRight class="w-6 h-6" />
         </button>
 
         <!-- Контент лайтбокса -->
@@ -237,7 +228,7 @@
               v-if="currentLightboxMedia.media_type === 'PHOTO'"
               :src="getMediaUrl(currentLightboxMedia.id)"
               :alt="currentLightboxMedia.title || 'Фото'"
-              class="max-w-full max-h-[70vh] object-contain mx-auto rounded-lg"
+              class="max-w-full max-h-[70vh] object-contain mx-auto rounded-xl shadow-2xl"
             />
 
             <!-- Видео -->
@@ -246,45 +237,57 @@
               :src="getMediaUrl(currentLightboxMedia.id)"
               controls
               autoplay
-              class="max-w-full max-h-[70vh] mx-auto rounded-lg"
+              class="max-w-full max-h-[70vh] mx-auto rounded-xl shadow-2xl"
             ></video>
 
             <!-- Информация о медиа -->
             <div
               v-if="currentLightboxMedia.title"
-              class="mt-4 text-white max-w-2xl mx-auto"
+              class="mt-4 text-white max-w-2xl mx-auto bg-[#202c27]/60 backdrop-blur-sm rounded-xl p-4 border border-white/10"
             >
-              <h3 class="text-xl font-semibold mb-2">
+              <h3 class="text-lg font-light tracking-wide">
                 {{ currentLightboxMedia.title }}
               </h3>
             </div>
           </div>
 
           <!-- Индикатор прогресса -->
-          <div v-if="filteredMedia.length > 1" class="mt-6">
-            <div class="flex justify-center space-x-2 mb-2">
+          <div
+            v-if="filteredMedia.length > 1"
+            class="mt-6 flex flex-col items-center"
+          >
+            <div class="flex justify-center space-x-2 mb-3">
               <div
                 v-for="(item, index) in filteredMedia"
                 :key="item.id"
                 @click="currentIndex = index"
                 :class="[
-                  'w-2 h-2 rounded-full cursor-pointer transition-all duration-200',
+                  'h-1.5 rounded-full cursor-pointer transition-all duration-300',
                   currentIndex === index
-                    ? 'bg-white w-4'
-                    : 'bg-white bg-opacity-50 hover:bg-opacity-75',
+                    ? 'bg-[#c2a886] w-8'
+                    : 'bg-white/30 hover:bg-white/50 w-1.5',
                 ]"
               ></div>
             </div>
-            <p class="text-white text-center text-sm">
-              {{ currentIndex + 1 }} / {{ filteredMedia.length }}
-              <span class="text-gray-400 ml-2">
-                {{
-                  currentLightboxMedia.media_type === "VIDEO"
-                    ? "🎬 Видео"
-                    : "📸 Фото"
-                }}
-              </span>
-            </p>
+            <div class="bg-[#202c27]/60 backdrop-blur-sm rounded-lg px-4 py-2">
+              <p
+                class="text-white text-center text-sm font-light flex items-center justify-center gap-2"
+              >
+                {{ currentIndex + 1 }} / {{ filteredMedia.length }}
+                <span class="text-[#c2a886] flex items-center gap-1">
+                  <Video
+                    v-if="currentLightboxMedia.media_type === 'VIDEO'"
+                    class="h-3.5 w-3.5"
+                  />
+                  <Camera v-else class="h-3.5 w-3.5" />
+                  {{
+                    currentLightboxMedia.media_type === "VIDEO"
+                      ? "Видео"
+                      : "Фото"
+                  }}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -296,29 +299,26 @@
 import { mediaAPI } from "@/utils/api";
 import { mapState } from "pinia";
 import { useAppStore } from "@/stores/appStore";
+import icons from "@/utils/icons";
 
 export default {
   name: "MediaGallery",
+  components: {
+    ...icons,
+  },
   props: {
-    // Категории для загрузки (например: ['BACHELOR', 'BACHELORETTE'])
     sections: {
       type: Array,
       required: true,
     },
-
-    // Показывать фильтр по типу медиа
     showMediaTypeFilter: {
       type: Boolean,
       default: true,
     },
-
-    // Начальная категория
     initialSection: {
       type: String,
       default: null,
     },
-
-    // Лейблы для категорий
     categoryLabels: {
       type: Object,
       default: () => ({}),
@@ -329,7 +329,7 @@ export default {
     return {
       isLoading: false,
       error: null,
-      mediaData: {}, // { 'BACHELOR': [...], 'BACHELORETTE': [...] }
+      mediaData: {},
       selectedCategory: this.initialSection || "all",
       selectedMediaType: "all",
       showLightbox: false,
@@ -345,19 +345,18 @@ export default {
         {
           value: "all",
           label: "Все",
-          icon: "",
+          icon: null,
         },
       ];
 
       this.sections.forEach((section) => {
         const label =
           this.categoryLabels[section] || this.getDefaultLabel(section);
-        const icon = this.getDefaultIcon(section);
 
         cats.push({
           value: section,
           label: label,
-          icon: icon,
+          icon: section,
         });
       });
 
@@ -366,7 +365,6 @@ export default {
 
     currentMedia() {
       if (this.selectedCategory === "all") {
-        // Объединяем все медиа
         return Object.values(this.mediaData).flat();
       } else {
         return this.mediaData[this.selectedCategory] || [];
@@ -376,14 +374,12 @@ export default {
     filteredMedia() {
       let items = this.currentMedia;
 
-      // Фильтрация по типу медиа
       if (this.selectedMediaType !== "all") {
         items = items.filter(
           (item) => item.media_type === this.selectedMediaType
         );
       }
 
-      // Сортируем по display_order
       return items.sort((a, b) => a.display_order - b.display_order);
     },
 
@@ -425,10 +421,8 @@ export default {
 
         const results = await Promise.all(promises);
 
-        // Формируем объект { 'BACHELOR': [...], 'BACHELORETTE': [...] }
         this.mediaData = {};
         results.forEach(({ section, items }) => {
-          // Фильтруем только активные медиа
           this.mediaData[section] = items.filter((item) => item.is_active);
         });
 
@@ -450,13 +444,11 @@ export default {
     openLightbox(index) {
       this.currentIndex = index;
       this.showLightbox = true;
-      // Блокируем скролл страницы на фоне
       document.body.style.overflow = "hidden";
     },
 
     closeLightbox() {
       this.showLightbox = false;
-      // Разблокируем скролл страницы
       document.body.style.overflow = "";
     },
 
@@ -475,7 +467,6 @@ export default {
     },
 
     getMediaUrl(mediaId) {
-      // URL для получения медиа файла (публичный эндпоинт - только активные)
       return mediaAPI.getDownloadUrl(mediaId);
     },
 
@@ -486,7 +477,7 @@ export default {
 
     getDefaultLabel(section) {
       const labels = {
-        BACHELOR: "Мальчишники",
+        BACHELOR: "Коллективная баня",
         BACHELORETTE: "Девичники",
         COLLECTIVE: "Коллективные",
         AUTHOR: "Авторские",
@@ -497,21 +488,6 @@ export default {
         LOYALTY: "Лояльность",
       };
       return labels[section] || section;
-    },
-
-    getDefaultIcon(section) {
-      const icons = {
-        BACHELOR: "👔",
-        BACHELORETTE: "👗",
-        COLLECTIVE: "👥",
-        AUTHOR: "✨",
-        CERTIFICATE: "🎁",
-        BATH_CLUB: "♨️",
-        BUSINESS_BATH: "🏢",
-        FIRST_TIME: "🌟",
-        LOYALTY: "💝",
-      };
-      return icons[section] || "📸";
     },
   },
 
@@ -530,7 +506,6 @@ export default {
   },
 
   mounted() {
-    // Обработка клавиш для навигации
     const handleKeydown = (e) => {
       if (!this.showLightbox) return;
 
@@ -548,17 +523,13 @@ export default {
     };
 
     window.addEventListener("keydown", handleKeydown);
-
-    // Сохраняем ссылку для удаления в beforeUnmount
     this._handleKeydown = handleKeydown;
   },
 
   beforeUnmount() {
-    // Удаляем обработчик при размонтировании
     if (this._handleKeydown) {
       window.removeEventListener("keydown", this._handleKeydown);
     }
-    // Разблокируем скролл на случай если лайтбокс был открыт
     document.body.style.overflow = "";
   },
 };
@@ -566,25 +537,34 @@ export default {
 
 <style scoped>
 .media-gallery {
-  height: 100%;
   min-height: 300px;
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
 }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(194, 168, 134, 0.1);
+  border-radius: 10px;
 }
 
-/* Плавные переходы для сетки */
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(194, 168, 134, 0.5);
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(194, 168, 134, 0.7);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(194, 168, 134, 0.5) rgba(194, 168, 134, 0.1);
+}
+
+/* Плавные переходы для карточек */
 .grid > div {
-  transition: transform 0.2s ease;
-}
-
-.grid > div:hover {
-  transform: scale(0.98);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

@@ -55,7 +55,7 @@
             class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
           >
             <option value="">Выберите тип</option>
-            <option value="BACHELOR">МАЛЬЧИШНИК</option>
+            <option value="BACHELOR">КОЛЛЕКТИВНАЯ БАНЯ</option>
             <option value="BACHELORETTE">ДЕВИЧНИК</option>
             <option value="BATH_CLUB">БАННЫЙ КЛУБ С. ХАЧАТУРЬЯН</option>
             <option value="BUSINESS_BATH">Бизнес-баня МОСТ</option>
@@ -121,6 +121,42 @@
             class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
             placeholder="120"
           />
+        </div>
+
+        <!-- Управление местами -->
+        <div class="pt-1.5 border-t border-gray-200">
+          <h3 class="text-xs font-semibold text-gray-900 mb-2">
+            👥 Управление местами
+          </h3>
+
+          <!-- Максимум участников -->
+          <div class="mb-2">
+            <label class="block text-xs font-medium text-gray-700 mb-0.5">
+              Максимум участников
+            </label>
+            <input
+              v-model.number="formData.max_participants"
+              type="number"
+              min="0"
+              class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
+              placeholder="10"
+            />
+          </div>
+
+          <!-- Занято мест (начальное значение) -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-0.5">
+              Занято мест (начальное)
+            </label>
+            <input
+              v-model.number="formData.occupied_slots"
+              type="number"
+              min="0"
+              :max="formData.max_participants || 999"
+              class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
+              placeholder="0"
+            />
+          </div>
         </div>
 
         <!-- Повторяющееся событие -->
@@ -267,6 +303,8 @@ export default {
         branch_id: null,
         start_date: this.getDefaultDateTime(),
         duration_minutes: 120,
+        max_participants: 10,
+        occupied_slots: 0,
         recurring_day_of_week: null,
         recurring_time: "19:00",
         is_active: true,
@@ -293,19 +331,16 @@ export default {
 
         const createData = { ...this.formData };
 
-        // Преобразуем пустые строки в null
         Object.keys(createData).forEach((key) => {
           if (createData[key] === "") {
             createData[key] = null;
           }
         });
 
-        // Если recurring_day_of_week не выбран, устанавливаем recurring_time в null
         if (createData.recurring_day_of_week === null) {
           createData.recurring_time = null;
         }
 
-        // Преобразуем start_date в ISO строку
         if (createData.start_date) {
           createData.start_date = new Date(createData.start_date).toISOString();
         }

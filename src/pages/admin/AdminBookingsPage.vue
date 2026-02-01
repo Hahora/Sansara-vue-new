@@ -319,8 +319,56 @@
 
             <!-- Информация -->
             <div class="space-y-2">
-              <!-- Дата создания -->
-              <div class="flex items-center text-sm text-gray-600">
+              <!-- Дата и время посещения (главная информация) -->
+              <div v-if="booking.booking_date" class="flex items-start gap-2">
+                <div class="flex-1">
+                  <div class="bg-[#4e5d51]/10 rounded-lg px-3 py-2 mb-2">
+                    <div class="flex items-center gap-2 mb-1">
+                      <svg
+                        class="w-4 h-4 text-[#4e5d51] flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <span class="text-xs text-gray-600 font-medium"
+                        >Дата посещения:</span
+                      >
+                    </div>
+                    <p class="text-sm font-bold text-gray-900 ml-6">
+                      {{
+                        formatBookingDateTime(
+                          booking.booking_date,
+                          booking.booking_time
+                        )
+                      }}
+                    </p>
+                  </div>
+
+                  <!-- Дата создания заявки -->
+                  <div class="flex items-center text-xs text-gray-500 ml-1">
+                    <svg
+                      class="w-3.5 h-3.5 mr-1.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Заявка от {{ formatCreatedDate(booking.created_at) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fallback если нет booking_date -->
+              <div v-else class="flex items-center text-sm text-gray-600">
                 <svg
                   class="w-4 h-4 mr-2 text-gray-500"
                   fill="currentColor"
@@ -509,9 +557,16 @@ export default {
         }
 
         if (Array.isArray(data)) {
-          this.allBookings = data.sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at)
-          );
+          // Сортируем по дате посещения если есть, иначе по дате создания
+          this.allBookings = data.sort((a, b) => {
+            const dateA = a.booking_date
+              ? new Date(a.booking_date + " " + (a.booking_time || "00:00"))
+              : new Date(a.created_at);
+            const dateB = b.booking_date
+              ? new Date(b.booking_date + " " + (b.booking_time || "00:00"))
+              : new Date(b.created_at);
+            return dateB - dateA; // Новые сверху
+          });
 
           // Применяем поиск по имени
           this.applySearch();
@@ -597,6 +652,158 @@ export default {
         hour: "2-digit",
         minute: "2-digit",
       });
+    },
+
+    formatBookingDateTime(bookingDate, bookingTime) {
+      if (!bookingDate) {
+        return "Дата не указана";
+      }
+
+      try {
+        const [year, month, day] = bookingDate.split("-");
+        const dateObj = new Date(year, month - 1, day);
+
+        const formattedDate = dateObj.toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+        if (bookingTime) {
+          return `${formattedDate}, ${bookingTime}`;
+        }
+
+        return formattedDate;
+      } catch (e) {
+        console.error("Ошибка форматирования даты бронирования:", e);
+        return bookingDate;
+      }
+    },
+
+    formatCreatedDate(dateString) {
+      if (!dateString) return "";
+      try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = now - date;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        // Если сегодня
+        if (diffDays === 0) {
+          return (
+            date.toLocaleTimeString("ru-RU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }) + " (сегодня)"
+          );
+        }
+
+        // Если вчера
+        if (diffDays === 1) {
+          return (
+            date.toLocaleTimeString("ru-RU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }) + " (вчера)"
+          );
+        }
+
+        // Если в этом году
+        if (date.getFullYear() === now.getFullYear()) {
+          return date.toLocaleDateString("ru-RU", {
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+
+        // Полная дата
+        return date.toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+      } catch (error) {
+        console.error("Error formatting created date:", error);
+        return dateString;
+      }
+    },
+
+    formatBookingDateTime(bookingDate, bookingTime) {
+      if (!bookingDate) {
+        return "Дата не указана";
+      }
+
+      try {
+        const [year, month, day] = bookingDate.split("-");
+        const dateObj = new Date(year, month - 1, day);
+
+        const formattedDate = dateObj.toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+        if (bookingTime) {
+          return `${formattedDate}, ${bookingTime}`;
+        }
+
+        return formattedDate;
+      } catch (e) {
+        console.error("Ошибка форматирования даты бронирования:", e);
+        return bookingDate;
+      }
+    },
+
+    formatCreatedDate(dateString) {
+      if (!dateString) return "";
+      try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = now - date;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        // Если сегодня
+        if (diffDays === 0) {
+          return (
+            date.toLocaleTimeString("ru-RU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }) + " (сегодня)"
+          );
+        }
+
+        // Если вчера
+        if (diffDays === 1) {
+          return (
+            date.toLocaleTimeString("ru-RU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }) + " (вчера)"
+          );
+        }
+
+        // Если в этом году
+        if (date.getFullYear() === now.getFullYear()) {
+          return date.toLocaleDateString("ru-RU", {
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+
+        // Полная дата
+        return date.toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+      } catch (error) {
+        console.error("Error formatting created date:", error);
+        return dateString;
+      }
     },
 
     getGuestWord(count) {

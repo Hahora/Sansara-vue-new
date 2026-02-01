@@ -470,7 +470,7 @@ export default {
       editingMedia: null,
 
       menuSections: [
-        { value: "BACHELOR", label: "Мальчишник" },
+        { value: "BACHELOR", label: "Коллективная баня" },
         { value: "BACHELORETTE", label: "Девичник" },
         { value: "COLLECTIVE", label: "Коллективная программа" },
         { value: "AUTHOR", label: "Авторская программа" },

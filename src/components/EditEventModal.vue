@@ -58,7 +58,7 @@
             class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
           >
             <option value="">Выберите тип</option>
-            <option value="BACHELOR">МАЛЬЧИШНИК</option>
+            <option value="BACHELOR">Коллективная баня</option>
             <option value="BACHELORETTE">ДЕВИЧНИК</option>
             <option value="BATH_CLUB">БАННЫЙ КЛУБ С. ХАЧАТУРЬЯН</option>
             <option value="BUSINESS_BATH">Бизнес-баня МОСТ</option>
@@ -124,6 +124,45 @@
             class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
             placeholder="120"
           />
+        </div>
+
+        <!-- Управление местами -->
+        <div class="pt-1.5 border-t border-gray-200">
+          <h3 class="text-xs font-semibold text-gray-900 mb-2">
+            👥 Управление местами
+          </h3>
+
+          <!-- Максимум участников -->
+          <div class="mb-2">
+            <label class="block text-xs font-medium text-gray-700 mb-0.5">
+              Максимум участников
+            </label>
+            <input
+              v-model.number="formData.max_participants"
+              type="number"
+              min="0"
+              class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
+              placeholder="10"
+            />
+          </div>
+
+          <!-- Занято мест -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-0.5">
+              Занято мест
+            </label>
+            <input
+              v-model.number="formData.occupied_slots"
+              type="number"
+              min="0"
+              :max="formData.max_participants || 999"
+              class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none"
+              placeholder="0"
+            />
+            <p class="text-xs text-gray-500 mt-1">
+              Используйте "Управление местами" для изменения через +1/-1
+            </p>
+          </div>
         </div>
 
         <!-- Повторяющееся событие -->
@@ -274,6 +313,8 @@ export default {
         branch_id: this.event.branch_id || null,
         start_date: this.formatDateTimeForInput(this.event.start_date),
         duration_minutes: this.event.duration_minutes || 120,
+        max_participants: this.event.max_participants || 10,
+        occupied_slots: this.event.occupied_slots || 0,
         recurring_day_of_week:
           this.event.recurring_day_of_week !== undefined
             ? this.event.recurring_day_of_week
@@ -302,19 +343,16 @@ export default {
 
         const updateData = { ...this.formData };
 
-        // Преобразуем пустые строки в null
         Object.keys(updateData).forEach((key) => {
           if (updateData[key] === "") {
             updateData[key] = null;
           }
         });
 
-        // Если recurring_day_of_week не выбран, устанавливаем recurring_time в null
         if (updateData.recurring_day_of_week === null) {
           updateData.recurring_time = null;
         }
 
-        // Преобразуем start_date в ISO строку
         if (updateData.start_date) {
           updateData.start_date = new Date(updateData.start_date).toISOString();
         }

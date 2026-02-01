@@ -245,7 +245,7 @@ export default {
 
     getKeyLabel(key) {
       const labels = {
-        BACHELOR: "МАЛЬЧИШНИК",
+        BACHELOR: "КОЛЛЕКТИВНАЯ БАНЯ",
         BACHELORETTE: "ДЕВИЧНИК",
         COLLECTIVE: "КОЛЛЕКТИВНАЯ ПРОГРАММА",
         AUTHOR: "АВТОРСКАЯ ПРОГРАММА",

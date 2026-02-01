@@ -166,7 +166,7 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none bg-white"
             >
               <option value="">Выберите раздел</option>
-              <option value="BACHELOR">Мальчишник</option>
+              <option value="BACHELOR">Коллективная баня</option>
               <option value="BACHELORETTE">Девичник</option>
               <option value="COLLECTIVE">Коллективная программа</option>
               <option value="AUTHOR">Авторская программа</option>

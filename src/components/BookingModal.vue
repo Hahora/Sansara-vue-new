@@ -1,316 +1,508 @@
 <template>
-  <!-- Модальное окно -->
-  <div
-    v-if="visible"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    @click.self="closeModal"
+  <!-- Модальное окно с transition -->
+  <transition
+    enter-active-class="transition-all duration-300 ease-out"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition-all duration-200 ease-in"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
   >
     <div
-      class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+      v-if="visible"
+      class="fixed inset-0 bg-[#202c27]/90 backdrop-blur-sm flex items-end sm:items-center justify-center z-[9999] p-0 sm:p-4"
+      @click.self="closeModal"
     >
-      <!-- Заголовок -->
-      <div
-        class="sticky top-0 bg-gradient-to-r from-[#4e5d51] to-[#5a6d5e] text-white px-4 sm:px-5 py-4 rounded-t-xl z-10"
+      <!-- Контейнер модалки с анимацией выезда -->
+      <transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0"
+        enter-to-class="translate-y-0 sm:scale-100 sm:opacity-100"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="translate-y-0 sm:scale-100 sm:opacity-100"
+        leave-to-class="translate-y-full sm:translate-y-0 sm:scale-95 sm:opacity-0"
       >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center min-w-0 flex-1">
-            <svg
-              class="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-              <path
-                d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-              />
-            </svg>
-            <div class="min-w-0 flex-1">
-              <h3 class="font-bold text-base sm:text-lg truncate">
-                Бронирование
-              </h3>
-              <p class="text-white text-opacity-90 text-xs sm:text-sm truncate">
-                {{ bookingTitle }}
-              </p>
-            </div>
-          </div>
-          <button
-            @click="closeModal"
-            class="text-white hover:text-gray-200 ml-2 flex-shrink-0"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Содержимое -->
-      <div class="p-4 sm:p-5 space-y-3 sm:space-y-4">
-        <!-- Ошибки профиля -->
         <div
-          v-if="!userHasRequiredData"
-          class="bg-red-50 border-l-4 border-red-500 rounded-r p-3 sm:p-4"
+          v-if="visible"
+          class="bg-[#edeae6] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl"
         >
-          <div class="flex items-start">
-            <svg
-              class="h-5 w-5 text-red-500 mt-0.5 mr-2 sm:mr-3 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-red-800 font-medium mb-1">
-                Недостаточно данных для бронирования
-              </p>
-              <p class="text-xs text-red-600">
-                Для бронирования необходимо заполнить данные профиля
-              </p>
+          <!-- Заголовок -->
+          <div
+            class="flex-shrink-0 bg-[#202c27] text-white px-5 py-4 rounded-t-2xl sm:rounded-t-2xl"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center min-w-0 flex-1 gap-3">
+                <div
+                  class="h-10 w-10 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-xl flex items-center justify-center flex-shrink-0"
+                >
+                  <CalendarCheck class="h-5 w-5 text-white" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="font-light text-lg tracking-wide truncate">
+                    Бронирование
+                  </h3>
+                  <p class="text-white/70 text-sm truncate font-light">
+                    {{ bookingTitle }}
+                  </p>
+                </div>
+              </div>
               <button
-                @click="goToProfile"
-                class="mt-2 text-xs sm:text-sm text-red-600 hover:text-red-800 font-medium"
+                @click="closeModal"
+                class="text-white/80 hover:text-white ml-3 flex-shrink-0 p-1 hover:bg-white/10 rounded-lg transition-colors"
               >
-                Перейти в профиль →
+                <X class="w-5 h-5" />
               </button>
             </div>
           </div>
-        </div>
 
-        <!-- Информация о бронировании -->
-        <div class="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex-1 min-w-0">
-              <h4 class="font-bold text-gray-900 text-sm sm:text-base truncate">
-                {{ bookingTitle }}
-              </h4>
-              <p class="text-xs sm:text-sm text-gray-600 truncate">
-                {{ getEventTypeName(eventKey) }}
-              </p>
-            </div>
-          </div>
-
-          <div v-if="selectedBranch" class="text-xs sm:text-sm text-gray-600">
-            <span class="font-medium">Филиал:</span>
-            <span class="ml-2">{{ selectedBranch.name }}</span>
-          </div>
-        </div>
-
-        <!-- Форма бронирования -->
-        <div v-if="userHasRequiredData" class="space-y-3 sm:space-y-4">
-          <!-- Информация о контактах -->
-          <div class="bg-blue-50 rounded-lg p-3 sm:p-4 border border-blue-200">
-            <div class="flex items-center mb-2">
-              <svg
-                class="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mr-2 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span class="font-medium text-gray-700 text-xs sm:text-sm"
-                >Ваши контактные данные</span
-              >
-            </div>
-            <div class="space-y-1 text-xs sm:text-sm">
-              <div class="flex justify-between items-start">
-                <span class="text-gray-600 flex-shrink-0">Имя:</span>
-                <span
-                  class="font-medium text-gray-900 text-right ml-2 break-words"
-                  >{{ user?.first_name }} {{ user?.last_name || "" }}</span
-                >
-              </div>
-              <div class="flex justify-between items-start">
-                <span class="text-gray-600 flex-shrink-0">Телефон:</span>
-                <span class="font-medium text-gray-900 text-right ml-2">{{
-                  user?.phone || "Не указан"
-                }}</span>
-              </div>
-            </div>
-            <button
-              @click="goToProfile"
-              class="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+          <!-- Содержимое - с отдельным скроллом -->
+          <div
+            class="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-thin-modal"
+          >
+            <!-- Ошибки профиля -->
+            <div
+              v-if="!userHasRequiredData"
+              class="bg-red-50/90 backdrop-blur-sm border border-red-200 rounded-xl p-4"
             >
-              Изменить в профиле →
+              <div class="flex items-start gap-3">
+                <AlertCircle
+                  class="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-red-800 font-medium mb-1">
+                    Недостаточно данных для бронирования
+                  </p>
+                  <p class="text-xs text-red-600 mb-2">
+                    Для бронирования необходимо заполнить данные профиля
+                  </p>
+                  <button
+                    @click="goToProfile"
+                    class="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1 transition-colors"
+                  >
+                    Перейти в профиль
+                    <ChevronRight class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Информация о бронировании -->
+            <div class="bg-[#e3ded3] rounded-xl p-4 border border-[#c2a886]/20">
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex-1 min-w-0">
+                  <h4
+                    class="font-semibold text-gray-900 text-[15px] truncate mb-1"
+                  >
+                    {{ bookingTitle }}
+                  </h4>
+                  <p class="text-sm text-gray-600 truncate">
+                    {{ getEventTypeName(eventKey) }}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                v-if="selectedBranch"
+                class="flex items-center gap-2 text-sm text-gray-600"
+              >
+                <MapPin class="h-4 w-4 text-[#c2a886]" />
+                <span class="font-medium">{{ selectedBranch.name }}</span>
+              </div>
+            </div>
+
+            <!-- Форма бронирования -->
+            <div v-if="userHasRequiredData" class="space-y-4">
+              <!-- Информация о контактах -->
+              <div
+                class="bg-[#d9cebc]/60 backdrop-blur-sm rounded-xl p-4 border border-[#c2a886]/30"
+              >
+                <div class="flex items-center mb-3 gap-2">
+                  <div
+                    class="h-7 w-7 rounded-lg bg-[#c2a886]/20 flex items-center justify-center"
+                  >
+                    <UserIcon class="h-4 w-4 text-[#202c27]" />
+                  </div>
+                  <span class="font-medium text-gray-900 text-sm"
+                    >Ваши контактные данные</span
+                  >
+                </div>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between items-start gap-3">
+                    <span class="text-gray-600 flex-shrink-0">Имя:</span>
+                    <span
+                      class="font-medium text-gray-900 text-right break-words"
+                    >
+                      {{ user?.first_name }} {{ user?.last_name || "" }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-start gap-3">
+                    <span class="text-gray-600 flex-shrink-0">Телефон:</span>
+                    <span class="font-medium text-gray-900 text-right">{{
+                      user?.phone || "Не указан"
+                    }}</span>
+                  </div>
+                </div>
+                <button
+                  @click="goToProfile"
+                  class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
+                >
+                  Изменить в профиле
+                  <ChevronRight class="h-4 w-4" />
+                </button>
+              </div>
+
+              <!-- Выбор даты и времени -->
+              <!-- Если это событийный тип (мальчишник/девичник/бизнес-баня/банный клуб) -->
+              <div v-if="isEventBasedType">
+                <label class="block text-sm font-medium text-gray-900 mb-2">
+                  Выберите событие <span class="text-red-500">*</span>
+                </label>
+
+                <!-- Загрузка событий -->
+                <div
+                  v-if="loadingEvents"
+                  class="bg-[#e3ded3] rounded-xl p-4 text-center"
+                >
+                  <Loader2
+                    class="h-6 w-6 text-[#c2a886] animate-spin mx-auto mb-2"
+                  />
+                  <p class="text-sm text-gray-600">
+                    Загружаем доступные события...
+                  </p>
+                </div>
+
+                <!-- Список событий -->
+                <div v-else-if="availableEvents.length > 0" class="space-y-2">
+                  <div
+                    v-for="event in availableEvents"
+                    :key="event.id"
+                    @click="selectEvent(event)"
+                    :class="[
+                      'bg-[#e3ded3] rounded-xl p-3 border-2 cursor-pointer transition-all duration-200',
+                      selectedEvent?.id === event.id
+                        ? 'border-[#c2a886] bg-[#d9cebc]'
+                        : 'border-[#c2a886]/20 hover:border-[#c2a886]/40',
+                      isEventFullSlots(event)
+                        ? 'opacity-50 cursor-not-allowed'
+                        : '',
+                    ]"
+                  >
+                    <div class="flex items-start gap-3">
+                      <div
+                        :class="[
+                          'h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0',
+                          selectedEvent?.id === event.id
+                            ? 'bg-gradient-to-br from-[#c2a886] to-[#b5976e]'
+                            : 'bg-[#c2a886]/20',
+                        ]"
+                      >
+                        <CalendarDays
+                          :class="[
+                            'h-5 w-5',
+                            selectedEvent?.id === event.id
+                              ? 'text-white'
+                              : 'text-[#c2a886]',
+                          ]"
+                        />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <h4
+                          class="font-semibold text-gray-900 text-sm truncate mb-1"
+                        >
+                          {{ event.title }}
+                        </h4>
+                        <p
+                          class="text-xs text-gray-600 flex items-center gap-1 mb-1"
+                        >
+                          <Calendar class="h-3 w-3" />
+                          {{ formatEventDate(event.start_date) }}
+                        </p>
+                        <!-- Занятость мест -->
+                        <div
+                          v-if="event.max_participants"
+                          class="text-xs text-gray-600"
+                        >
+                          <span
+                            :class="
+                              isEventFullSlots(event)
+                                ? 'text-red-600 font-semibold'
+                                : 'text-gray-600'
+                            "
+                          >
+                            Мест: {{ getEventAvailableSlots(event) }} /
+                            {{ event.max_participants }}
+                          </span>
+                        </div>
+                      </div>
+                      <div
+                        v-if="
+                          selectedEvent?.id === event.id &&
+                          !isEventFullSlots(event)
+                        "
+                        class="flex-shrink-0"
+                      >
+                        <CheckCircle class="h-5 w-5 text-[#c2a886]" />
+                      </div>
+                      <div v-if="isEventFullSlots(event)" class="flex-shrink-0">
+                        <XCircle class="h-5 w-5 text-red-500" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Нет доступных событий -->
+                <div v-else class="bg-[#e3ded3] rounded-xl p-4 text-center">
+                  <CalendarDays class="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p class="text-sm text-gray-600 mb-1">
+                    Нет доступных событий
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    В ближайшее время нет запланированных мероприятий
+                  </p>
+                </div>
+              </div>
+
+              <!-- Для остальных типов - обычный выбор даты и времени -->
+              <div v-else>
+                <label class="block text-sm font-medium text-gray-900 mb-2">
+                  Желаемая дата <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="form.desired_date"
+                  type="date"
+                  :min="minDate"
+                  class="w-full px-4 py-3 bg-white border border-[#c2a886]/30 rounded-xl focus:ring-2 focus:ring-[#c2a886] focus:border-transparent text-sm transition-all date-input"
+                />
+                <p class="mt-1.5 text-xs text-gray-500">
+                  Выберите желаемую дату посещения
+                </p>
+
+                <label
+                  class="block text-sm font-medium text-gray-900 mb-2 mt-4"
+                >
+                  Желаемое время <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="form.desired_time"
+                  type="time"
+                  class="w-full px-4 py-3 bg-white border border-[#c2a886]/30 rounded-xl focus:ring-2 focus:ring-[#c2a886] focus:border-transparent text-sm transition-all time-input"
+                />
+                <p class="mt-1.5 text-xs text-gray-500">
+                  Укажите удобное время
+                </p>
+              </div>
+
+              <!-- Количество гостей -->
+              <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">
+                  Количество гостей <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    v-model.number="form.participants_count"
+                    type="number"
+                    min="1"
+                    :max="program?.max_participants || 100"
+                    placeholder="Укажите количество"
+                    class="w-full px-4 py-3 pr-10 bg-white border border-[#c2a886]/30 rounded-xl focus:ring-2 focus:ring-[#c2a886] focus:border-transparent text-sm transition-all"
+                  />
+                  <div
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                  >
+                    <Users class="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+                <p class="mt-1.5 text-xs text-gray-500">
+                  <span v-if="program?.max_participants">
+                    Максимум: {{ program.max_participants }} гостей
+                  </span>
+                  <span v-else>Укажите планируемое количество гостей</span>
+                </p>
+                <!-- Предупреждение о превышении свободных мест -->
+                <div
+                  v-if="
+                    isEventBasedType &&
+                    selectedEvent &&
+                    selectedEvent.max_participants &&
+                    form.participants_count >
+                      getEventAvailableSlots(selectedEvent)
+                  "
+                  class="mt-2 bg-red-50 border border-red-200 rounded-lg p-2 flex items-start gap-2"
+                >
+                  <AlertCircle
+                    class="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5"
+                  />
+                  <p class="text-xs text-red-700">
+                    Недостаточно свободных мест! Доступно только
+                    {{ getEventAvailableSlots(selectedEvent) }}
+                    {{
+                      getEventAvailableSlots(selectedEvent) === 1
+                        ? "место"
+                        : "мест"
+                    }}.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Промокод -->
+              <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">
+                  Промокод
+                </label>
+                <div class="relative">
+                  <input
+                    v-model="form.promo_code"
+                    type="text"
+                    placeholder="Введите промокод"
+                    class="w-full px-4 py-3 pr-10 bg-white border border-[#c2a886]/30 rounded-xl focus:ring-2 focus:ring-[#c2a886] focus:border-transparent text-sm uppercase transition-all"
+                    maxlength="20"
+                    @input="clearPromoError"
+                  />
+                  <div
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                  >
+                    <Ticket class="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+                <p class="mt-1.5 text-xs text-gray-500">
+                  Если у вас есть промокод, введите его для получения скидки
+                </p>
+
+                <!-- Сообщение об ошибке промокода -->
+                <div
+                  v-if="promoError"
+                  class="mt-2 p-3 bg-red-50/90 border border-red-200 rounded-lg text-xs text-red-600 flex items-start gap-2"
+                >
+                  <AlertCircle class="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <span>{{ promoError }}</span>
+                </div>
+              </div>
+
+              <!-- Комментарий -->
+              <div>
+                <label class="block text-sm font-medium text-gray-900 mb-2">
+                  Комментарий к бронированию
+                </label>
+                <textarea
+                  v-model="form.comment"
+                  placeholder="Дополнительные пожелания, удобное время для связи..."
+                  rows="3"
+                  class="w-full px-4 py-3 bg-white border border-[#c2a886]/30 rounded-xl focus:ring-2 focus:ring-[#c2a886] focus:border-transparent text-sm resize-none transition-all"
+                  maxlength="500"
+                ></textarea>
+                <p class="mt-1.5 text-xs text-gray-500 text-right">
+                  {{ form.comment.length }}/500
+                </p>
+              </div>
+
+              <!-- Информация -->
+              <div
+                class="bg-[#d9cebc]/60 backdrop-blur-sm border border-[#c2a886]/30 rounded-xl p-3"
+              >
+                <p class="text-xs text-gray-700 leading-relaxed text-center">
+                  После отправки заявки наш менеджер свяжется с вами для
+                  подтверждения
+                </p>
+              </div>
+
+              <!-- Или свяжитесь с менеджером -->
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <div class="flex-1 h-px bg-[#c2a886]/20"></div>
+                  <span class="text-xs text-gray-500 font-medium"
+                    >Или свяжитесь напрямую</span
+                  >
+                  <div class="flex-1 h-px bg-[#c2a886]/20"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <!-- Позвонить менеджеру -->
+                  <button
+                    v-if="branchPhoneNumber"
+                    @click="callManager"
+                    class="flex flex-col items-center justify-center gap-2 bg-[#d9cebc]/60 hover:bg-[#c2a886]/30 border border-[#c2a886]/30 rounded-xl p-4 transition-all duration-200 active:scale-[0.98]"
+                  >
+                    <div
+                      class="h-10 w-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center"
+                    >
+                      <Phone class="h-5 w-5 text-white" />
+                    </div>
+                    <span class="text-xs font-medium text-gray-900"
+                      >Позвонить</span
+                    >
+                  </button>
+
+                  <!-- Написать в Telegram -->
+                  <button
+                    v-if="branchTelegram"
+                    @click="openTelegram"
+                    class="flex flex-col items-center justify-center gap-2 bg-[#d9cebc]/60 hover:bg-[#c2a886]/30 border border-[#c2a886]/30 rounded-xl p-4 transition-all duration-200 active:scale-[0.98]"
+                  >
+                    <div
+                      class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center"
+                    >
+                      <svg
+                        class="h-5 w-5 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"
+                        />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-medium text-gray-900"
+                      >Telegram</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Кнопка отправки - зафиксирована внизу -->
+          <div
+            class="flex-shrink-0 p-5 bg-[#edeae6] border-t border-[#c2a886]/20"
+          >
+            <button
+              @click="submitBooking"
+              :disabled="!canSubmit"
+              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] hover:from-[#b5976e] hover:to-[#a68a5f] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+            >
+              <Loader2
+                v-if="isSubmitting"
+                class="animate-spin h-5 w-5 mr-2 text-white"
+              />
+              <XCircle
+                v-else-if="
+                  !canSubmit &&
+                  form.participants_count &&
+                  isEventBasedType &&
+                  selectedEvent
+                "
+                class="h-5 w-5 mr-2 text-white"
+              />
+              <CalendarCheck v-else class="h-5 w-5 mr-2 text-white" />
+              <span class="text-[15px] text-white">{{ submitButtonText }}</span>
             </button>
           </div>
-
-          <!-- Количество гостей -->
-          <div>
-            <label
-              class="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
-            >
-              Количество гостей <span class="text-red-500">*</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model.number="form.participants_count"
-                type="number"
-                min="1"
-                :max="program?.max_participants || 100"
-                placeholder="Укажите количество гостей"
-                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent text-sm"
-                :key="`participants-${visible}`"
-              />
-              <div
-                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-              >
-                <svg
-                  class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <p class="mt-1 text-xs text-gray-500">
-              <span v-if="program?.max_participants">
-                Максимум: {{ program.max_participants }} гостей
-              </span>
-              <span v-else> Укажите планируемое количество гостей </span>
-            </p>
-          </div>
-
-          <!-- Промокод -->
-          <div>
-            <label
-              class="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
-            >
-              Промокод
-            </label>
-            <div class="relative">
-              <input
-                v-model="form.promo_code"
-                type="text"
-                placeholder="Введите промокод"
-                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent text-sm uppercase"
-                maxlength="20"
-                :key="`promo-${visible}`"
-                @input="clearPromoError"
-              />
-              <div
-                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-              >
-                <svg
-                  class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-            <p class="mt-1 text-xs text-gray-500">
-              Если у вас есть промокод, введите его для получения скидки
-            </p>
-
-            <!-- Сообщение об ошибке промокода -->
-            <div
-              v-if="promoError"
-              class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600"
-            >
-              {{ promoError }}
-            </div>
-          </div>
-
-          <!-- Комментарий -->
-          <div>
-            <label
-              class="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
-            >
-              Комментарий к бронированию
-            </label>
-            <textarea
-              v-model="form.comment"
-              placeholder="Дополнительные пожелания, удобное время для связи и т.д."
-              rows="3"
-              class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent text-sm resize-none"
-              maxlength="500"
-              :key="`comment-${visible}`"
-            ></textarea>
-            <p class="mt-1 text-xs text-gray-500 text-right">
-              {{ form.comment.length }}/500
-            </p>
-          </div>
-
-          <!-- Кнопка отправки -->
-          <button
-            @click="submitBooking"
-            :disabled="
-              isSubmitting || !userHasRequiredData || !form.participants_count
-            "
-            class="w-full bg-[#4e5d51] hover:bg-[#3d4a40] active:bg-[#2d3a30] text-white font-bold py-3 sm:py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-          >
-            <svg
-              v-if="isSubmitting"
-              class="animate-spin h-4 w-4 sm:h-5 sm:w-5 mr-2 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <svg
-              v-else
-              class="h-4 w-4 sm:h-5 sm:h-5 mr-2"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-              <path
-                d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
-              />
-            </svg>
-            <span class="text-sm sm:text-base">{{
-              isSubmitting ? "Отправка..." : "Забронировать"
-            }}</span>
-          </button>
-
-          <p class="text-xs text-gray-500 text-center px-2">
-            После отправки заявки наш менеджер свяжется с вами для подтверждения
-          </p>
         </div>
-      </div>
+      </transition>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
 import { mapState } from "pinia";
 import { useAppStore } from "@/stores/appStore";
-import { bookingAPI } from "@/utils/api";
+import { bookingAPI, eventAPI } from "@/utils/api";
+import icons from "@/utils/icons";
 
 export default {
   name: "BookingModal",
+  components: {
+    ...icons,
+  },
   props: {
     visible: {
       type: Boolean,
@@ -333,10 +525,15 @@ export default {
     return {
       isSubmitting: false,
       promoError: "",
+      loadingEvents: false,
+      availableEvents: [],
+      selectedEvent: null,
       form: {
         participants_count: null,
         comment: "",
         promo_code: "",
+        desired_date: "",
+        desired_time: "",
       },
     };
   },
@@ -352,40 +549,232 @@ export default {
       if (this.program?.name) return this.program.name;
       return this.getEventTypeName(this.eventKey) || "Бронирование";
     },
+
+    // Получаем телефон филиала
+    branchPhoneNumber() {
+      console.log("BookingModal - selectedBranch:", this.selectedBranch);
+      console.log("BookingModal - phone:", this.selectedBranch?.phone);
+      return this.selectedBranch?.phone || null;
+    },
+
+    // Получаем Telegram филиала
+    branchTelegram() {
+      console.log(
+        "BookingModal - tg_username:",
+        this.selectedBranch?.tg_username
+      );
+      console.log("BookingModal - telegram:", this.selectedBranch?.telegram);
+      const tg =
+        this.selectedBranch?.tg_username ||
+        this.selectedBranch?.telegram ||
+        null;
+      console.log("BookingModal - branchTelegram result:", tg);
+      return tg;
+    },
+
+    // Проверяем, является ли тип событийным (из календаря)
+    isEventBasedType() {
+      const eventTypes = [
+        "BACHELOR",
+        "BACHELORETTE",
+        "BATH_CLUB",
+        "BUSINESS_BATH",
+      ];
+      return eventTypes.includes(this.eventKey);
+    },
+
+    // Минимальная дата (сегодня)
+    minDate() {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+    },
+
+    // Можно ли отправить форму
+    canSubmit() {
+      if (
+        !this.userHasRequiredData ||
+        !this.form.participants_count ||
+        this.isSubmitting
+      ) {
+        return false;
+      }
+
+      // Для событийных типов нужно выбрать событие
+      if (this.isEventBasedType) {
+        if (!this.selectedEvent) {
+          return false;
+        }
+
+        // Проверяем доступность мест
+        if (this.selectedEvent.max_participants) {
+          const availableSlots = this.getEventAvailableSlots(
+            this.selectedEvent
+          );
+          // Если гостей больше чем свободных мест - блокируем
+          if (this.form.participants_count > availableSlots) {
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      // Для остальных типов нужна дата и время
+      return !!(this.form.desired_date && this.form.desired_time);
+    },
+
+    // Текст кнопки бронирования
+    submitButtonText() {
+      if (this.isSubmitting) {
+        return "Отправка...";
+      }
+
+      // Проверяем если гостей больше чем свободных мест
+      if (
+        this.isEventBasedType &&
+        this.selectedEvent &&
+        this.selectedEvent.max_participants &&
+        this.form.participants_count
+      ) {
+        const availableSlots = this.getEventAvailableSlots(this.selectedEvent);
+        if (this.form.participants_count > availableSlots) {
+          return "Недостаточно мест";
+        }
+      }
+
+      return "Забронировать";
+    },
   },
   methods: {
+    lockBodyScroll() {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
+      document.body.dataset.scrollY = scrollY;
+
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+    },
+
+    unlockBodyScroll() {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+
+      const scrollY = document.body.dataset.scrollY;
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY, 10));
+        delete document.body.dataset.scrollY;
+      }
+    },
+
     closeModal() {
-      console.log("BookingModal: closeModal called");
       this.$emit("update:visible", false);
       this.$emit("close");
-      // Сбрасываем форму с небольшой задержкой после закрытия
+      this.unlockBodyScroll();
+
       setTimeout(() => {
         this.resetForm();
       }, 300);
     },
 
     resetForm() {
-      // Полностью пересоздаем объект формы
       this.form = {
         participants_count: null,
         comment: "",
         promo_code: "",
+        desired_date: "",
+        desired_time: "",
       };
+      this.selectedEvent = null;
       this.promoError = "";
       this.isSubmitting = false;
-
-      // Принудительно обновляем компонент
-      this.$forceUpdate();
     },
 
     clearPromoError() {
       this.promoError = "";
     },
 
+    // Позвонить менеджеру
+    callManager() {
+      if (!this.branchPhoneNumber) {
+        alert("Номер телефона филиала не указан");
+        return;
+      }
+
+      // Проверяем, доступен ли Telegram WebApp
+      if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+
+        // Показываем popup с возможностью скопировать номер
+        tg.showPopup(
+          {
+            title: "Позвонить менеджеру",
+            message: `Номер телефона: ${this.branchPhoneNumber}`,
+            buttons: [
+              { id: "copy", type: "default", text: "Скопировать" },
+              { id: "close", type: "cancel", text: "Закрыть" },
+            ],
+          },
+          (buttonId) => {
+            if (buttonId === "copy") {
+              // Копируем номер в буфер обмена
+              if (navigator.clipboard) {
+                navigator.clipboard
+                  .writeText(this.branchPhoneNumber)
+                  .then(() => {
+                    tg.showAlert("Номер скопирован!");
+                  });
+              }
+            }
+          }
+        );
+      } else {
+        // Веб-версия - просто открываем ссылку tel:
+        const phoneLink = `tel:${this.branchPhoneNumber}`;
+        window.location.href = phoneLink;
+      }
+    },
+
+    // Открыть Telegram
+    openTelegram() {
+      if (!this.branchTelegram) {
+        alert("Telegram филиала не указан");
+        return;
+      }
+
+      // Формируем ссылку на Telegram
+      let telegramUrl = this.branchTelegram;
+
+      // Если это username без https, добавляем
+      if (!telegramUrl.startsWith("http")) {
+        // Убираем @ если есть
+        const username = telegramUrl.replace("@", "");
+        telegramUrl = `https://t.me/${username}`;
+      }
+
+      // Открываем Telegram через Telegram WebApp API если доступен
+      if (window.Telegram?.WebApp?.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(telegramUrl);
+      } else {
+        // Fallback для браузера
+        window.open(telegramUrl, "_blank");
+      }
+    },
+
     getEventTypeName(eventKey) {
       const types = {
         BACHELOR: "Мальчишник",
         BACHELORETTE: "Девичник",
+        BATH_CLUB: "Банный клуб",
+        BUSINESS_BATH: "Бизнес-баня",
         CLUB_EVENT: "Клубное мероприятие",
         FIRST_TIME: "Первый раз",
         CORPORATE: "Корпоративное мероприятие",
@@ -398,10 +787,101 @@ export default {
       this.$router.push("/profile");
     },
 
-    parsePromoError(errorDetail) {
-      console.log("Parsing promo error detail:", errorDetail);
+    // Загрузка доступных событий
+    async loadAvailableEvents() {
+      if (!this.isEventBasedType) {
+        console.log("Тип не событийный, пропускаем загрузку событий");
+        return;
+      }
 
-      // Приводим к нижнему регистру для поиска
+      try {
+        this.loadingEvents = true;
+        const branchId = this.selectedBranch?.id;
+
+        console.log("Загрузка событий для бронирования:", {
+          eventKey: this.eventKey,
+          branchId: branchId,
+          isEventBasedType: this.isEventBasedType,
+        });
+
+        if (!branchId) {
+          console.log("Нет выбранного филиала");
+          return;
+        }
+
+        const data = await eventAPI.getAll(branchId);
+        console.log("Получены события от API:", data);
+
+        if (Array.isArray(data)) {
+          const now = new Date();
+          // Фильтруем события по типу и оставляем только будущие
+          this.availableEvents = data
+            .filter((event) => {
+              const eventDate = new Date(event.start_date);
+              const matches =
+                event.event_key === this.eventKey &&
+                event.branch_id === branchId &&
+                eventDate >= now;
+
+              if (matches) {
+                console.log("Подходящее событие:", event);
+              }
+
+              return matches;
+            })
+            .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+
+          console.log(
+            "Доступные события после фильтрации:",
+            this.availableEvents
+          );
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке событий:", error);
+        this.availableEvents = [];
+      } finally {
+        this.loadingEvents = false;
+      }
+    },
+
+    // Выбор события
+    selectEvent(event) {
+      // Если событие полностью занято - не даем выбрать
+      if (this.isEventFullSlots(event)) {
+        return;
+      }
+      console.log("Выбрано событие для бронирования:", event);
+      console.log("start_date выбранного события:", event.start_date);
+      this.selectedEvent = event;
+    },
+
+    // Проверка заполненности события
+    isEventFullSlots(event) {
+      if (!event.max_participants) return false;
+      const occupied = event.occupied_slots || 0;
+      return occupied >= event.max_participants;
+    },
+
+    // Доступные места в событии
+    getEventAvailableSlots(event) {
+      if (!event.max_participants) return 0;
+      const occupied = event.occupied_slots || 0;
+      return Math.max(event.max_participants - occupied, 0);
+    },
+
+    // Форматирование даты события
+    formatEventDate(dateString) {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      return date.toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    },
+
+    parsePromoError(errorDetail) {
       const errorLower = errorDetail.toLowerCase();
 
       if (
@@ -451,41 +931,7 @@ export default {
         errorLower.includes("not valid for program") ||
         errorLower.includes("не действует")
       ) {
-        // Пытаемся извлечь тип программы
-        const match =
-          errorDetail.match(/type:?\s*(\w+)/i) ||
-          errorDetail.match(/программ[а-я]*:\s*(\w+)/i);
-        const programType = match ? match[1] : "";
-
-        // Получаем название типа программы на русском
-        const programTypeNames = {
-          BACHELOR: "мальчишник",
-          BACHELORETTE: "девичник",
-          CLUB_EVENT: "клубное мероприятие",
-          FIRST_TIME: "первый раз",
-          CORPORATE: "корпоративное мероприятие",
-          COLLECTIVE: "групповое мероприятие",
-          AUTHOR: "авторская программа",
-        };
-
-        const programName =
-          programTypeNames[programType] || programType.toLowerCase();
-        return `Промокод не действует на ${programName}.`;
-      }
-
-      if (
-        errorLower.includes("invalid configuration") ||
-        errorLower.includes("некорректная конфигурация")
-      ) {
-        return "Некорректная конфигурация промокода.";
-      }
-
-      // Общее сообщение для других ошибок промокода
-      if (
-        errorLower.includes("promo code") ||
-        errorLower.includes("промокод")
-      ) {
-        return "Ошибка промокода. Проверьте правильность ввода или попробуйте без промокода.";
+        return "Промокод не действует на эту программу.";
       }
 
       return "Ошибка промокода. Проверьте правильность ввода.";
@@ -500,6 +946,31 @@ export default {
 
         if (!this.form.participants_count || this.form.participants_count < 1) {
           alert("Укажите количество гостей");
+          return;
+        }
+
+        // Проверка для событийных типов
+        if (this.isEventBasedType && !this.selectedEvent) {
+          alert("Выберите событие");
+          return;
+        }
+
+        // Проверка что выбранное событие не заполнено
+        if (
+          this.isEventBasedType &&
+          this.selectedEvent &&
+          this.isEventFullSlots(this.selectedEvent)
+        ) {
+          alert("К сожалению, все места на это событие уже заняты");
+          return;
+        }
+
+        // Проверка для обычных типов
+        if (
+          !this.isEventBasedType &&
+          (!this.form.desired_date || !this.form.desired_time)
+        ) {
+          alert("Укажите желаемую дату и время");
           return;
         }
 
@@ -527,14 +998,66 @@ export default {
           comment: this.form.comment,
         };
 
-        // Добавляем промокод только если он заполнен
+        // Для событийных типов добавляем event_calendar_id, booking_date и booking_time
+        if (this.isEventBasedType && this.selectedEvent) {
+          console.log("Выбранное событие:", this.selectedEvent);
+
+          bookingData.event_calendar_id = this.selectedEvent.id;
+
+          // Добавляем дату и время события
+          if (this.selectedEvent.start_date) {
+            console.log("start_date события:", this.selectedEvent.start_date);
+
+            // Парсим start_date (формат ISO: "2025-02-15T18:00:00Z" или "2025-02-15T18:00:00")
+            const eventDate = new Date(this.selectedEvent.start_date);
+
+            console.log("Распарсенная дата:", eventDate);
+
+            // Проверяем что дата валидна
+            if (!isNaN(eventDate.getTime())) {
+              // Форматируем в нужные поля
+              const year = eventDate.getFullYear();
+              const month = String(eventDate.getMonth() + 1).padStart(2, "0");
+              const day = String(eventDate.getDate()).padStart(2, "0");
+              const hours = String(eventDate.getHours()).padStart(2, "0");
+              const minutes = String(eventDate.getMinutes()).padStart(2, "0");
+
+              bookingData.booking_date = `${year}-${month}-${day}`;
+              bookingData.booking_time = `${hours}:${minutes}`;
+
+              console.log("Сформированные booking_date и booking_time:", {
+                booking_date: bookingData.booking_date,
+                booking_time: bookingData.booking_time,
+              });
+            } else {
+              console.error("Невалидная дата события!");
+            }
+          } else {
+            console.warn("У события нет start_date!");
+          }
+        } else {
+          // Для обычных типов добавляем дату и время
+          const dateTime = `${this.form.desired_date}T${this.form.desired_time}:00`;
+          bookingData.desired_datetime = new Date(dateTime).toISOString();
+
+          // Также добавляем booking_date и booking_time для обычных типов
+          bookingData.booking_date = this.form.desired_date;
+          bookingData.booking_time = this.form.desired_time;
+        }
+
         if (this.form.promo_code && this.form.promo_code.trim()) {
           bookingData.promo_code = this.form.promo_code.trim().toUpperCase();
         }
 
-        if (this.eventKey) {
+        // Определяем что бронируем (только ОДНО из полей)
+        if (this.isEventBasedType && this.selectedEvent) {
+          // Для событий передаем event_calendar_id (уже добавлено выше)
+          // НЕ передаем event_key
+        } else if (this.eventKey) {
+          // Для событийных типов БЕЗ выбранного события
           bookingData.event_key = this.eventKey;
         } else if (this.program?.id) {
+          // Для программ
           bookingData.program_id = this.program.id;
         } else {
           throw new Error("Не указано что бронировать");
@@ -550,55 +1073,29 @@ export default {
           "Бронирование успешно отправлено! Менеджер свяжется с вами в ближайшее время."
         );
 
-        // Просто закрываем модальное окно
         this.closeModal();
       } catch (error) {
         console.error("Ошибка при бронировании:", error);
-        console.error("Error details:", error.response?.data);
-        console.error("Error message:", error.message);
 
-        // Обработка ошибок промокода
-        // Проверяем разные места где может быть детализация ошибки
         const errorDetail = error.response?.data?.detail || error.message || "";
-        console.log("Error detail for parsing:", errorDetail);
 
-        // Проверяем, содержит ли ошибка информацию о промокоде
         if (
           errorDetail.includes("Promo code") ||
-          errorDetail.includes("promo code") ||
-          error.message.includes("Promo code") ||
-          error.message.includes("promo code")
+          errorDetail.includes("promo code")
         ) {
-          const promoErrorMessage = this.parsePromoError(errorDetail);
-          this.promoError = promoErrorMessage;
-          console.log("Promo error set:", promoErrorMessage);
-
-          // Если ошибка промокода, не показываем общий alert
+          this.promoError = this.parsePromoError(errorDetail);
           return;
         }
 
-        // Общие ошибки HTTP
         let errorMessage = "Ошибка при бронировании. Попробуйте еще раз.";
 
         if (error.message.includes("400") || errorDetail.includes("400")) {
           errorMessage = "Проверьте правильность заполнения данных";
         } else if (
-          error.message.includes("404") ||
-          errorDetail.includes("404")
-        ) {
-          errorMessage = "Запрашиваемый ресурс не найден";
-        } else if (
           error.message.includes("409") ||
           errorDetail.includes("409")
         ) {
           errorMessage = "Вы уже забронировали эту программу";
-        } else if (
-          error.message.includes("422") ||
-          errorDetail.includes("422")
-        ) {
-          errorMessage = "Неверные данные для бронирования";
-        } else if (error.message.includes("Не указано что бронировать")) {
-          errorMessage = "Ошибка: не указано что бронировать";
         }
 
         alert(errorMessage);
@@ -607,82 +1104,161 @@ export default {
       }
     },
   },
+
   watch: {
     visible(newVal) {
-      console.log("BookingModal watch visible:", newVal);
       if (newVal) {
-        // При открытии модального окна сбрасываем форму
+        this.lockBodyScroll();
         this.$nextTick(() => {
           this.resetForm();
         });
+        // Загружаем события если это событийный тип
+        if (this.isEventBasedType) {
+          this.loadAvailableEvents();
+        }
+      } else {
+        this.unlockBodyScroll();
       }
     },
+
+    // Также загружаем события при изменении типа
+    eventKey() {
+      if (this.visible && this.isEventBasedType) {
+        this.loadAvailableEvents();
+      }
+    },
+  },
+
+  mounted() {
+    if (this.visible) {
+      this.lockBodyScroll();
+      // Загружаем события если модалка уже открыта при монтировании
+      if (this.isEventBasedType) {
+        this.loadAvailableEvents();
+      }
+    }
+
+    const handleEscape = (e) => {
+      if (e.key === "Escape" && this.visible) {
+        this.closeModal();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    this.handleEscapeKey = handleEscape;
+  },
+
+  beforeUnmount() {
+    if (this.handleEscapeKey) {
+      document.removeEventListener("keydown", this.handleEscapeKey);
+    }
+    this.unlockBodyScroll();
+  },
+
+  unmounted() {
+    this.unlockBodyScroll();
   },
 };
 </script>
 
 <style scoped>
-/* Стили для скролла в модальном окне */
-.max-h-\[90vh\] {
-  max-height: 90vh;
-}
-
-.overflow-y-auto {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
-}
-
-.overflow-y-auto::-webkit-scrollbar {
+/* Скролл для содержимого */
+.scrollbar-thin-modal::-webkit-scrollbar {
   width: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.scrollbar-thin-modal::-webkit-scrollbar-track {
+  background: rgba(194, 168, 134, 0.1);
   border-radius: 10px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: #888;
+.scrollbar-thin-modal::-webkit-scrollbar-thumb {
+  background: rgba(194, 168, 134, 0.5);
   border-radius: 10px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: #555;
+.scrollbar-thin-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(194, 168, 134, 0.7);
 }
 
-/* ИСПРАВЛЕНИЕ: Цвет курсора в полях ввода */
+.scrollbar-thin-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(194, 168, 134, 0.5) rgba(194, 168, 134, 0.1);
+}
+
+/* Цвет курсора в полях ввода */
 input,
 textarea {
-  caret-color: #4e5d51; /* Зеленый цвет как у вашей темы */
-  color: #111827; /* Темный цвет текста */
+  caret-color: #c2a886;
+  color: #111827;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #9ca3af; /* Серый цвет плейсхолдера */
-}
-
-/* Убираем outline на мобильных при фокусе */
-@media (max-width: 640px) {
-  input:focus,
-  textarea:focus,
-  button:focus {
-    outline: none;
-  }
-}
-
-/* Улучшаем кликабельность кнопок на мобильных */
-.touch-manipulation {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  color: #9ca3af;
 }
 
 /* Предотвращаем zoom при фокусе на input на iOS */
 @media screen and (max-width: 640px) {
   input[type="text"],
   input[type="number"],
+  input[type="date"],
+  input[type="time"],
   textarea {
-    font-size: 16px; /* iOS не зумит если размер >= 16px */
+    font-size: 16px;
   }
+
+  /* Специальные стили для date и time на мобильных */
+  .date-input,
+  .time-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* Убираем стандартные иконки календаря и часов на iOS */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+  }
+
+  /* Делаем поля более компактными на маленьких экранах */
+  .date-input,
+  .time-input {
+    padding: 0.75rem 1rem;
+    min-height: 44px; /* Минимальная высота для удобного тапа */
+  }
+}
+
+/* Стили для date и time на всех устройствах */
+input[type="date"],
+input[type="time"] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Убираем spinner для webkit */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button {
+  display: none;
+  -webkit-appearance: none;
+}
+
+/* Убираем стрелки для Firefox */
+input[type="date"],
+input[type="time"] {
+  -moz-appearance: textfield;
 }
 </style>

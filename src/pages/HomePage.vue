@@ -21,14 +21,16 @@
               @click.stop="toggleBranchSelect"
               class="group bg-[#c2a886]/90 hover:bg-[#c2a886] backdrop-blur-sm border border-[#c2a886]/40 rounded-xl px-4 py-2.5 text-sm flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
             >
-              <MapPin class="h-4 w-4 text-white mr-2" />
-              <span class="max-w-[100px] truncate text-white font-medium">
+              <MapPin class="h-4 w-4 text-white mr-2 text-black" />
+              <span
+                class="max-w-[100px] truncate text-white font-medium text-black"
+              >
                 {{
                   selectedBranch?.short_name || selectedBranch?.name || "Филиал"
                 }}
               </span>
               <ChevronDown
-                class="h-4 w-4 text-white/80 ml-1.5 transition-transform duration-200 group-hover:rotate-180"
+                class="h-4 w-4 text-white/80 ml-1.5 transition-transform duration-200 group-hover:rotate-180 text-black"
                 :class="{ 'rotate-180': showBranchSelect }"
               />
             </button>
@@ -237,7 +239,7 @@
         <div
           v-for="n in 8"
           :key="n"
-          class="bg-white/50 rounded-2xl p-5 animate-pulse"
+          class="bg-[#e3ded3] rounded-2xl p-5 animate-pulse"
         >
           <div class="flex items-center">
             <div class="w-14 h-14 bg-gray-200 rounded-xl"></div>
@@ -251,306 +253,247 @@
       </div>
 
       <!-- Карточки программ после загрузки -->
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-3">
         <!-- Мальчишники и девичники -->
         <router-link
           to="/bachelor"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <!-- Только иконка темная -->
-              <PartyPopper class="h-7 w-7 text-[#202c27]" />
+              <PartyPopper class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
-                Мальчишники и девичники
-              </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
               >
-                Отпразднуйте важное событие в особенной атмосфере бани
+                Коллективная баня и девичники
+              </h3>
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Отпразднуйте важное событие в особенной атмосфере
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <!-- Стрелочка тоже темная -->
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Я первый раз -->
         <router-link
           to="/first-time"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#d4b896] to-[#c2a886] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <Star class="h-7 w-7 text-[#202c27]" />
+              <Star class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Я первый раз
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                Особое предложение и знакомство с банными традициями для новых
-                гостей
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Особое предложение для новых гостей
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Лотерея -->
         <router-link
           to="/lottery"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#b5976e] to-[#a68a5f] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <Ticket class="h-7 w-7 text-[#202c27]" />
+              <Ticket class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Лотерея
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                Участвуйте в розыгрышах и выигрывайте специальные призы
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Участвуйте в розыгрышах и выигрывайте призы
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Клубные мероприятия -->
         <router-link
           to="/club-events"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#a68a5f] to-[#8f7550] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <Castle class="h-7 w-7 text-[#202c27]" />
+              <Castle class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Клубные мероприятия
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                Регулярные встречи единомышленников в особом банном формате
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Регулярные встречи в особом формате
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Коллективные программы -->
         <router-link
           to="/collective-programs"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#c2a886] to-[#a68a5f] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <UsersRound class="h-7 w-7 text-[#202c27]" />
+              <UsersRound class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Коллективные программы
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                Тепло, живой пар, общее действие и единение в кругу близких
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Единение в кругу близких
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Авторские программы -->
         <router-link
           to="/author-programs"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#d4b896] to-[#b5976e] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <Wand2 class="h-7 w-7 text-[#202c27]" />
+              <Wand2 class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Авторские программы
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                Уникальные техники, глубокие состояния, работа с телом и
-                энергией
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Уникальные техники и глубокие состояния
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Корпоративные программы -->
         <router-link
           to="/corporate"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#8f7550] to-[#7a6344] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <Briefcase class="h-7 w-7 text-[#202c27]" />
+              <Briefcase class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Корпоративные программы
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                «Отдых, после которого не нужен отдых» для вашей команды
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Отдых для вашей команды
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Система лояльности -->
         <router-link
           to="/loyalty"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#b5976e] to-[#c2a886] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <Award class="h-7 w-7 text-[#202c27]" />
+              <Tag class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Лояльность и промокоды
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                Актуальные скидки и специальные предложения для постоянных
-                гостей
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Скидки для постоянных гостей
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
 
         <!-- Подарочные сертификаты -->
         <router-link
           to="/certificates"
-          class="group block bg-white rounded-2xl shadow-sm border border-[#c2a886]/20 p-5 mb-8 transition-all duration-300 hover:shadow-xl hover:border-[#c2a886]/40 hover:scale-[1.01] active:scale-[0.99]"
+          class="group block bg-[#e3ded3] rounded-2xl shadow-sm border border-[#c2a886]/30 p-4 mb-8 transition-all duration-300 hover:shadow-lg hover:border-[#c2a886]/50 active:scale-[0.98]"
         >
-          <div class="flex items-center">
+          <div class="flex items-start gap-3">
             <div
-              class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#c2a886]/10 to-[#c2a886]/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#c2a886]/30"
+              class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#d4b896] to-[#c2a886] rounded-xl flex items-center justify-center shadow-sm"
             >
-              <Gift class="h-7 w-7 text-[#202c27]" />
+              <Gift class="h-6 w-6 text-white" />
             </div>
-            <div class="ml-4 flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 text-base tracking-tight">
+            <div class="flex-1 min-w-0 pt-0.5">
+              <h3
+                class="font-semibold text-gray-900 text-[15px] leading-snug mb-1"
+              >
                 Подарочные сертификаты
               </h3>
-              <p
-                class="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed"
-              >
-                Подарите заботу, счастье и ресурсное состояние близким людям
+              <p class="text-[13px] text-gray-600 leading-relaxed line-clamp-2">
+                Подарите заботу близким людям
               </p>
             </div>
-            <div class="ml-2">
-              <div
-                class="h-8 w-8 rounded-full bg-[#c2a886]/10 flex items-center justify-center group-hover:bg-[#c2a886]/20 transition-colors"
-              >
-                <ChevronRight
-                  class="h-4 w-4 text-[#202c27] transition-transform group-hover:translate-x-0.5"
-                />
-              </div>
-            </div>
+            <ChevronRight
+              class="h-5 w-5 text-[#c2a886]/60 flex-shrink-0 mt-2.5 transition-transform group-active:translate-x-1"
+            />
           </div>
         </router-link>
       </div>

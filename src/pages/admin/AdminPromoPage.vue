@@ -617,7 +617,7 @@ export default {
       const labels = {
         COLLECTIVE: "Коллективные",
         AUTHOR: "Авторские",
-        BACHELOR: "Мальчишник",
+        BACHELOR: "Коллективная баня",
         BACHELORETTE: "Девичник",
         BUSINESS_BATH: "Бизнес баня",
         BATH_CLUB: "Банный клуб",

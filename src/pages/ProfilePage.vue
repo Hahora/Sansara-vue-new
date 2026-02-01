@@ -1,211 +1,275 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
-    <!-- Шапка -->
+  <div class="min-h-screen bg-[#edeae6] pb-20">
+    <!-- Индикатор загрузки (ДОЛЖЕН БЫТЬ ПЕРВЫМ) -->
     <div
-      class="bg-gradient-to-br from-[#4e5d51] via-[#5a6d5e] to-[#4e5d51] text-white px-5 py-6"
+      v-if="loadingStats"
+      class="fixed inset-0 bg-[#edeae6]/90 backdrop-blur-sm z-50 flex items-center justify-center"
     >
-      <div class="flex items-center mb-4">
+      <div class="flex flex-col items-center">
+        <Loader2 class="h-14 w-14 text-[#c2a886] animate-spin mb-4" />
+        <div class="text-sm text-gray-600 font-light">
+          Загружаем вашу статистику...
+        </div>
+      </div>
+    </div>
+
+    <!-- Шапка профиля -->
+    <div class="relative overflow-hidden bg-[#202c27] text-white">
+      <!-- Декоративная текстура -->
+      <div class="absolute inset-0 opacity-5">
+        <div
+          class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/10"
+        ></div>
+      </div>
+
+      <div class="relative px-5 pt-6 pb-8">
         <button
           @click="$router.go(-1)"
-          class="flex items-center text-white hover:text-gray-200 transition-colors"
+          class="flex items-center text-white/90 hover:text-white transition-all duration-300 mb-6"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <span class="font-medium">Назад</span>
+          <ChevronLeft class="h-6 w-6" />
+          <span class="ml-2 font-medium text-sm">Назад</span>
         </button>
-      </div>
 
-      <!-- Информация о пользователе в шапке -->
-      <div v-if="user" class="flex items-center">
-        <div
-          class="w-20 h-20 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center text-4xl border-2 border-white border-opacity-30"
-        >
-          {{ getUserInitials }}
-        </div>
-        <div class="ml-4 flex-1">
-          <h1 class="text-2xl font-bold">{{ getUserFullName || "Гость" }}</h1>
-          <p class="text-white text-opacity-90 text-sm mt-1">
-            @{{ user.username || user.telegram_id }}
-          </p>
-        </div>
-        <!-- Кнопка редактирования -->
-        <button
-          @click="showEditModal = true"
-          class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-3 rounded-full transition-all active:scale-95"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        <!-- Информация о пользователе -->
+        <div v-if="user" class="flex items-start gap-3">
+          <!-- Аватар с поддержкой Telegram фото -->
+          <div class="relative flex-shrink-0">
+            <div
+              class="w-16 h-16 rounded-full flex items-center justify-center border-2 border-[#c2a886]/30 shadow-lg overflow-hidden"
+              :class="
+                userPhotoUrl
+                  ? 'bg-[#202c27]'
+                  : 'bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 backdrop-blur-sm'
+              "
+            >
+              <!-- Если есть фото из Telegram -->
+              <img
+                v-if="userPhotoUrl"
+                :src="userPhotoUrl"
+                alt="Avatar"
+                class="w-full h-full object-cover"
+                @error="onPhotoError"
+                @load="onPhotoLoad"
+              />
+              <!-- Если нет фото - показываем инициалы -->
+              <span v-else class="text-2xl font-light text-white">
+                {{ getUserInitials }}
+              </span>
+            </div>
+            <!-- Декоративное кольцо -->
+            <div
+              class="absolute -inset-1 border border-[#c2a886]/20 rounded-full animate-pulse"
+            ></div>
+          </div>
+
+          <!-- Информация -->
+          <div class="flex-1 min-w-0 pt-1">
+            <h1
+              class="text-xl font-light tracking-wide text-white leading-tight"
+            >
+              {{ getUserFullName || "Дорогой гость" }}
+            </h1>
+            <p class="text-sm text-white/70 font-light mt-1.5">
+              @{{ user.username || user.telegram_id }}
+            </p>
+          </div>
+
+          <!-- Кнопка редактирования -->
+          <button
+            @click="showEditModal = true"
+            class="bg-[#c2a886]/20 hover:bg-[#c2a886]/30 backdrop-blur-sm text-white p-2.5 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 border border-[#c2a886]/30 flex-shrink-0"
           >
-            <path
-              d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-            />
-          </svg>
-        </button>
+            <Settings class="h-5 w-5" />
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Индикатор загрузки статистики -->
-    <div
-      v-if="loadingStats && !statsLoaded"
-      class="flex justify-center items-center py-8"
+    <!-- Ошибка загрузки статистики -->
+    <transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2"
     >
-      <div class="relative">
-        <div
-          class="animate-spin rounded-full h-8 w-8 border-4 border-[#4e5d51] border-opacity-30"
-        ></div>
-        <div
-          class="animate-spin rounded-full h-8 w-8 border-4 border-[#4e5d51] border-t-transparent absolute top-0 left-0"
-        ></div>
+      <div
+        v-if="statsError"
+        class="mx-5 mt-4 bg-red-50/90 backdrop-blur-sm border border-red-200 rounded-xl p-4 shadow-lg"
+      >
+        <div class="flex items-start">
+          <AlertCircle class="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
+          <div class="flex-1">
+            <p class="text-sm text-red-800 font-medium">{{ statsError }}</p>
+            <p class="text-xs text-red-600 mt-1">
+              Попробуйте обновить страницу
+            </p>
+          </div>
+          <button
+            @click="statsError = null"
+            class="text-red-500 hover:text-red-700 ml-3 flex-shrink-0 transition-colors"
+          >
+            <X class="h-5 w-5" />
+          </button>
+        </div>
       </div>
-    </div>
-
-    <!-- Ошибка -->
-    <div
-      v-else-if="statsError"
-      class="mx-4 mt-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 shadow-sm"
-    >
-      <div class="flex items-start">
-        <svg
-          class="h-5 w-5 text-red-500 mt-0.5 mr-3"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <p class="text-sm text-red-800">{{ statsError }}</p>
-      </div>
-    </div>
+    </transition>
 
     <!-- Основной контент -->
-    <div v-else class="px-4 py-5 space-y-4">
+    <div v-if="!loadingStats" class="px-5 py-5 space-y-5">
       <!-- Личная информация -->
       <div
-        class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+        class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
       >
-        <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
-          <h2 class="font-semibold text-gray-900 flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2 text-gray-600"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+        <!-- Заголовок блока -->
+        <div class="px-4 py-3.5 bg-[#d9cebc] border-b border-[#c2a886]/20">
+          <div class="flex items-center gap-2.5">
+            <div
+              class="h-8 w-8 rounded-lg bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 flex items-center justify-center"
             >
-              <path
-                fill-rule="evenodd"
-                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            Личная информация
-          </h2>
+              <UserIcon class="h-4 w-4 text-[#202c27]" />
+            </div>
+            <h2 class="font-semibold text-gray-900 tracking-tight text-[15px]">
+              Личная информация
+            </h2>
+          </div>
         </div>
-        <div class="divide-y divide-gray-100">
-          <div class="px-4 py-3 flex justify-between items-center">
-            <span class="text-sm text-gray-600">Имя</span>
-            <span class="text-sm font-medium text-gray-900">{{
-              user?.first_name || "Не указано"
-            }}</span>
+
+        <!-- Список данных -->
+        <div class="divide-y divide-[#c2a886]/15">
+          <div class="px-4 py-3.5 flex justify-between items-center gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div
+                class="h-6 w-6 rounded-full bg-[#c2a886]/15 flex items-center justify-center flex-shrink-0"
+              >
+                <span class="text-[10px] text-[#202c27] font-semibold">И</span>
+              </div>
+              <span class="text-[13px] text-gray-600">Имя</span>
+            </div>
+            <span
+              class="text-[13px] font-medium text-gray-900 text-right truncate"
+              >{{ user?.first_name || "Не указано" }}</span
+            >
           </div>
-          <div class="px-4 py-3 flex justify-between items-center">
-            <span class="text-sm text-gray-600">Фамилия</span>
-            <span class="text-sm font-medium text-gray-900">{{
-              user?.last_name || "Не указана"
-            }}</span>
+
+          <div class="px-4 py-3.5 flex justify-between items-center gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div
+                class="h-6 w-6 rounded-full bg-[#c2a886]/15 flex items-center justify-center flex-shrink-0"
+              >
+                <span class="text-[10px] text-[#202c27] font-semibold">Ф</span>
+              </div>
+              <span class="text-[13px] text-gray-600">Фамилия</span>
+            </div>
+            <span
+              class="text-[13px] font-medium text-gray-900 text-right truncate"
+              >{{ user?.last_name || "Не указана" }}</span
+            >
           </div>
-          <div class="px-4 py-3 flex justify-between items-center">
-            <span class="text-sm text-gray-600">Телефон</span>
-            <span class="text-sm font-medium text-gray-900">{{
-              user?.phone || "Не указан"
-            }}</span>
+
+          <div class="px-4 py-3.5 flex justify-between items-center gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div
+                class="h-6 w-6 rounded-full bg-[#c2a886]/15 flex items-center justify-center flex-shrink-0"
+              >
+                <Phone class="h-3 w-3 text-[#202c27]" />
+              </div>
+              <span class="text-[13px] text-gray-600">Телефон</span>
+            </div>
+            <span
+              class="text-[13px] font-medium text-gray-900 text-right truncate"
+              >{{ user?.phone || "Не указан" }}</span
+            >
           </div>
-          <div class="px-4 py-3 flex justify-between items-center">
-            <span class="text-sm text-gray-600">Дата рождения</span>
-            <span class="text-sm font-medium text-gray-900">{{
-              formatDate(user?.date_of_birth) || "Не указана"
-            }}</span>
+
+          <div class="px-4 py-3.5 flex justify-between items-center gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div
+                class="h-6 w-6 rounded-full bg-[#c2a886]/15 flex items-center justify-center flex-shrink-0"
+              >
+                <Calendar class="h-3 w-3 text-[#202c27]" />
+              </div>
+              <span class="text-[13px] text-gray-600">Дата рождения</span>
+            </div>
+            <span
+              class="text-[13px] font-medium text-gray-900 text-right truncate"
+              >{{ formatDate(user?.date_of_birth) || "Не указана" }}</span
+            >
           </div>
         </div>
       </div>
 
-      <!-- Бронирования -->
+      <!-- Статистика бронирований -->
       <div class="space-y-3">
-        <h2 class="font-semibold text-gray-900 text-lg px-1">Бронирования:</h2>
-
-        <!-- Статистика бронирований -->
-        <div v-if="statsLoaded && stats" class="grid grid-cols-3 gap-2">
-          <!-- Всего -->
+        <!-- Заголовок раздела -->
+        <div class="flex items-center">
           <div
-            class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200"
-          >
+            class="h-px flex-1 bg-gradient-to-r from-transparent to-[#c2a886]/30"
+          ></div>
+          <h2 class="mx-3 text-base font-light text-gray-900 tracking-wide">
+            Статистика
+          </h2>
+          <div
+            class="h-px flex-1 bg-gradient-to-l from-transparent to-[#c2a886]/30"
+          ></div>
+        </div>
+
+        <!-- Карточки статистики -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <!-- Всего -->
+          <div class="bg-[#e3ded3] rounded-xl p-3 border border-gray-200/80">
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-900">
-                {{ stats.total || 0 }}
+              <div class="text-xl font-bold text-[#202c27]">
+                {{ stats?.total || 0 }}
               </div>
-              <div class="text-xs text-blue-700 mt-1">Всего</div>
+              <div
+                class="text-[11px] text-gray-500 mt-1.5 font-medium leading-tight"
+              >
+                Всего
+              </div>
             </div>
+            <!-- Декоративный элемент -->
+            <div
+              class="h-0.5 w-6 mx-auto bg-gradient-to-r from-[#c2a886]/30 to-[#c2a886]/60 rounded-full mt-2"
+            ></div>
           </div>
 
           <!-- Подтверждено -->
-          <div
-            class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 border border-green-200"
-          >
+          <div class="bg-[#e3ded3] rounded-xl p-3 border border-gray-200/80">
             <div class="text-center">
-              <div class="text-2xl font-bold text-green-900">
-                {{ stats.confirmed_count || 0 }}
+              <div class="text-xl font-bold text-[#202c27]">
+                {{ stats?.confirmed_count || 0 }}
               </div>
-              <div class="text-xs text-green-700 mt-1">Подтверждено</div>
+              <div
+                class="text-[11px] text-gray-500 mt-1.5 font-medium leading-tight"
+              >
+                Подтверждено
+              </div>
             </div>
+            <!-- Зеленая полоска -->
+            <div
+              class="h-0.5 w-6 mx-auto bg-gradient-to-r from-green-400 to-green-500 rounded-full mt-2"
+            ></div>
           </div>
 
           <!-- Отменено -->
-          <div
-            class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-3 border border-red-200"
-          >
+          <div class="bg-[#e3ded3] rounded-xl p-3 border border-gray-200/80">
             <div class="text-center">
-              <div class="text-2xl font-bold text-red-900">
-                {{ stats.cancelled_count || 0 }}
+              <div class="text-xl font-bold text-[#202c27]">
+                {{ stats?.cancelled_count || 0 }}
               </div>
-              <div class="text-xs text-red-700 mt-1">Отменено</div>
+              <div
+                class="text-[11px] text-gray-500 mt-1.5 font-medium leading-tight"
+              >
+                Отменено
+              </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Заглушка, если статистика не загружена -->
-        <div v-else class="grid grid-cols-3 gap-2">
-          <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
-            <div class="text-center">
-              <div class="text-2xl font-bold text-gray-400">—</div>
-              <div class="text-xs text-gray-500 mt-1">Всего</div>
-            </div>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
-            <div class="text-center">
-              <div class="text-2xl font-bold text-gray-400">—</div>
-              <div class="text-xs text-gray-500 mt-1">Подтверждено</div>
-            </div>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
-            <div class="text-center">
-              <div class="text-2xl font-bold text-gray-400">—</div>
-              <div class="text-xs text-gray-500 mt-1">Отменено</div>
-            </div>
+            <!-- Красная полоска -->
+            <div
+              class="h-0.5 w-6 mx-auto bg-gradient-to-r from-red-400 to-red-500 rounded-full mt-2"
+            ></div>
           </div>
         </div>
       </div>
@@ -215,49 +279,47 @@
         <!-- История бронирований -->
         <button
           @click="$router.push('/profile/history')"
-          class="w-full bg-[#4e5d51] hover:bg-[#3d4a40] text-white font-semibold py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center shadow-sm active:scale-98"
+          class="group w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+          <CalendarDays class="h-5 w-5 mr-2 text-white" />
+          <span class="tracking-wide text-white text-[15px]"
+            >История бронирований</span
           >
-            <path
-              fill-rule="evenodd"
-              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          История бронирований
+          <ChevronRight
+            class="h-5 w-5 ml-2 group-active:translate-x-1 transition-transform text-white"
+          />
         </button>
       </div>
 
-      <!-- Дополнительная информация -->
-      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-6">
-        <div class="flex items-start">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+      <!-- Информационный блок -->
+      <div
+        class="bg-[#d9cebc]/60 backdrop-blur-sm border border-[#c2a886]/30 rounded-xl p-4"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="h-8 w-8 rounded-lg bg-[#c2a886]/20 flex items-center justify-center flex-shrink-0"
           >
-            <path
-              fill-rule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <div class="flex-1">
-            <h3 class="text-sm font-semibold text-blue-900">
+            <Shield class="h-4 w-4 text-[#202c27]" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-[13px] font-semibold text-gray-900 mb-1">
               Ваши данные в безопасности
             </h3>
-            <p class="text-xs text-blue-700 mt-1">
+            <p class="text-[12px] text-gray-700 leading-relaxed">
               Мы используем ваши данные только для бронирования и улучшения
-              сервиса.
+              сервиса. Все данные защищены и не передаются третьим лицам.
             </p>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Декоративный элемент внизу -->
+    <div class="relative h-8 mt-2">
+      <div class="absolute inset-x-0 bottom-0 flex justify-center">
+        <div
+          class="h-px w-24 bg-gradient-to-r from-transparent via-[#c2a886]/30 to-transparent"
+        ></div>
       </div>
     </div>
 
@@ -276,11 +338,13 @@ import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
 import { bookingAPI } from "@/utils/api";
 import EditProfileModal from "@/components/EditProfileModal.vue";
+import icons from "@/utils/icons";
 
 export default {
   name: "ProfilePage",
   components: {
     EditProfileModal,
+    ...icons,
   },
   data() {
     return {
@@ -289,33 +353,64 @@ export default {
       statsError: null,
       stats: null,
       statsLoaded: false,
+      // Для работы с аватаром
+      photoLoadError: false,
+      photoLoaded: false,
+      telegramPhotoUrl: null,
     };
   },
   computed: {
     ...mapState(useAppStore, ["user", "isLoading", "error"]),
+
+    // Получение URL фото пользователя
+    userPhotoUrl() {
+      // Если была ошибка загрузки - не показываем фото
+      if (this.photoLoadError) {
+        return null;
+      }
+
+      // Приоритет 1: фото из БД (если сохранено)
+      if (this.user?.photo_url) {
+        return this.user.photo_url;
+      }
+
+      // Приоритет 2: фото из Telegram SDK
+      if (this.telegramPhotoUrl) {
+        return this.telegramPhotoUrl;
+      }
+
+      // Приоритет 3: получаем напрямую из Telegram WebApp
+      const tgPhotoUrl =
+        window.Telegram?.WebApp?.initDataUnsafe?.user?.photo_url;
+      if (tgPhotoUrl) {
+        return tgPhotoUrl;
+      }
+
+      return null;
+    },
+
     getUserInitials() {
-      if (!this.user) return "?";
+      if (!this.user) return "👤";
       const firstName = this.user.first_name || "";
       const lastName = this.user.last_name || "";
       const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
       return initials || "👤";
     },
+
     getUserFullName() {
       if (!this.user) return "";
       const firstName = this.user.first_name || "";
       const lastName = this.user.last_name || "";
-      return [firstName, lastName].filter(Boolean).join(" ") || "Гость";
+      return [firstName, lastName].filter(Boolean).join(" ") || "Дорогой гость";
     },
   },
   watch: {
-    // Отслеживаем изменение маршрута - при каждом входе на страницу
     $route(to, from) {
       if (to.name === "ProfilePage") {
         console.log("Route changed to ProfilePage, reloading stats");
         this.loadBookingStats(true);
       }
     },
-    // Отслеживаем изменение пользователя
     user: {
       immediate: true,
       handler(newUser) {
@@ -332,6 +427,35 @@ export default {
   },
   methods: {
     ...mapActions(useAppStore, ["updateUserProfile", "authenticate"]),
+
+    // Обработка успешной загрузки фото
+    onPhotoLoad() {
+      console.log("User photo loaded successfully");
+      this.photoLoaded = true;
+      this.photoLoadError = false;
+    },
+
+    // Обработка ошибки загрузки фото
+    onPhotoError(event) {
+      console.warn("Failed to load user photo:", event);
+      this.photoLoadError = true;
+      this.photoLoaded = false;
+    },
+
+    // Получение фото из Telegram SDK
+    getTelegramPhoto() {
+      try {
+        const tg = window.Telegram?.WebApp;
+        if (tg?.initDataUnsafe?.user?.photo_url) {
+          this.telegramPhotoUrl = tg.initDataUnsafe.user.photo_url;
+          console.log("Telegram photo URL found:", this.telegramPhotoUrl);
+        } else {
+          console.log("No Telegram photo URL available");
+        }
+      } catch (error) {
+        console.error("Error getting Telegram photo:", error);
+      }
+    },
 
     formatDate(dateString) {
       if (!dateString) return "Не указана";
@@ -368,16 +492,13 @@ export default {
       try {
         await this.updateUserProfile(updatedUser);
         this.showEditModal = false;
-        // После обновления профиля перезагружаем статистику
         await this.loadBookingStats(true);
       } catch (error) {
         console.error("Failed to update user in store:", error);
       }
     },
 
-    // Метод для загрузки статистики бронирований
     async loadBookingStats(force = false) {
-      // Если нет пользователя, не можем загрузить статистику
       if (!this.user || !this.user.id) {
         console.log("No user found, cannot load stats");
         this.stats = null;
@@ -385,7 +506,6 @@ export default {
         return;
       }
 
-      // Если статистика уже загружена и не требуется принудительная перезагрузка
       if (this.statsLoaded && !force) {
         console.log("Stats already loaded, skipping");
         return;
@@ -399,12 +519,10 @@ export default {
 
         console.log("Loading booking statistics for user:", this.user.id);
 
-        // Делаем запрос на получение бронирований
         const bookingsResponse = await bookingAPI.getMyBookings();
 
         console.log("Bookings API response:", bookingsResponse);
 
-        // Обрабатываем ответ
         this.processBookingsResponse(bookingsResponse);
 
         this.statsLoaded = true;
@@ -419,7 +537,6 @@ export default {
       }
     },
 
-    // Обработка ответа от API бронирований
     processBookingsResponse(response) {
       if (!response) {
         console.warn("Empty response from API");
@@ -432,12 +549,9 @@ export default {
         return;
       }
 
-      // Логируем полный ответ для отладки
       console.log("Processing response:", JSON.stringify(response, null, 2));
 
-      // Проверяем разные форматы ответа
       if (response.total !== undefined) {
-        // Формат 1: { total: X, pending_count: X, confirmed_count: X, cancelled_count: X, bookings: [...] }
         this.stats = {
           total: response.total || 0,
           pending_count: response.pending_count || 0,
@@ -445,17 +559,13 @@ export default {
           cancelled_count: response.cancelled_count || 0,
         };
       } else if (response.bookings && Array.isArray(response.bookings)) {
-        // Формат 2: { bookings: [...] }
         const bookings = response.bookings;
         this.calculateStatsFromBookings(bookings);
       } else if (Array.isArray(response)) {
-        // Формат 3: просто массив
         this.calculateStatsFromBookings(response);
       } else if (response.data) {
-        // Формат 4: { data: { ... } }
         this.processBookingsResponse(response.data);
       } else {
-        // Неизвестный формат
         console.warn("Unknown response format:", response);
         this.stats = {
           total: 0,
@@ -466,7 +576,6 @@ export default {
       }
     },
 
-    // Вычисление статистики из массива бронирований
     calculateStatsFromBookings(bookings) {
       if (!bookings || !Array.isArray(bookings)) {
         this.stats = {
@@ -492,17 +601,14 @@ export default {
       };
     },
 
-    // Основной метод загрузки данных
     async loadData() {
       try {
-        // Загружаем данные пользователя (если еще не загружены)
         const store = useAppStore();
         if (!store.user || !store.user.id) {
           console.log("Loading user data...");
           await this.authenticate();
         }
 
-        // Загружаем статистику бронирований
         await this.loadBookingStats();
       } catch (error) {
         console.error("Failed to load profile data:", error);
@@ -514,13 +620,14 @@ export default {
     console.log("ProfilePage created");
     console.log("Initial user state:", this.user);
 
-    // Загружаем данные только если пользователь существует
+    // Получаем фото из Telegram SDK при создании компонента
+    this.getTelegramPhoto();
+
     const store = useAppStore();
     if (store.user && store.user.id) {
       console.log("User exists, loading stats");
       await this.loadBookingStats();
     } else {
-      // Если пользователь не загружен, загружаем всё
       console.log("No user found, loading all data");
       await this.loadData();
     }
@@ -528,12 +635,20 @@ export default {
 
   mounted() {
     console.log("ProfilePage mounted");
+
+    // Повторно пытаемся получить фото после монтирования
+    // (на случай если Telegram SDK загрузился позже)
+    this.$nextTick(() => {
+      if (!this.telegramPhotoUrl) {
+        this.getTelegramPhoto();
+      }
+    });
   },
 };
 </script>
 
 <style scoped>
-.active\:scale-98:active {
+.active\:scale-\[0\.98\]:active {
   transform: scale(0.98);
 }
 </style>

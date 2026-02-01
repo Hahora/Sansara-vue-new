@@ -1,39 +1,28 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
-    <!-- Шапка -->
-    <div
-      class="bg-gradient-to-br from-[#4e5d51] via-[#5a6d5e] to-[#4e5d51] text-white px-5 py-6"
-    >
+  <div class="min-h-screen bg-[#edeae6] pb-20">
+    <!-- Шапка - статичная -->
+    <div class="bg-[#202c27] text-white px-5 py-6">
       <div class="flex items-center mb-4">
         <button
           @click="$router.go(-1)"
-          class="flex items-center text-white hover:text-gray-200 transition-colors"
+          class="flex items-center text-white/80 hover:text-white transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 mr-2"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <span class="font-medium">Назад</span>
+          <ChevronLeft class="h-6 w-6 mr-1" />
+          <span class="font-light">Назад</span>
         </button>
       </div>
 
       <div class="flex items-center">
         <div
-          class="w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center text-3xl border-2 border-white border-opacity-30"
+          class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center border-2 border-white/10 backdrop-blur-sm"
         >
-          👥
+          <UsersRound class="h-8 w-8 text-white" />
         </div>
         <div class="ml-4 flex-1">
-          <h1 class="text-2xl font-bold">Коллективные программы</h1>
-          <p class="text-white text-opacity-90 text-sm mt-1">
+          <h1 class="text-2xl font-light tracking-wide">
+            Коллективные программы
+          </h1>
+          <p class="text-white/70 text-sm mt-1 font-light">
             Тепло, живой пар, общее действие и единение
           </p>
         </div>
@@ -41,74 +30,63 @@
     </div>
 
     <!-- Переключатель вкладок -->
-    <div class="px-4 py-3 border-b border-gray-200 bg-white">
-      <div class="flex rounded-lg bg-gray-100 p-1">
+    <div class="px-5 py-3 bg-[#e3ded3] border-b border-[#c2a886]/20">
+      <div class="flex rounded-xl bg-[#d9cebc]/60 p-1">
         <button
           @click="activeTab = 'info'"
           :class="[
-            'flex-1 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200',
+            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'info'
-              ? 'bg-white shadow-sm text-[#4e5d51]'
-              : 'text-gray-600 hover:text-gray-900',
+              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
+              : 'text-gray-700 hover:bg-white/50',
           ]"
         >
-          📋 Основная информация
+          <FileText class="h-4 w-4" />
+          <span>Информация</span>
         </button>
         <button
           @click="activeTab = 'gallery'"
           :class="[
-            'flex-1 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200',
+            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'gallery'
-              ? 'bg-white shadow-sm text-[#4e5d51]'
-              : 'text-gray-600 hover:text-gray-900',
+              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
+              : 'text-gray-700 hover:bg-white/50',
           ]"
         >
-          📸 Галерея
+          <Images class="h-4 w-4" />
+          <span>Галерея</span>
         </button>
       </div>
     </div>
 
     <!-- Индикатор загрузки -->
-    <div v-if="isLoading" class="flex justify-center items-center py-16">
-      <div class="relative">
-        <div
-          class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200"
-        ></div>
-        <div
-          class="animate-spin rounded-full h-12 w-12 border-4 border-[#4e5d51] border-t-transparent absolute top-0 left-0"
-        ></div>
-      </div>
+    <div
+      v-if="isLoading"
+      class="flex flex-col justify-center items-center py-16 px-5"
+    >
+      <Loader2 class="h-12 w-12 text-[#c2a886] animate-spin mb-4" />
+      <p class="text-sm text-gray-600 font-light">Загружаем программы...</p>
     </div>
 
     <!-- Ошибка -->
     <div
       v-else-if="error"
-      class="mx-4 mt-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 shadow-sm"
+      class="mx-5 mt-5 bg-red-50/90 backdrop-blur-sm border border-red-200 rounded-xl p-4 shadow-sm"
     >
-      <div class="flex items-start">
-        <svg
-          class="h-5 w-5 text-red-500 mt-0.5 mr-3"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-            clip-rule="evenodd"
-          />
-        </svg>
+      <div class="flex items-start gap-3">
+        <AlertCircle class="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
         <p class="text-sm text-red-800">{{ error }}</p>
       </div>
     </div>
 
     <!-- Контент: Основная информация -->
-    <div v-else-if="activeTab === 'info'" class="px-4 py-5">
+    <div v-else-if="activeTab === 'info'" class="px-5 py-5 space-y-4">
       <!-- Описание раздела из контента -->
       <div
         v-if="pageContent"
-        class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4"
+        class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-4"
       >
-        <h3 class="font-semibold text-gray-900 mb-3">
+        <h3 class="font-semibold text-gray-900 mb-3 text-[15px]">
           О коллективных программах
         </h3>
         <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
@@ -119,13 +97,17 @@
       <!-- Если программ нет -->
       <div
         v-if="!collectivePrograms || collectivePrograms.length === 0"
-        class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center"
+        class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-8 text-center"
       >
-        <div class="text-4xl mb-4">👥</div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+        <div
+          class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-4"
+        >
+          <UsersRound class="h-8 w-8 text-[#c2a886]" />
+        </div>
+        <h3 class="text-base font-semibold text-gray-900 mb-2">
           Коллективные программы
         </h3>
-        <p class="text-gray-600">
+        <p class="text-sm text-gray-600 leading-relaxed">
           Скоро здесь появится информация о коллективных программах
         </p>
       </div>
@@ -140,16 +122,20 @@
             name: 'CollectiveProgramDetail',
             params: { id: program.id },
           }"
-          class="block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200 active:scale-98"
+          class="block bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden hover:shadow-md transition-all duration-300 active:scale-[0.98]"
         >
           <!-- Заголовок программы -->
-          <div class="px-4 py-4 bg-gradient-to-r from-green-50 to-emerald-50">
-            <div class="flex items-start justify-between">
-              <div class="flex items-start flex-1 min-w-0">
-                <span class="text-2xl mr-3 flex-shrink-0">👥</span>
+          <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start flex-1 min-w-0 gap-3">
+                <div
+                  class="h-11 w-11 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0"
+                >
+                  <UsersRound class="h-5 w-5 text-white" />
+                </div>
                 <div class="flex-1 min-w-0">
                   <h2
-                    class="font-bold text-gray-900 text-base leading-tight mb-1"
+                    class="font-semibold text-gray-900 text-[15px] leading-tight mb-1"
                   >
                     {{ program.name }}
                   </h2>
@@ -161,19 +147,7 @@
                   </p>
                 </div>
               </div>
-              <svg
-                class="w-5 h-5 text-gray-400 flex-shrink-0 ml-2 mt-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+              <ChevronRight class="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
             </div>
           </div>
 
@@ -184,42 +158,35 @@
               <!-- Цена -->
               <div
                 v-if="getPriceRange(program)"
-                class="bg-green-50 text-green-800 px-3 py-1.5 rounded-lg border border-green-200 text-sm font-semibold"
+                class="bg-[#d9cebc] border border-[#c2a886]/30 px-3 py-2 rounded-xl flex items-center gap-2"
               >
-                {{ getPriceRange(program) }}
+                <div
+                  class="h-6 w-6 rounded-full bg-[#c2a886]/30 flex items-center justify-center"
+                >
+                  <Wallet class="h-3.5 w-3.5 text-[#202c27]" />
+                </div>
+                <span class="font-semibold text-gray-900 text-sm">
+                  {{ getPriceRange(program) }}
+                </span>
               </div>
 
               <!-- Длительность -->
               <div
                 v-if="getDurationRange(program)"
-                class="bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 text-sm flex items-center"
+                class="bg-[#d9cebc]/40 text-gray-700 px-3 py-2 rounded-xl border border-[#c2a886]/20 text-sm flex items-center gap-1.5"
               >
-                <svg
-                  class="w-4 h-4 mr-1"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                {{ getDurationRange(program) }}
+                <Calendar class="h-4 w-4 text-[#c2a886]" />
+                <span>{{ getDurationRange(program) }}</span>
               </div>
             </div>
 
             <!-- Количество участников -->
             <div
               v-if="getGuestsRange(program)"
-              class="text-xs text-gray-500 flex items-center"
+              class="text-xs text-gray-600 flex items-center gap-1.5"
             >
-              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"
-                />
-              </svg>
-              {{ getGuestsRange(program) }}
+              <Users class="h-4 w-4 text-[#c2a886]" />
+              <span>{{ getGuestsRange(program) }}</span>
             </div>
           </div>
         </router-link>
@@ -242,19 +209,21 @@ import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
 import { programAPI } from "@/utils/api";
 import MediaGallery from "@/components/MediaGallery.vue";
+import icons from "@/utils/icons";
 
 export default {
   name: "CollectiveProgramsPage",
   components: {
     MediaGallery,
+    ...icons,
   },
   data() {
     return {
-      isLoading: false,
+      isLoading: true,
       error: null,
-      collectivePrograms: [], // Список коллективных программ из API
-      pageContent: null, // Контент страницы (описание)
-      activeTab: "info", // 'info' или 'gallery'
+      collectivePrograms: [],
+      pageContent: null,
+      activeTab: "info",
     };
   },
   computed: {
@@ -272,7 +241,7 @@ export default {
   },
   methods: {
     ...mapActions(useAppStore, ["loadSiteContent"]),
-    // Форматирование цены
+
     formatPrice(price) {
       if (!price && price !== 0) return "";
 
@@ -282,7 +251,6 @@ export default {
       return priceNumber.toLocaleString("ru-RU") + " ₽";
     },
 
-    // Получить диапазон цен из pricing_tiers
     getPriceRange(program) {
       if (!program.pricing_tiers || program.pricing_tiers.length === 0) {
         return null;
@@ -304,7 +272,6 @@ export default {
       }
     },
 
-    // Получить диапазон длительности
     getDurationRange(program) {
       if (!program.pricing_tiers || program.pricing_tiers.length === 0) {
         return null;
@@ -326,7 +293,6 @@ export default {
       }
     },
 
-    // Получить диапазон гостей
     getGuestsRange(program) {
       if (!program.pricing_tiers || program.pricing_tiers.length === 0) {
         if (program.max_participants) {
@@ -350,7 +316,6 @@ export default {
       }
     },
 
-    // Форматирование длительности
     formatDuration(minutes) {
       if (!minutes) return "";
 
@@ -366,28 +331,21 @@ export default {
       }
     },
 
-    // Загрузка контента страницы
     async loadPageContent() {
       try {
         await this.loadSiteContent("COLLECTIVE");
 
-        // Получаем контент из contentData
         const content = this.contentData?.["COLLECTIVE"];
         if (content && content.content) {
           this.pageContent = content.content;
         }
       } catch (error) {
         console.error("Ошибка при загрузке контента страницы:", error);
-        // Не показываем ошибку пользователю, просто не отображаем контент
       }
     },
 
-    // Загрузка коллективных программ из API
     async loadCollectivePrograms() {
       try {
-        this.isLoading = true;
-        this.error = null;
-
         console.log(
           "Загрузка коллективных программ для филиала:",
           this.selectedBranch?.id
@@ -398,7 +356,6 @@ export default {
           throw new Error("Филиал не выбран");
         }
 
-        // Загружаем программы с API используя programAPI
         const data = await programAPI.getCollective(branchId);
 
         if (data && Array.isArray(data.programs)) {
@@ -419,19 +376,25 @@ export default {
           error.message ||
           "Не удалось загрузить информацию о коллективных программах";
         this.collectivePrograms = [];
-      } finally {
-        this.isLoading = false;
       }
     },
   },
   async created() {
     console.log("CollectiveProgramsPage created");
 
-    // Загружаем контент страницы и программы параллельно
-    await Promise.all([this.loadPageContent(), this.loadCollectivePrograms()]);
+    try {
+      await Promise.all([
+        this.loadPageContent(),
+        this.loadCollectivePrograms(),
+      ]);
+    } catch (error) {
+      console.error("Ошибка при загрузке страницы:", error);
+      this.error = error.message || "Ошибка при загрузке страницы";
+    } finally {
+      this.isLoading = false;
+    }
   },
 
-  // Следим за изменением филиала
   watch: {
     "selectedBranch.id": {
       handler(newBranchId) {
@@ -448,29 +411,10 @@ export default {
 </script>
 
 <style scoped>
-.active\:scale-98:active {
-  transform: scale(0.98);
-}
-
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* Стили для градиентных кнопок */
-.bg-gradient-to-r {
-  background-image: linear-gradient(to right, var(--tw-gradient-stops));
-}
-
-.from-green-500 {
-  --tw-gradient-from: #10b981;
-  --tw-gradient-stops:
-    var(--tw-gradient-from), var(--tw-gradient-to, rgba(16, 185, 129, 0));
-}
-
-.to-emerald-500 {
-  --tw-gradient-to: #34d399;
 }
 </style>

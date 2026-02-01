@@ -247,7 +247,7 @@ export default {
       availableProgramTypes: [
         { value: "COLLECTIVE", label: "Коллективные" },
         { value: "AUTHOR", label: "Авторские" },
-        { value: "BACHELOR", label: "Мальчишник" },
+        { value: "BACHELOR", label: "Коллективная баня" },
         { value: "BACHELORETTE", label: "Девьчник" },
         { value: "BUSINESS_BATH", label: "Бизнес баня" },
         { value: "BATH_CLUB", label: "Банный клуб" },
