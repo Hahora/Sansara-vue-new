@@ -495,7 +495,7 @@
 <script>
 import { mapState } from "pinia";
 import { useAppStore } from "@/stores/appStore";
-import { bookingAPI, eventAPI } from "@/utils/api";
+import { bookingAPI, eventAPI, branchAPI } from "@/utils/api";
 import icons from "@/utils/icons";
 
 export default {
@@ -528,6 +528,7 @@ export default {
       loadingEvents: false,
       availableEvents: [],
       selectedEvent: null,
+      actualBranch: null,
       form: {
         participants_count: null,
         comment: "",
@@ -540,6 +541,12 @@ export default {
   computed: {
     ...mapState(useAppStore, ["user", "selectedBranch"]),
 
+    // Актуальный филиал — свежие данные из API, fallback на store
+    currentBranch() {
+      if (this.actualBranch) return this.actualBranch;
+      return this.selectedBranch;
+    },
+
     userHasRequiredData() {
       return this.user?.phone && this.user?.first_name;
     },
@@ -550,26 +557,16 @@ export default {
       return this.getEventTypeName(this.eventKey) || "Бронирование";
     },
 
-    // Получаем телефон филиала
+    // Телефон филиала — из актуальных данных
     branchPhoneNumber() {
-      console.log("BookingModal - selectedBranch:", this.selectedBranch);
-      console.log("BookingModal - phone:", this.selectedBranch?.phone);
-      return this.selectedBranch?.phone || null;
+      return this.currentBranch?.phone || null;
     },
 
-    // Получаем Telegram филиала
+    // Telegram филиала — из актуальных данных
     branchTelegram() {
-      console.log(
-        "BookingModal - tg_username:",
-        this.selectedBranch?.tg_username
+      return (
+        this.currentBranch?.tg_username || this.currentBranch?.telegram || null
       );
-      console.log("BookingModal - telegram:", this.selectedBranch?.telegram);
-      const tg =
-        this.selectedBranch?.tg_username ||
-        this.selectedBranch?.telegram ||
-        null;
-      console.log("BookingModal - branchTelegram result:", tg);
-      return tg;
     },
 
     // Проверяем, является ли тип событийным (из календаря)
@@ -610,7 +607,6 @@ export default {
           const availableSlots = this.getEventAvailableSlots(
             this.selectedEvent
           );
-          // Если гостей больше чем свободных мест - блокируем
           if (this.form.participants_count > availableSlots) {
             return false;
           }
@@ -629,7 +625,6 @@ export default {
         return "Отправка...";
       }
 
-      // Проверяем если гостей больше чем свободных мест
       if (
         this.isEventBasedType &&
         this.selectedEvent &&
@@ -646,6 +641,34 @@ export default {
     },
   },
   methods: {
+    // Загрузка актуальных данных филиала из API
+    async loadActualBranch() {
+      try {
+        if (!this.selectedBranch?.id) return;
+
+        const branches = await branchAPI.getAll();
+        const found = branches.find(
+          (b) => b.id === this.selectedBranch.id && b.is_active === true
+        );
+
+        if (found) {
+          this.actualBranch = found;
+          console.log("BookingModal - актуальный филиал загружен:", {
+            id: found.id,
+            name: found.name,
+            phone: found.phone,
+            tg_username: found.tg_username,
+          });
+        } else {
+          console.warn(
+            "BookingModal - филиал не найден в API, используем store"
+          );
+        }
+      } catch (error) {
+        console.error("BookingModal - ошибка загрузки филиала:", error);
+      }
+    },
+
     lockBodyScroll() {
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
@@ -709,11 +732,9 @@ export default {
         return;
       }
 
-      // Проверяем, доступен ли Telegram WebApp
       if (window.Telegram && window.Telegram.WebApp) {
         const tg = window.Telegram.WebApp;
 
-        // Показываем popup с возможностью скопировать номер
         tg.showPopup(
           {
             title: "Позвонить менеджеру",
@@ -725,7 +746,6 @@ export default {
           },
           (buttonId) => {
             if (buttonId === "copy") {
-              // Копируем номер в буфер обмена
               if (navigator.clipboard) {
                 navigator.clipboard
                   .writeText(this.branchPhoneNumber)
@@ -737,7 +757,6 @@ export default {
           }
         );
       } else {
-        // Веб-версия - просто открываем ссылку tel:
         const phoneLink = `tel:${this.branchPhoneNumber}`;
         window.location.href = phoneLink;
       }
@@ -750,21 +769,16 @@ export default {
         return;
       }
 
-      // Формируем ссылку на Telegram
       let telegramUrl = this.branchTelegram;
 
-      // Если это username без https, добавляем
       if (!telegramUrl.startsWith("http")) {
-        // Убираем @ если есть
         const username = telegramUrl.replace("@", "");
         telegramUrl = `https://t.me/${username}`;
       }
 
-      // Открываем Telegram через Telegram WebApp API если доступен
       if (window.Telegram?.WebApp?.openTelegramLink) {
         window.Telegram.WebApp.openTelegramLink(telegramUrl);
       } else {
-        // Fallback для браузера
         window.open(telegramUrl, "_blank");
       }
     },
@@ -790,19 +804,12 @@ export default {
     // Загрузка доступных событий
     async loadAvailableEvents() {
       if (!this.isEventBasedType) {
-        console.log("Тип не событийный, пропускаем загрузку событий");
         return;
       }
 
       try {
         this.loadingEvents = true;
-        const branchId = this.selectedBranch?.id;
-
-        console.log("Загрузка событий для бронирования:", {
-          eventKey: this.eventKey,
-          branchId: branchId,
-          isEventBasedType: this.isEventBasedType,
-        });
+        const branchId = this.currentBranch?.id;
 
         if (!branchId) {
           console.log("Нет выбранного филиала");
@@ -810,31 +817,19 @@ export default {
         }
 
         const data = await eventAPI.getAll(branchId);
-        console.log("Получены события от API:", data);
 
         if (Array.isArray(data)) {
           const now = new Date();
-          // Фильтруем события по типу и оставляем только будущие
           this.availableEvents = data
             .filter((event) => {
               const eventDate = new Date(event.start_date);
-              const matches =
+              return (
                 event.event_key === this.eventKey &&
                 event.branch_id === branchId &&
-                eventDate >= now;
-
-              if (matches) {
-                console.log("Подходящее событие:", event);
-              }
-
-              return matches;
+                eventDate >= now
+              );
             })
             .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
-
-          console.log(
-            "Доступные события после фильтрации:",
-            this.availableEvents
-          );
         }
       } catch (error) {
         console.error("Ошибка при загрузке событий:", error);
@@ -846,12 +841,9 @@ export default {
 
     // Выбор события
     selectEvent(event) {
-      // Если событие полностью занято - не даем выбрать
       if (this.isEventFullSlots(event)) {
         return;
       }
-      console.log("Выбрано событие для бронирования:", event);
-      console.log("start_date выбранного события:", event.start_date);
       this.selectedEvent = event;
     },
 
@@ -949,13 +941,11 @@ export default {
           return;
         }
 
-        // Проверка для событийных типов
         if (this.isEventBasedType && !this.selectedEvent) {
           alert("Выберите событие");
           return;
         }
 
-        // Проверка что выбранное событие не заполнено
         if (
           this.isEventBasedType &&
           this.selectedEvent &&
@@ -965,7 +955,6 @@ export default {
           return;
         }
 
-        // Проверка для обычных типов
         if (
           !this.isEventBasedType &&
           (!this.form.desired_date || !this.form.desired_time)
@@ -974,7 +963,8 @@ export default {
           return;
         }
 
-        if (!this.selectedBranch?.id) {
+        // Используем currentBranch вместо selectedBranch
+        if (!this.currentBranch?.id) {
           alert("Выберите филиал");
           return;
         }
@@ -990,7 +980,7 @@ export default {
         const bookingData = {
           user_id: this.user.id,
           username: this.user?.username || `user_${this.user.id}`,
-          branch_id: this.selectedBranch.id,
+          branch_id: this.currentBranch.id,
           contact_name:
             `${this.user.first_name} ${this.user.last_name || ""}`.trim(),
           contact_phone: this.user.phone,
@@ -1000,22 +990,12 @@ export default {
 
         // Для событийных типов добавляем event_calendar_id, booking_date и booking_time
         if (this.isEventBasedType && this.selectedEvent) {
-          console.log("Выбранное событие:", this.selectedEvent);
-
           bookingData.event_calendar_id = this.selectedEvent.id;
 
-          // Добавляем дату и время события
           if (this.selectedEvent.start_date) {
-            console.log("start_date события:", this.selectedEvent.start_date);
-
-            // Парсим start_date (формат ISO: "2025-02-15T18:00:00Z" или "2025-02-15T18:00:00")
             const eventDate = new Date(this.selectedEvent.start_date);
 
-            console.log("Распарсенная дата:", eventDate);
-
-            // Проверяем что дата валидна
             if (!isNaN(eventDate.getTime())) {
-              // Форматируем в нужные поля
               const year = eventDate.getFullYear();
               const month = String(eventDate.getMonth() + 1).padStart(2, "0");
               const day = String(eventDate.getDate()).padStart(2, "0");
@@ -1024,23 +1004,12 @@ export default {
 
               bookingData.booking_date = `${year}-${month}-${day}`;
               bookingData.booking_time = `${hours}:${minutes}`;
-
-              console.log("Сформированные booking_date и booking_time:", {
-                booking_date: bookingData.booking_date,
-                booking_time: bookingData.booking_time,
-              });
-            } else {
-              console.error("Невалидная дата события!");
             }
-          } else {
-            console.warn("У события нет start_date!");
           }
         } else {
-          // Для обычных типов добавляем дату и время
           const dateTime = `${this.form.desired_date}T${this.form.desired_time}:00`;
           bookingData.desired_datetime = new Date(dateTime).toISOString();
 
-          // Также добавляем booking_date и booking_time для обычных типов
           bookingData.booking_date = this.form.desired_date;
           bookingData.booking_time = this.form.desired_time;
         }
@@ -1049,15 +1018,12 @@ export default {
           bookingData.promo_code = this.form.promo_code.trim().toUpperCase();
         }
 
-        // Определяем что бронируем (только ОДНО из полей)
+        // Определяем что бронируем
         if (this.isEventBasedType && this.selectedEvent) {
-          // Для событий передаем event_calendar_id (уже добавлено выше)
-          // НЕ передаем event_key
+          // event_calendar_id уже добавлен выше
         } else if (this.eventKey) {
-          // Для событийных типов БЕЗ выбранного события
           bookingData.event_key = this.eventKey;
         } else if (this.program?.id) {
-          // Для программ
           bookingData.program_id = this.program.id;
         } else {
           throw new Error("Не указано что бронировать");
@@ -1112,6 +1078,8 @@ export default {
         this.$nextTick(() => {
           this.resetForm();
         });
+        // Загружаем актуальные данные филиала из API
+        this.loadActualBranch();
         // Загружаем события если это событийный тип
         if (this.isEventBasedType) {
           this.loadAvailableEvents();
@@ -1127,12 +1095,23 @@ export default {
         this.loadAvailableEvents();
       }
     },
+
+    // При смене филиала в store — перезагружаем актуальные данные
+    selectedBranch: {
+      handler() {
+        if (this.visible) {
+          this.actualBranch = null;
+          this.loadActualBranch();
+        }
+      },
+      deep: true,
+    },
   },
 
   mounted() {
     if (this.visible) {
       this.lockBodyScroll();
-      // Загружаем события если модалка уже открыта при монтировании
+      this.loadActualBranch();
       if (this.isEventBasedType) {
         this.loadAvailableEvents();
       }
