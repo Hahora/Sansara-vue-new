@@ -286,429 +286,649 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "pinia";
+import { mapState } from "pinia";
 import { useAppStore } from "@/stores/appStore";
-import { branchAPI } from "@/utils/api";
+import { bookingAPI, eventAPI, branchAPI } from "@/utils/api";
 import icons from "@/utils/icons";
 
 export default {
-  name: "CorporateProgramsPage",
+  name: "BookingModal",
   components: {
     ...icons,
   },
+  props: {
+    visible: {
+      type: Boolean,
+      default: false,
+    },
+    program: {
+      type: Object,
+      default: null,
+    },
+    eventKey: {
+      type: String,
+      default: "",
+    },
+    title: {
+      type: String,
+      default: "",
+    },
+  },
   data() {
     return {
-      isLoading: true,
-      error: null,
-      corporatePrograms: [],
-      isTelegramWebApp: false,
-      telegramWebApp: null,
-      allBranches: [],
-      expandedPrograms: {}, // Объект для отслеживания развернутых программ
+      isSubmitting: false,
+      promoError: "",
+      loadingEvents: false,
+      availableEvents: [],
+      selectedEvent: null,
+      actualBranch: null,
+      form: {
+        participants_count: null,
+        comment: "",
+        promo_code: "",
+        desired_date: "",
+        desired_time: "",
+      },
     };
   },
   computed: {
-    ...mapState(useAppStore, [
-      "programs",
-      "programsLoaded",
-      "selectedBranch",
-      "contentData",
-    ]),
+    ...mapState(useAppStore, ["user", "selectedBranch"]),
 
+    // Актуальный филиал — свежие данные из API, fallback на store
     currentBranch() {
-      if (!this.selectedBranch || !this.selectedBranch.id) {
-        console.log("Нет selectedBranch в store");
-        return null;
-      }
-
-      const actualBranch = this.allBranches.find(
-        (branch) => branch.id === this.selectedBranch.id
-      );
-
-      if (actualBranch) {
-        console.log("Найден актуальный филиал по ID:", actualBranch);
-        return actualBranch;
-      }
-
-      console.log(
-        "Используем филиал из store (может быть устаревшим):",
-        this.selectedBranch
-      );
+      if (this.actualBranch) return this.actualBranch;
       return this.selectedBranch;
     },
 
-    branchPhoneNumber() {
-      if (!this.currentBranch) {
-        console.log("Нет currentBranch для получения телефона");
-        return null;
-      }
-
-      const phone = this.currentBranch.phone;
-      console.log(
-        "Телефон филиала:",
-        phone,
-        "для филиала:",
-        this.currentBranch.name
-      );
-      return phone;
+    userHasRequiredData() {
+      return this.user?.phone && this.user?.first_name;
     },
 
-    branchTelegramUrl() {
-      if (!this.currentBranch) {
-        console.log("Нет currentBranch для получения TG");
-        return null;
+    bookingTitle() {
+      if (this.title) return this.title;
+      if (this.program?.name) return this.program.name;
+      return this.getEventTypeName(this.eventKey) || "Бронирование";
+    },
+
+    // Телефон филиала — из актуальных данных
+    branchPhoneNumber() {
+      return this.currentBranch?.phone || null;
+    },
+
+    // Telegram филиала — из актуальных данных
+    branchTelegram() {
+      return (
+        this.currentBranch?.tg_username || this.currentBranch?.telegram || null
+      );
+    },
+
+    // Проверяем, является ли тип событийным (из календаря)
+    isEventBasedType() {
+      const eventTypes = [
+        "BACHELOR",
+        "BACHELORETTE",
+        "BATH_CLUB",
+        "BUSINESS_BATH",
+      ];
+      return eventTypes.includes(this.eventKey);
+    },
+
+    // Минимальная дата (сегодня)
+    minDate() {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+    },
+
+    // Можно ли отправить форму
+    canSubmit() {
+      if (
+        !this.userHasRequiredData ||
+        !this.form.participants_count ||
+        this.isSubmitting
+      ) {
+        return false;
       }
 
-      const tgUsername = this.currentBranch.tg_username;
-      if (tgUsername) {
-        let cleanUsername = tgUsername.trim();
-        if (cleanUsername.startsWith("@")) {
-          cleanUsername = cleanUsername.substring(1);
+      // Для событийных типов нужно выбрать событие
+      if (this.isEventBasedType) {
+        if (!this.selectedEvent) {
+          return false;
         }
 
-        if (!cleanUsername) {
-          console.log("TG username пустой после очистки");
-          return null;
+        // Проверяем доступность мест
+        if (this.selectedEvent.max_participants) {
+          const availableSlots = this.getEventAvailableSlots(
+            this.selectedEvent
+          );
+          if (this.form.participants_count > availableSlots) {
+            return false;
+          }
         }
 
-        const url = `https://t.me/${cleanUsername}`;
-        console.log(
-          "TG URL филиала:",
-          url,
-          "для филиала:",
-          this.currentBranch.name
-        );
-        return url;
+        return true;
       }
 
-      console.log("Нет TG у филиала:", this.currentBranch.name);
-      return null;
+      // Для остальных типов нужна дата и время
+      return !!(this.form.desired_date && this.form.desired_time);
+    },
+
+    // Текст кнопки бронирования
+    submitButtonText() {
+      if (this.isSubmitting) {
+        return "Отправка...";
+      }
+
+      if (
+        this.isEventBasedType &&
+        this.selectedEvent &&
+        this.selectedEvent.max_participants &&
+        this.form.participants_count
+      ) {
+        const availableSlots = this.getEventAvailableSlots(this.selectedEvent);
+        if (this.form.participants_count > availableSlots) {
+          return "Недостаточно мест";
+        }
+      }
+
+      return "Забронировать";
     },
   },
   methods: {
-    ...mapActions(useAppStore, ["loadPrograms", "loadSiteContent"]),
-
-    async loadAllBranches() {
+    // Загрузка актуальных данных филиала из API
+    async loadActualBranch() {
       try {
-        console.log("Загрузка списка филиалов из API...");
+        if (!this.selectedBranch?.id) return;
+
         const branches = await branchAPI.getAll();
-
-        this.allBranches = branches.filter(
-          (branch) => branch.is_active === true
+        const found = branches.find(
+          (b) => b.id === this.selectedBranch.id && b.is_active === true
         );
-        console.log("Загружено филиалов:", this.allBranches.length);
 
-        this.allBranches.forEach((branch, index) => {
-          console.log(`Филиал ${index + 1}:`, {
-            id: branch.id,
-            name: branch.name,
-            phone: branch.phone,
-            tg_username: branch.tg_username,
-            hasPhone: !!branch.phone,
-            hasTg: !!branch.tg_username,
+        if (found) {
+          this.actualBranch = found;
+          console.log("BookingModal - актуальный филиал загружен:", {
+            id: found.id,
+            name: found.name,
+            phone: found.phone,
+            tg_username: found.tg_username,
           });
-        });
-      } catch (error) {
-        console.error("Ошибка при загрузке филиалов:", error);
-      }
-    },
-
-    formatContent(content) {
-      if (!content) return "";
-      return content
-        .replace(/\n/g, "<br>")
-        .replace(/\\n/g, "<br>")
-        .replace(/\r\n/g, "<br>");
-    },
-
-    formatPrice(price) {
-      if (!price && price !== 0) return "";
-
-      const priceNumber = Number(price);
-      if (isNaN(priceNumber)) return price;
-
-      return priceNumber.toLocaleString("ru-RU") + " ₽";
-    },
-
-    isContentLong(content) {
-      if (!content) return false;
-      // Проверяем длину контента (более 200 символов) или количество переносов строк (более 3)
-      const textLength = content.replace(/<[^>]*>/g, "").length;
-      const lineBreaks = (content.match(/\n|<br>/gi) || []).length;
-      return textLength > 200 || lineBreaks > 3;
-    },
-
-    toggleExpanded(programId) {
-      // Vue 3 способ - напрямую изменяем объект
-      this.expandedPrograms[programId] = !this.expandedPrograms[programId];
-    },
-
-    callCorporateNumber() {
-      console.log("=== callCorporateNumber вызван ===");
-      console.log("selectedBranch из store:", this.selectedBranch);
-      console.log("Актуальный currentBranch:", this.currentBranch);
-      console.log("Номер телефона:", this.branchPhoneNumber);
-
-      const phoneNumber = this.branchPhoneNumber;
-
-      if (!phoneNumber) {
-        this.showErrorPopup(
-          this.currentBranch
-            ? `У филиала "${this.currentBranch.name}" нет указанного телефона`
-            : "Телефон для связи не указан"
-        );
-        return;
-      }
-
-      if (this.isTelegramWebApp && this.telegramWebApp) {
-        this.telegramWebApp
-          .showPopup({
-            title: `Позвонить в ${this.currentBranch?.name || "филиал"}`,
-            message: `Для связи по корпоративным вопросам:\n${phoneNumber}`,
-            buttons: [
-              {
-                id: "copy",
-                type: "default",
-                text: "📋 Скопировать номер",
-              },
-              {
-                id: "close",
-                type: "cancel",
-                text: "Закрыть",
-              },
-            ],
-          })
-          .then((buttonId) => {
-            if (buttonId === "copy") {
-              this.copyToClipboard(phoneNumber);
-              this.telegramWebApp.showAlert("Номер скопирован в буфер обмена!");
-            }
-          });
-      } else {
-        try {
-          window.location.href = `tel:${phoneNumber.replace(/[^\d+]/g, "")}`;
-        } catch (error) {
-          this.showPhonePopup(
-            phoneNumber,
-            this.currentBranch?.name || "филиал"
+        } else {
+          console.warn(
+            "BookingModal - филиал не найден в API, используем store"
           );
         }
+      } catch (error) {
+        console.error("BookingModal - ошибка загрузки филиала:", error);
       }
     },
 
-    openTelegramChat() {
-      console.log("=== openTelegramChat вызван ===");
-      console.log("selectedBranch из store:", this.selectedBranch);
-      console.log("Актуальный currentBranch:", this.currentBranch);
-      console.log("TG URL:", this.branchTelegramUrl);
+    lockBodyScroll() {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflow = "hidden";
+      document.body.dataset.scrollY = scrollY;
 
-      if (!this.branchTelegramUrl) {
-        this.showErrorPopup(
-          this.currentBranch
-            ? `У филиала "${this.currentBranch.name}" нет указанного Telegram аккаунта`
-            : "Telegram для связи не указан"
-        );
-        return;
-      }
-
-      if (this.isTelegramWebApp && this.telegramWebApp) {
-        this.telegramWebApp.openTelegramLink(this.branchTelegramUrl);
-      } else {
-        window.open(this.branchTelegramUrl, "_blank");
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
       }
     },
 
-    showErrorPopup(message) {
-      console.log("Показываем ошибку:", message);
-      if (this.isTelegramWebApp && this.telegramWebApp) {
-        this.telegramWebApp.showAlert(message);
-      } else {
-        alert(message);
+    unlockBodyScroll() {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+
+      const scrollY = document.body.dataset.scrollY;
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY, 10));
+        delete document.body.dataset.scrollY;
       }
     },
 
-    showPhonePopup(phoneNumber, branchName = "филиал") {
-      const modal = document.createElement("div");
-      modal.className =
-        "fixed inset-0 bg-[#202c27]/90 backdrop-blur-sm flex items-center justify-center z-50 p-4";
-      modal.innerHTML = `
-        <div class="bg-[#edeae6] rounded-2xl max-w-sm w-full p-6">
-          <div class="text-center mb-6">
-            <div class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg class="w-8 h-8 text-[#c2a886]" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-              </svg>
-            </div>
-            <h3 class="text-xl font-light text-gray-900 mb-2 tracking-wide">Позвонить в ${branchName}</h3>
-            <p class="text-gray-600 text-sm mb-4 font-light">Для связи по корпоративным вопросам</p>
-            <div class="text-2xl font-medium text-[#c2a886] mb-6">${phoneNumber}</div>
-            ${
-              this.currentBranch?.name
-                ? `<p class="text-sm text-gray-500 font-light">${this.currentBranch.name}</p>`
-                : ""
-            }
-          </div>
-          <div class="space-y-3">
-            <button onclick="window.location.href='tel:${phoneNumber.replace(
-              /[^\d+]/g,
-              ""
-            )}'" class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] hover:from-[#b5976e] hover:to-[#a68a5f] text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 shadow-md">
-              Позвонить
-            </button>
-            <button id="copyPhoneBtn" class="w-full bg-[#d9cebc] hover:bg-[#c2a886]/30 text-gray-800 font-medium py-3 px-4 rounded-xl transition-all duration-300">
-              Скопировать номер
-            </button>
-            <button id="closePhoneModal" class="w-full bg-white hover:bg-gray-50 text-gray-600 font-medium py-3 px-4 rounded-xl transition-all duration-300 border border-[#c2a886]/20">
-              Закрыть
-            </button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(modal);
-
-      modal.querySelector("#copyPhoneBtn").addEventListener("click", () => {
-        this.copyToClipboard(phoneNumber);
-        this.showToast("Номер скопирован в буфер обмена!");
-      });
-
-      modal.querySelector("#closePhoneModal").addEventListener("click", () => {
-        document.body.removeChild(modal);
-      });
-
-      modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-          document.body.removeChild(modal);
-        }
-      });
-    },
-
-    copyToClipboard(text) {
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          console.log("Текст скопирован:", text);
-        })
-        .catch((err) => {
-          console.error("Ошибка копирования:", err);
-          const textArea = document.createElement("textarea");
-          textArea.value = text;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
-        });
-    },
-
-    showToast(message) {
-      const toast = document.createElement("div");
-      toast.className =
-        "fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-[#202c27] text-white px-4 py-3 rounded-xl shadow-2xl z-50 animate-fade-in-up backdrop-blur-sm";
-      toast.textContent = message;
-      document.body.appendChild(toast);
+    closeModal() {
+      this.$emit("update:visible", false);
+      this.$emit("close");
+      this.unlockBodyScroll();
 
       setTimeout(() => {
-        toast.classList.add("animate-fade-out");
-        setTimeout(() => {
-          if (toast.parentNode) {
-            document.body.removeChild(toast);
-          }
-        }, 300);
-      }, 3000);
+        this.resetForm();
+      }, 300);
     },
 
-    checkTelegramWebApp() {
+    resetForm() {
+      this.form = {
+        participants_count: null,
+        comment: "",
+        promo_code: "",
+        desired_date: "",
+        desired_time: "",
+      };
+      this.selectedEvent = null;
+      this.promoError = "";
+      this.isSubmitting = false;
+    },
+
+    clearPromoError() {
+      this.promoError = "";
+    },
+
+    // Позвонить менеджеру
+    callManager() {
+      if (!this.branchPhoneNumber) {
+        alert("Номер телефона филиала не указан");
+        return;
+      }
+
       if (window.Telegram && window.Telegram.WebApp) {
-        this.isTelegramWebApp = true;
-        this.telegramWebApp = window.Telegram.WebApp;
-        console.log("Telegram Web App detected");
+        const tg = window.Telegram.WebApp;
+
+        tg.showPopup(
+          {
+            title: "Позвонить менеджеру",
+            message: `Номер телефона: ${this.branchPhoneNumber}`,
+            buttons: [
+              { id: "copy", type: "default", text: "Скопировать" },
+              { id: "close", type: "cancel", text: "Закрыть" },
+            ],
+          },
+          (buttonId) => {
+            if (buttonId === "copy") {
+              if (navigator.clipboard) {
+                navigator.clipboard
+                  .writeText(this.branchPhoneNumber)
+                  .then(() => {
+                    tg.showAlert("Номер скопирован!");
+                  });
+              }
+            }
+          }
+        );
       } else {
-        console.log("Not in Telegram Web App");
+        const phoneLink = `tel:${this.branchPhoneNumber}`;
+        window.location.href = phoneLink;
       }
     },
 
-    async loadCorporatePrograms() {
+    // Открыть Telegram
+    openTelegram() {
+      if (!this.branchTelegram) {
+        alert("Telegram филиала не указан");
+        return;
+      }
+
+      let telegramUrl = this.branchTelegram;
+
+      if (!telegramUrl.startsWith("http")) {
+        const username = telegramUrl.replace("@", "");
+        telegramUrl = `https://t.me/${username}`;
+      }
+
+      if (window.Telegram?.WebApp?.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(telegramUrl);
+      } else {
+        window.open(telegramUrl, "_blank");
+      }
+    },
+
+    getEventTypeName(eventKey) {
+      const types = {
+        BACHELOR: "Коллективная баня",
+        BACHELORETTE: "Девичник",
+        BATH_CLUB: "Банный клуб",
+        BUSINESS_BATH: "Бизнес-баня",
+        CLUB_EVENT: "Клубное мероприятие",
+        FIRST_TIME: "Первый раз",
+        CORPORATE: "Корпоративное мероприятие",
+      };
+      return types[eventKey] || "";
+    },
+
+    goToProfile() {
+      this.closeModal();
+      this.$router.push("/profile");
+    },
+
+    // Загрузка доступных событий
+    async loadAvailableEvents() {
+      if (!this.isEventBasedType) {
+        return;
+      }
+
       try {
-        console.log(
-          "Загрузка корпоративных программ для филиала:",
-          this.currentBranch?.id,
-          this.currentBranch?.name
-        );
+        this.loadingEvents = true;
+        const branchId = this.currentBranch?.id;
 
-        await this.loadSiteContent("CORPORATE", true);
+        if (!branchId) {
+          console.log("Нет выбранного филиала");
+          return;
+        }
 
-        const content = this.contentData?.["CORPORATE"];
+        const data = await eventAPI.getAll(branchId);
 
-        if (Array.isArray(content)) {
-          this.corporatePrograms = content.filter(
-            (program) => program.is_active !== false
-          );
-          console.log(
-            "Загружено корпоративных программ:",
-            this.corporatePrograms.length
-          );
-        } else if (content && typeof content === "object") {
-          this.corporatePrograms = content.is_active !== false ? [content] : [];
-          console.log("Загружена одна корпоративная программа:", content.title);
-        } else {
-          this.corporatePrograms = [];
-          console.log("Корпоративные программы не найдены");
+        if (Array.isArray(data)) {
+          const now = new Date();
+          this.availableEvents = data
+            .filter((event) => {
+              const eventDate = new Date(event.start_date);
+              return (
+                event.event_key === this.eventKey &&
+                event.branch_id === branchId &&
+                eventDate >= now
+              );
+            })
+            .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
         }
       } catch (error) {
-        console.error("Ошибка при загрузке корпоративных программ:", error);
-        this.error =
-          error.message ||
-          "Не удалось загрузить информацию о корпоративных программах";
-        this.corporatePrograms = [];
+        console.error("Ошибка при загрузке событий:", error);
+        this.availableEvents = [];
+      } finally {
+        this.loadingEvents = false;
       }
     },
-  },
-  async created() {
-    console.log("=== CorporateProgramsPage created ===");
-    console.log("selectedBranch из store при создании:", this.selectedBranch);
 
-    this.checkTelegramWebApp();
+    // Выбор события
+    selectEvent(event) {
+      if (this.isEventFullSlots(event)) {
+        return;
+      }
+      this.selectedEvent = event;
+    },
 
-    try {
-      await this.loadAllBranches();
+    // Проверка заполненности события
+    isEventFullSlots(event) {
+      if (!event.max_participants) return false;
+      const occupied = event.occupied_slots || 0;
+      return occupied >= event.max_participants;
+    },
 
-      console.log("Актуальный currentBranch:", this.currentBranch);
-      console.log("branchPhoneNumber:", this.branchPhoneNumber);
-      console.log("branchTelegramUrl:", this.branchTelegramUrl);
+    // Доступные места в событии
+    getEventAvailableSlots(event) {
+      if (!event.max_participants) return 0;
+      const occupied = event.occupied_slots || 0;
+      return Math.max(event.max_participants - occupied, 0);
+    },
 
-      await this.loadCorporatePrograms();
+    // Форматирование даты события
+    formatEventDate(dateString) {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      return date.toLocaleDateString("ru-RU", {
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    },
 
-      console.log("Страница корпоративных программ загружена успешно");
-    } catch (error) {
-      console.error(
-        "Ошибка при загрузке страницы корпоративных программ:",
-        error
-      );
-      this.error = error.message || "Ошибка при загрузке страницы";
-    } finally {
-      this.isLoading = false;
-    }
+    parsePromoError(errorDetail) {
+      const errorLower = errorDetail.toLowerCase();
+
+      if (
+        errorLower.includes("not found") ||
+        errorLower.includes("не найден")
+      ) {
+        return "Промокод не найден. Проверьте правильность ввода.";
+      }
+
+      if (
+        errorLower.includes("not active") ||
+        errorLower.includes("неактивен")
+      ) {
+        return "Промокод неактивен.";
+      }
+
+      if (
+        errorLower.includes("not yet active") ||
+        errorLower.includes("еще не начал")
+      ) {
+        return "Промокод еще не начал действовать.";
+      }
+
+      if (errorLower.includes("expired") || errorLower.includes("истек")) {
+        return "Срок действия промокода истек.";
+      }
+
+      if (errorLower.includes("maximum uses") || errorLower.includes("лимит")) {
+        return "Лимит использований промокода исчерпан.";
+      }
+
+      if (
+        errorLower.includes("already used") ||
+        errorLower.includes("уже использовали")
+      ) {
+        return "Вы уже использовали этот промокод.";
+      }
+
+      if (
+        errorLower.includes("first visit only") ||
+        errorLower.includes("первого посещения")
+      ) {
+        return "Промокод только для первого посещения. У вас уже есть бронирования.";
+      }
+
+      if (
+        errorLower.includes("not valid for program") ||
+        errorLower.includes("не действует")
+      ) {
+        return "Промокод не действует на эту программу.";
+      }
+
+      return "Ошибка промокода. Проверьте правильность ввода.";
+    },
+
+    async submitBooking() {
+      try {
+        if (!this.userHasRequiredData) {
+          alert("Заполните данные профиля для бронирования");
+          return;
+        }
+
+        if (!this.form.participants_count || this.form.participants_count < 1) {
+          alert("Укажите количество гостей");
+          return;
+        }
+
+        if (this.isEventBasedType && !this.selectedEvent) {
+          alert("Выберите событие");
+          return;
+        }
+
+        if (
+          this.isEventBasedType &&
+          this.selectedEvent &&
+          this.isEventFullSlots(this.selectedEvent)
+        ) {
+          alert("К сожалению, все места на это событие уже заняты");
+          return;
+        }
+
+        if (
+          !this.isEventBasedType &&
+          (!this.form.desired_date || !this.form.desired_time)
+        ) {
+          alert("Укажите желаемую дату и время");
+          return;
+        }
+
+        // Используем currentBranch вместо selectedBranch
+        if (!this.currentBranch?.id) {
+          alert("Выберите филиал");
+          return;
+        }
+
+        if (!this.user?.id) {
+          alert("Необходима авторизация");
+          return;
+        }
+
+        this.isSubmitting = true;
+        this.promoError = "";
+
+        const bookingData = {
+          user_id: this.user.id,
+          username: this.user?.username || `user_${this.user.id}`,
+          branch_id: this.currentBranch.id,
+          contact_name:
+            `${this.user.first_name} ${this.user.last_name || ""}`.trim(),
+          contact_phone: this.user.phone,
+          participants_count: this.form.participants_count,
+          comment: this.form.comment,
+        };
+
+        // Для событийных типов добавляем event_calendar_id, booking_date и booking_time
+        if (this.isEventBasedType && this.selectedEvent) {
+          bookingData.event_calendar_id = this.selectedEvent.id;
+
+          if (this.selectedEvent.start_date) {
+            const eventDate = new Date(this.selectedEvent.start_date);
+
+            if (!isNaN(eventDate.getTime())) {
+              const year = eventDate.getFullYear();
+              const month = String(eventDate.getMonth() + 1).padStart(2, "0");
+              const day = String(eventDate.getDate()).padStart(2, "0");
+              const hours = String(eventDate.getHours()).padStart(2, "0");
+              const minutes = String(eventDate.getMinutes()).padStart(2, "0");
+
+              bookingData.booking_date = `${year}-${month}-${day}`;
+              bookingData.booking_time = `${hours}:${minutes}`;
+            }
+          }
+        } else {
+          const dateTime = `${this.form.desired_date}T${this.form.desired_time}:00`;
+          bookingData.desired_datetime = new Date(dateTime).toISOString();
+
+          bookingData.booking_date = this.form.desired_date;
+          bookingData.booking_time = this.form.desired_time;
+        }
+
+        if (this.form.promo_code && this.form.promo_code.trim()) {
+          bookingData.promo_code = this.form.promo_code.trim().toUpperCase();
+        }
+
+        // Определяем что бронируем
+        if (this.isEventBasedType && this.selectedEvent) {
+          // event_calendar_id уже добавлен выше
+        } else if (this.eventKey) {
+          bookingData.event_key = this.eventKey;
+        } else if (this.program?.id) {
+          bookingData.program_id = this.program.id;
+        } else {
+          throw new Error("Не указано что бронировать");
+        }
+
+        console.log("Отправка данных бронирования:", bookingData);
+
+        const response = await bookingAPI.create(bookingData);
+
+        console.log("Ответ от сервера:", response);
+
+        alert(
+          "Бронирование успешно отправлено! Менеджер свяжется с вами в ближайшее время."
+        );
+
+        this.closeModal();
+      } catch (error) {
+        console.error("Ошибка при бронировании:", error);
+
+        const errorDetail = error.response?.data?.detail || error.message || "";
+
+        if (
+          errorDetail.includes("Promo code") ||
+          errorDetail.includes("promo code")
+        ) {
+          this.promoError = this.parsePromoError(errorDetail);
+          return;
+        }
+
+        let errorMessage = "Ошибка при бронировании. Попробуйте еще раз.";
+
+        if (error.message.includes("400") || errorDetail.includes("400")) {
+          errorMessage = "Проверьте правильность заполнения данных";
+        } else if (
+          error.message.includes("409") ||
+          errorDetail.includes("409")
+        ) {
+          errorMessage = "Вы уже забронировали эту программу";
+        }
+
+        alert(errorMessage);
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
   },
 
   watch: {
-    selectedBranch: {
-      handler(newVal) {
-        console.log("selectedBranch изменился в store:", newVal);
-        console.log("Новый актуальный currentBranch:", this.currentBranch);
-        this.loadCorporatePrograms();
-      },
-      deep: true,
+    visible(newVal) {
+      if (newVal) {
+        this.lockBodyScroll();
+        this.$nextTick(() => {
+          this.resetForm();
+        });
+        // Загружаем актуальные данные филиала из API
+        this.loadActualBranch();
+        // Загружаем события если это событийный тип
+        if (this.isEventBasedType) {
+          this.loadAvailableEvents();
+        }
+      } else {
+        this.unlockBodyScroll();
+      }
     },
 
-    allBranches: {
+    // Также загружаем события при изменении типа
+    eventKey() {
+      if (this.visible && this.isEventBasedType) {
+        this.loadAvailableEvents();
+      }
+    },
+
+    // При смене филиала в store — перезагружаем актуальные данные
+    selectedBranch: {
       handler() {
-        console.log(
-          "allBranches обновился, актуальный currentBranch:",
-          this.currentBranch
-        );
+        if (this.visible) {
+          this.actualBranch = null;
+          this.loadActualBranch();
+        }
       },
       deep: true,
     },
+  },
+
+  mounted() {
+    if (this.visible) {
+      this.lockBodyScroll();
+      this.loadActualBranch();
+      if (this.isEventBasedType) {
+        this.loadAvailableEvents();
+      }
+    }
+
+    const handleEscape = (e) => {
+      if (e.key === "Escape" && this.visible) {
+        this.closeModal();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    this.handleEscapeKey = handleEscape;
+  },
+
+  beforeUnmount() {
+    if (this.handleEscapeKey) {
+      document.removeEventListener("keydown", this.handleEscapeKey);
+    }
+    this.unlockBodyScroll();
+  },
+
+  unmounted() {
+    this.unlockBodyScroll();
   },
 };
 </script>
