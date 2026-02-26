@@ -110,7 +110,7 @@
         <div
           v-for="(item, index) in filteredMedia"
           :key="item.id"
-          @click="openLightbox(index)"
+          @click="handleItemClick($event, index)"
           class="aspect-square bg-[#d9cebc] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 relative group hover:shadow-lg active:scale-95"
         >
           <!-- Фото -->
@@ -126,23 +126,35 @@
           <!-- Видео превью -->
           <div
             v-else-if="item.media_type === 'VIDEO'"
-            class="w-full h-full bg-gradient-to-br from-[#202c27] to-[#2a3a34] flex items-center justify-center relative"
+            class="w-full h-full relative"
           >
-            <!-- Иконка воспроизведения -->
-            <div
-              class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-all duration-300"
-            >
-              <div
-                class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 shadow-lg"
-              >
-                <svg
-                  class="w-6 h-6 text-[#202c27] ml-1"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
+            <!-- iOS: controls без playsinline → нативный iOS плеер при тапе -->
+            <video
+              v-if="isIOS"
+              :src="getMediaUrl(item.id)"
+              :poster="item.preview_file_id ? getMediaUrl(item.preview_file_id) : undefined"
+              controls
+              preload="none"
+              class="w-full h-full object-cover"
+              @click.stop="onIOSVideoClick($event, item)"
+              @play="addDebug('▶ play event: ' + item.id)"
+              @error="onVideoError($event, item)"
+            ></video>
+            <!-- Не-iOS: автовоспроизведение превью без звука -->
+            <video
+              v-else
+              :src="getMediaUrl(item.id)"
+              :muted="true"
+              autoplay
+              loop
+              playsinline
+              preload="metadata"
+              class="w-full h-full object-cover"
+              @loadstart="e => e.target.muted = true"
+            ></video>
+            <!-- Иконка видео (только не-iOS, у iOS есть нативные controls) -->
+            <div v-if="!isIOS" class="absolute top-2 left-2 bg-[#202c27]/70 rounded-md px-1.5 py-0.5 flex items-center gap-1">
+              <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </div>
           </div>
 
@@ -231,12 +243,14 @@
               class="max-w-full max-h-[70vh] object-contain mx-auto rounded-xl shadow-2xl"
             />
 
-            <!-- Видео -->
+            <!-- Видео (со звуком в лайтбоксе) -->
             <video
               v-else-if="currentLightboxMedia.media_type === 'VIDEO'"
+              :key="currentLightboxMedia.id"
               :src="getMediaUrl(currentLightboxMedia.id)"
               controls
               autoplay
+              playsinline
               class="max-w-full max-h-[70vh] mx-auto rounded-xl shadow-2xl"
             ></video>
 
@@ -334,6 +348,8 @@ export default {
       selectedMediaType: "all",
       showLightbox: false,
       currentIndex: 0,
+      isIOS: /iPhone|iPad|iPod/i.test(navigator.userAgent),
+      iosDebug: [],
     };
   },
 
@@ -427,6 +443,18 @@ export default {
         });
 
         console.log("Загружено медиа:", this.mediaData);
+
+        // Дебаг — инфа о загруженных видео
+        const allItems = Object.values(this.mediaData).flat();
+        const videos = allItems.filter(i => i.media_type === "VIDEO");
+        this.addDebug(`Loaded: ${allItems.length} items, ${videos.length} videos`);
+        if (videos.length > 0) {
+          const v = videos[0];
+          this.addDebug(`video[0]: id=${v.id}, preview_file_id=${v.preview_file_id}`);
+          if (v.preview_file_id) {
+            this.addDebug(`posterURL: ...${this.getMediaUrl(v.preview_file_id).slice(-40)}`);
+          }
+        }
       } catch (error) {
         console.error("Ошибка при загрузке медиа:", error);
         this.error = error.message || "Не удалось загрузить медиа";
@@ -439,6 +467,54 @@ export default {
       this.selectedCategory = category;
       this.showLightbox = false;
       this.currentIndex = 0;
+    },
+
+    addDebug(msg) {
+      const time = new Date().toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      this.iosDebug.unshift(`[${time}] ${msg}`);
+      if (this.iosDebug.length > 15) this.iosDebug.pop();
+    },
+
+    onIOSVideoClick(event, item) {
+      const video = event.currentTarget;
+      this.addDebug(`tap video ${item.id}, readyState=${video.readyState}, hasWEFS=${typeof video.webkitEnterFullscreen === "function"}`);
+      // controls нативные уже обработают tap, но дополнительно пробуем webkitEnterFullscreen
+      if (typeof video.webkitEnterFullscreen === "function") {
+        try {
+          video.webkitEnterFullscreen();
+          this.addDebug("webkitEnterFullscreen() OK");
+        } catch (err) {
+          this.addDebug(`webkitEnterFullscreen ERR: ${err.name}: ${err.message}`);
+          // Fallback
+          video.removeAttribute("playsinline");
+          video.muted = false;
+          video.play()
+            .then(() => this.addDebug("play() resolved"))
+            .catch(e => this.addDebug(`play() ERR: ${e.name}: ${e.message}`));
+        }
+      } else {
+        this.addDebug("webkitEnterFullscreen NOT available, trying play()");
+        video.removeAttribute("playsinline");
+        video.muted = false;
+        video.play()
+          .then(() => this.addDebug("play() resolved"))
+          .catch(e => this.addDebug(`play() ERR: ${e.name}: ${e.message}`));
+      }
+    },
+
+    onVideoError(event, item) {
+      const err = event.target.error;
+      const code = err ? err.code : "?";
+      const msg = err ? err.message : "unknown";
+      const src = event.target.src || "";
+      this.addDebug(`video error ${item.id}: code=${code} "${msg}" src=${src.slice(-30)}`);
+    },
+
+    handleItemClick(_event, index) {
+      const item = this.filteredMedia[index];
+      // iOS видео обрабатываются нативно через controls (click.stop на video)
+      if (this.isIOS && item.media_type === "VIDEO") return;
+      this.openLightbox(index);
     },
 
     openLightbox(index) {
@@ -506,6 +582,11 @@ export default {
   },
 
   mounted() {
+    // Дебаг — сразу показываем ключевую инфу
+    const ua = navigator.userAgent;
+    this.addDebug(`UA: ${ua.slice(0, 90)}`);
+    this.addDebug(`isIOS=${this.isIOS} | Telegram=${ua.includes("Telegram")}`);
+
     const handleKeydown = (e) => {
       if (!this.showLightbox) return;
 

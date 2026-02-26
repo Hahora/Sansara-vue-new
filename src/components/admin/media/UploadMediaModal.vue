@@ -51,7 +51,7 @@
               <input
                 ref="fileInput"
                 type="file"
-                accept="image/*,video/*,.pdf,.doc,.docx"
+                :accept="acceptedFileTypes"
                 @change="onFileSelect"
                 class="hidden"
               />
@@ -107,12 +107,45 @@
             </div>
           </div>
 
+          <!-- Раздел меню -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Раздел меню *
+            </label>
+            <select
+              v-model="formData.menu_section"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none bg-white"
+            >
+              <option value="">Выберите раздел</option>
+              <option value="INTRO">Интро (только видео)</option>
+              <option value="HOME">Главная (только фото)</option>
+              <option value="BACHELOR">Коллективная баня</option>
+              <option value="BACHELORETTE">Девичник</option>
+              <option value="BATH_CLUB">Банный клуб</option>
+              <option value="BUSINESS_BATH">Бизнес-баня</option>
+              <option value="CERTIFICATE">Сертификаты</option>
+              <option value="FIRST_TIME">Первый раз</option>
+              <option value="LOYALTY">Лояльность</option>
+            </select>
+          </div>
+
           <!-- Тип медиа -->
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-2">
               Тип медиа *
             </label>
-            <div class="grid grid-cols-3 gap-2">
+            <!-- Для INTRO — только видео (заблокировано) -->
+            <div v-if="formData.menu_section === 'INTRO'" class="p-3 border-2 border-blue-500 bg-blue-50 rounded-lg text-sm text-blue-700 font-medium flex items-center gap-2">
+              <span class="text-xl">🎥</span>
+              Только видео (для раздела Интро)
+            </div>
+            <!-- Для HOME — только фото (заблокировано) -->
+            <div v-else-if="formData.menu_section === 'HOME'" class="p-3 border-2 border-green-500 bg-green-50 rounded-lg text-sm text-green-700 font-medium flex items-center gap-2">
+              <span class="text-xl">📷</span>
+              Только фото (для раздела Главная)
+            </div>
+            <div v-else-if="formData.menu_section !== 'INTRO' && formData.menu_section !== 'HOME'" class="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 @click="formData.media_type = 'PHOTO'"
@@ -155,29 +188,6 @@
             </div>
           </div>
 
-          <!-- Раздел меню -->
-          <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">
-              Раздел меню *
-            </label>
-            <select
-              v-model="formData.menu_section"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none bg-white"
-            >
-              <option value="">Выберите раздел</option>
-              <option value="BACHELOR">Коллективная баня</option>
-              <option value="BACHELORETTE">Девичник</option>
-              <option value="COLLECTIVE">Коллективная программа</option>
-              <option value="AUTHOR">Авторская программа</option>
-              <option value="CERTIFICATE">Сертификаты</option>
-              <option value="BATH_CLUB">Банный клуб</option>
-              <option value="BUSINESS_BATH">Бизнес-баня</option>
-              <option value="FIRST_TIME">Первый раз</option>
-              <option value="LOYALTY">Лояльность</option>
-            </select>
-          </div>
-
           <!-- Название -->
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">
@@ -191,8 +201,8 @@
             />
           </div>
 
-          <!-- Филиал -->
-          <div>
+          <!-- Филиал (не нужен для INTRO) -->
+          <div v-if="formData.menu_section !== 'INTRO'">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Филиал *
             </label>
@@ -336,15 +346,26 @@ export default {
     ...mapState(useAppStore, ["branches"]),
 
     canUpload() {
-      return (
-        this.selectedFile &&
-        this.formData.media_type &&
-        this.formData.menu_section &&
-        this.formData.branch_id
-      );
+      if (!this.selectedFile || !this.formData.media_type || !this.formData.menu_section) return false;
+      if (this.formData.menu_section === 'INTRO') return true;
+      return !!this.formData.branch_id;
+    },
+
+    acceptedFileTypes() {
+      if (this.formData.menu_section === 'HOME') return 'image/*';
+      if (this.formData.menu_section === 'INTRO') return 'video/*';
+      return 'image/*,video/*,.pdf,.doc,.docx';
     },
   },
   watch: {
+    'formData.menu_section'(val) {
+      if (val === 'HOME') {
+        this.formData.media_type = 'PHOTO';
+      } else if (val === 'INTRO') {
+        this.formData.media_type = 'VIDEO';
+      }
+    },
+
     isOpen(newVal) {
       if (newVal) {
         this.lockBodyScroll();

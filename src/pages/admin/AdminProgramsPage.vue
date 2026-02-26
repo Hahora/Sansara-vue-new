@@ -302,6 +302,55 @@
             class="h-1"
           ></div>
 
+          <!-- Медиа программы: фото ИЛИ видео -->
+          <div
+            class="relative bg-gray-100 overflow-hidden cursor-pointer"
+            style="height:140px"
+            @click="program.video_url ? previewMedia = { url: getProgramVideoUrl(program.id), type: 'video' } : program.image_url ? previewMedia = { url: getProgramImageUrl(program.id), type: 'photo' } : null"
+          >
+            <!-- Видео -->
+            <video
+              v-if="program.video_url"
+              :src="getProgramVideoUrl(program.id)"
+              class="w-full h-full object-cover pointer-events-none"
+              muted preload="metadata"
+              @error="e => e.target.style.display='none'"
+            />
+            <!-- Фото -->
+            <img
+              v-else-if="program.image_url"
+              :src="getProgramImageUrl(program.id)"
+              class="w-full h-full object-cover pointer-events-none"
+              @error="e => e.target.style.display='none'"
+            />
+            <!-- Нет медиа -->
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-1">
+              <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+              </svg>
+              <span class="text-xs">Нет медиа</span>
+            </div>
+            <!-- Тип метка + иконка открытия -->
+            <div v-if="program.video_url || program.image_url" class="absolute top-2 left-2 bg-black/50 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded">
+              {{ program.video_url ? '🎬 видео' : '📷 фото' }}
+            </div>
+            <div v-if="program.video_url || program.image_url" class="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20">
+              <div class="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full">
+                {{ program.video_url ? '▶ Открыть видео' : '🔍 Открыть фото' }}
+              </div>
+            </div>
+            <!-- Оверлей загрузки медиа -->
+            <div
+              v-if="isMediaBusy(program.id)"
+              class="absolute inset-0 bg-black/65 flex flex-col items-center justify-center z-10"
+            >
+              <div class="animate-spin rounded-full h-9 w-9 border-[3px] border-white/30 border-t-white mb-2"></div>
+              <span class="text-white text-xs font-medium">
+                {{ isDeletingMedia(program.id) ? 'Удаление...' : 'Загрузка...' }}
+              </span>
+            </div>
+          </div>
+
           <div class="p-4">
             <!-- Заголовок -->
             <div class="flex items-start justify-between mb-3">
@@ -463,6 +512,42 @@
               >
                 🗑️ Удалить
               </button>
+              <!-- Загрузить фото ИЛИ видео -->
+              <label
+                :class="isMediaBusy(program.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-amber-100'"
+                class="bg-amber-50 text-amber-700 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-center flex items-center justify-center gap-1"
+              >
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/*" class="hidden" :disabled="isMediaBusy(program.id)" @change="uploadMedia(program, $event, 'PHOTO')" />
+                <span v-if="uploadingMedia[`${program.id}-PHOTO`]" class="inline-block animate-spin mr-1">⏳</span>
+                📷 {{ program.image_url ? 'Заменить фото' : 'Загрузить фото' }}
+              </label>
+              <label
+                :class="isMediaBusy(program.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-purple-100'"
+                class="bg-purple-50 text-purple-700 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-center flex items-center justify-center gap-1"
+              >
+                <input type="file" accept="video/mp4,video/webm,video/ogg,video/*" class="hidden" :disabled="isMediaBusy(program.id)" @change="uploadMedia(program, $event, 'VIDEO')" />
+                <span v-if="uploadingMedia[`${program.id}-VIDEO`]" class="inline-block animate-spin mr-1">⏳</span>
+                🎬 {{ program.video_url ? 'Заменить видео' : 'Загрузить видео' }}
+              </label>
+              <!-- Удалить текущее медиа -->
+              <button
+                v-if="program.image_url"
+                @click="deleteMedia(program, 'PHOTO')"
+                :disabled="isMediaBusy(program.id)"
+                class="col-span-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+              >
+                <span v-if="deletingMedia[`${program.id}-PHOTO`]" class="inline-block animate-spin mr-1">⏳</span>
+                🗑️ Удалить фото
+              </button>
+              <button
+                v-if="program.video_url"
+                @click="deleteMedia(program, 'VIDEO')"
+                :disabled="isMediaBusy(program.id)"
+                class="col-span-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+              >
+                <span v-if="deletingMedia[`${program.id}-VIDEO`]" class="inline-block animate-spin mr-1">⏳</span>
+                🗑️ Удалить видео
+              </button>
             </div>
           </div>
         </div>
@@ -506,6 +591,32 @@
       @close="editingProgram = null"
       @saved="onProgramSaved"
     />
+
+    <!-- Полноэкранный просмотр медиа -->
+    <div
+      v-if="previewMedia"
+      class="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center"
+      @click.self="previewMedia = null"
+    >
+      <button
+        @click="previewMedia = null"
+        class="absolute top-4 right-4 text-white bg-black/50 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10"
+      >✕</button>
+      <video
+        v-if="previewMedia.type === 'video'"
+        :src="previewMedia.url"
+        class="max-w-full max-h-full rounded-lg"
+        controls
+        autoplay
+        style="max-height: 90vh; max-width: 95vw"
+      />
+      <img
+        v-else
+        :src="previewMedia.url"
+        class="max-w-full max-h-full rounded-lg object-contain"
+        style="max-height: 90vh; max-width: 95vw"
+      />
+    </div>
   </div>
 </template>
 
@@ -536,6 +647,9 @@ export default {
       },
       showCreateModal: false,
       editingProgram: null,
+      previewMedia: null, // { url, type: 'photo'|'video' }
+      uploadingMedia: {}, // ключ: `${programId}-${mediaType}`
+      deletingMedia: {},  // ключ: `${programId}-${mediaType}`
     };
   },
   computed: {
@@ -563,25 +677,50 @@ export default {
         this.isLoading = true;
         this.error = null;
 
-        console.log("Загрузка программ с фильтрами:", this.filters);
+        let programs = [];
 
-        const data = await programAPI.adminGetAll();
-
-        if (Array.isArray(data)) {
-          this.allPrograms = data.sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at)
-          );
-
-          // Применяем локальные фильтры
-          this.applyLocalFilters();
-
-          this.totalPrograms = this.allPrograms.length;
-          console.log("Загружено программ:", this.allPrograms.length);
-        } else {
-          this.allPrograms = [];
-          this.programs = [];
-          this.totalPrograms = 0;
+        // Сначала пробуем admin endpoint
+        try {
+          const data = await programAPI.adminGetAll();
+          if (Array.isArray(data)) {
+            programs = data;
+          } else if (data && Array.isArray(data.programs)) {
+            programs = data.programs;
+          }
+        } catch (adminError) {
+          console.warn("Admin endpoint не ответил, грузим по подсекциям:", adminError);
         }
+
+        // Если admin endpoint вернул пусто — грузим через публичные подсекции для всех филиалов
+        if (programs.length === 0) {
+          const branches = this.branches || [];
+          const promises = [];
+          for (const branch of branches) {
+            promises.push(
+              programAPI.getCollective(branch.id).catch(() => ({ programs: [] }))
+            );
+            promises.push(
+              programAPI.getAuthor(branch.id).catch(() => ({ programs: [] }))
+            );
+          }
+          const results = await Promise.all(promises);
+          const seen = new Set();
+          for (const res of results) {
+            for (const p of res?.programs || []) {
+              if (!seen.has(p.id)) {
+                seen.add(p.id);
+                programs.push(p);
+              }
+            }
+          }
+        }
+
+        this.allPrograms = programs.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+        this.totalPrograms = this.allPrograms.length;
+        this.applyLocalFilters();
+        console.log("Загружено программ:", this.allPrograms.length);
       } catch (error) {
         console.error("Ошибка при загрузке программ:", error);
         this.error = error.message || "Не удалось загрузить программы";
@@ -644,6 +783,68 @@ export default {
 
     openEditModal(program) {
       this.editingProgram = { ...program };
+    },
+
+    getProgramImageUrl(programId) {
+      return programAPI.getImageUrl(programId);
+    },
+
+    getProgramVideoUrl(programId) {
+      return programAPI.getVideoUrl(programId);
+    },
+
+    isMediaBusy(programId) {
+      return ['PHOTO', 'VIDEO'].some(
+        t => this.uploadingMedia[`${programId}-${t}`] || this.deletingMedia[`${programId}-${t}`]
+      );
+    },
+
+    isDeletingMedia(programId) {
+      return ['PHOTO', 'VIDEO'].some(t => this.deletingMedia[`${programId}-${t}`]);
+    },
+
+    async uploadMedia(program, event, mediaType) {
+      const file = event.target.files[0];
+      if (!file) return;
+      event.target.value = "";
+
+      // Проверка конфликта типов медиа
+      if (mediaType === 'VIDEO' && program.image_url) {
+        alert('Сначала удалите фото, чтобы загрузить видео.');
+        return;
+      }
+      if (mediaType === 'PHOTO' && program.video_url) {
+        alert('Сначала удалите видео, чтобы загрузить фото.');
+        return;
+      }
+
+      const key = `${program.id}-${mediaType}`;
+      this.uploadingMedia = { ...this.uploadingMedia, [key]: true };
+      try {
+        await programAPI.adminUploadMedia(program.id, file, mediaType);
+        await this.loadPrograms();
+      } catch (error) {
+        console.error(`Ошибка загрузки ${mediaType}:`, error);
+        alert(`Не удалось загрузить ${mediaType === 'PHOTO' ? 'фото' : 'видео'}: ` + error.message);
+      } finally {
+        this.uploadingMedia = { ...this.uploadingMedia, [key]: false };
+      }
+    },
+
+    async deleteMedia(program, mediaType) {
+      const label = mediaType === 'PHOTO' ? 'фото' : 'видео';
+      if (!confirm(`Удалить ${label} программы?`)) return;
+      const key = `${program.id}-${mediaType}`;
+      this.deletingMedia = { ...this.deletingMedia, [key]: true };
+      try {
+        await programAPI.adminDeleteMedia(program.id, mediaType);
+        await this.loadPrograms();
+      } catch (error) {
+        console.error(`Ошибка удаления ${mediaType}:`, error);
+        alert(`Не удалось удалить ${label}: ` + error.message);
+      } finally {
+        this.deletingMedia = { ...this.deletingMedia, [key]: false };
+      }
     },
 
     async confirmDelete(program) {

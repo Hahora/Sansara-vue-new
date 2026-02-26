@@ -1,5 +1,8 @@
 <template>
   <div class="relative min-h-screen bg-[#edeae6]">
+
+    <VideoIntroOverlay v-if="showIntro" @done="showIntro = false" />
+
     <main class="pb-20">
       <RouterView />
     </main>
@@ -24,6 +27,7 @@ import { useRoute } from "vue-router";
 import { useAppStore } from "@/stores/appStore";
 import BookingModal from "@/components/BookingModal.vue";
 import Navigation from "@/components/Navigation.vue";
+import VideoIntroOverlay from "@/components/VideoIntroOverlay.vue";
 import {
   initTelegramWebApp,
   getTelegramUserInfo,
@@ -33,6 +37,8 @@ import { bookingModalState } from "@/utils/eventBus";
 
 const route = useRoute();
 const store = useAppStore();
+
+const showIntro = ref(!sessionStorage.getItem("intro_shown"));
 
 // Страницы без навигации
 const hideNavigationOnPages = ["booking", "TelegramRequired", "PrivacyPolicy"];

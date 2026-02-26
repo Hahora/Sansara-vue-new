@@ -24,35 +24,6 @@
       </div>
     </div>
 
-    <!-- Переключатель вкладок -->
-    <div class="px-5 py-3 bg-[#e3ded3] border-b border-[#c2a886]/20">
-      <div class="flex rounded-xl bg-[#d9cebc]/60 p-1">
-        <button
-          @click="activeTab = 'info'"
-          :class="[
-            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
-            activeTab === 'info'
-              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
-              : 'text-gray-700 hover:bg-white/50',
-          ]"
-        >
-          <FileText class="h-4 w-4" />
-          <span>Информация</span>
-        </button>
-        <button
-          @click="activeTab = 'gallery'"
-          :class="[
-            'flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
-            activeTab === 'gallery'
-              ? 'bg-gradient-to-r from-[#c2a886] to-[#b5976e] shadow-md text-white'
-              : 'text-gray-700 hover:bg-white/50',
-          ]"
-        >
-          <Images class="h-4 w-4" />
-          <span>Галерея</span>
-        </button>
-      </div>
-    </div>
 
     <!-- Индикатор загрузки -->
     <div
@@ -74,237 +45,196 @@
       </div>
     </div>
 
-    <!-- Контент: Основная информация -->
-    <div v-else-if="activeTab === 'info'" class="px-5 py-5">
-      <!-- Если нет программ -->
+    <!-- Контент -->
+    <div v-else class="px-5 py-5 space-y-4">
+
+      <!-- Пусто -->
       <div
-        v-if="
-          (!bathClubContent || !bathClubContent.title) &&
-          (!businessBathContent || !businessBathContent.title)
-        "
+        v-if="(!bathClubContent || !bathClubContent.title) && (!businessBathContent || !businessBathContent.title)"
         class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-8 text-center"
       >
-        <div
-          class="w-16 h-16 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-4"
-        >
-          <Castle class="h-8 w-8 text-[#c2a886]" />
-        </div>
-        <h3 class="text-base font-semibold text-gray-900 mb-2">
-          Клубные мероприятия
-        </h3>
-        <p class="text-sm text-gray-600 leading-relaxed">
-          Скоро здесь появится информация о клубных мероприятиях
-        </p>
+        <Castle class="h-8 w-8 text-[#c2a886] mx-auto mb-3" />
+        <p class="text-sm text-gray-600">Скоро здесь появится информация о клубных мероприятиях</p>
       </div>
 
-      <!-- Список клубных мероприятий -->
-      <div v-else class="space-y-4">
-        <!-- Банный клуб С. Хачатурьяна -->
-        <div
-          v-if="bathClubContent && bathClubContent.title"
-          class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
-        >
-          <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
-            <div class="flex items-center gap-3">
-              <div
-                class="h-12 w-12 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0"
-              >
-                <Sparkles class="h-6 w-6 text-white" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <h2 class="font-semibold text-gray-900 text-[15px] truncate">
-                  {{ bathClubContent.title }}
-                </h2>
-                <p
-                  v-if="bathClubSubtitle"
-                  class="text-sm text-gray-600 mt-0.5 truncate"
-                >
-                  {{ bathClubSubtitle }}
-                </p>
-              </div>
+      <!-- Карточка: Банный клуб -->
+      <div
+        v-if="bathClubContent && bathClubContent.title"
+        class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
+      >
+        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/30">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0">
+              <Sparkles class="h-4 w-4 text-white" />
             </div>
-          </div>
-
-          <div class="p-4 space-y-4">
-            <!-- Цена -->
-            <div v-if="bathClubContent.price" class="flex items-center">
-              <div
-                class="bg-[#d9cebc] px-4 py-2.5 rounded-xl border border-[#c2a886]/30 flex items-center gap-2"
-              >
-                <div
-                  class="h-8 w-8 bg-[#c2a886]/30 rounded-lg flex items-center justify-center"
-                >
-                  <Wallet class="h-4 w-4 text-[#202c27]" />
-                </div>
-                <div>
-                  <div class="font-semibold text-gray-900 text-base">
-                    {{ formatPrice(bathClubContent.price) }}
-                  </div>
-                  <div class="text-xs text-gray-600">с участника</div>
-                </div>
-              </div>
+            <div class="flex-1 min-w-0">
+              <h2 class="font-semibold text-gray-900 text-[15px] truncate">{{ bathClubContent.title }}</h2>
+              <p v-if="bathClubSubtitle" class="text-xs text-gray-600 mt-0.5 truncate">{{ bathClubSubtitle }}</p>
             </div>
-
-            <!-- Контент из API с разворачиванием -->
-            <div
-              v-if="bathClubContent.content"
-              class="bg-[#d9cebc]/40 rounded-xl p-4"
-            >
-              <div
-                :class="[
-                  'text-sm text-gray-700 leading-relaxed prose-content transition-all duration-300',
-                  !expandedBathClub && isContentLong(bathClubContent.content)
-                    ? 'line-clamp-4'
-                    : '',
-                ]"
-                v-html="formatContent(bathClubContent.content)"
-              ></div>
-
-              <!-- Кнопка развернуть/свернуть -->
-              <button
-                v-if="isContentLong(bathClubContent.content)"
-                @click="expandedBathClub = !expandedBathClub"
-                class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
-              >
-                <span>{{ expandedBathClub ? "Свернуть" : "Развернуть" }}</span>
-                <ChevronDown
-                  :class="[
-                    'h-4 w-4 transition-transform duration-300',
-                    expandedBathClub ? 'rotate-180' : '',
-                  ]"
-                />
-              </button>
-            </div>
-
-            <!-- Если контента нет -->
-            <div
-              v-else
-              class="bg-[#d9cebc]/40 rounded-xl p-4 text-center text-gray-500 text-sm"
-            >
-              Информация о банном клубе скоро появится
-            </div>
-
-            <!-- Кнопка записи -->
-            <button
-              @click="
-                openBooking('BATH_CLUB', bathClubContent.title || 'Банный клуб')
-              "
-              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] hover:from-[#b5976e] hover:to-[#a68a5f] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
-            >
-              <CalendarCheck class="h-5 w-5 mr-2" />
-              <span class="text-[15px]">Записаться</span>
-            </button>
           </div>
         </div>
 
-        <!-- Бизнес-баня с клубом МОСТ -->
-        <div
-          v-if="businessBathContent && businessBathContent.title"
-          class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
-        >
-          <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
-            <div class="flex items-center gap-3">
-              <div
-                class="h-12 w-12 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0"
-              >
-                <Briefcase class="h-6 w-6 text-white" />
+        <div class="flex">
+          <!-- Фото -->
+          <div
+            ref="bathClubPhoto"
+            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden"
+            :style="bathClubPhotoH ? { height: bathClubPhotoH + 'px' } : {}"
+          >
+            <template v-if="bathClubMedia.length > 0">
+              <video
+                v-if="bathClubMedia[bathClubMediaIdx].media_type === 'VIDEO'"
+                :key="bathClubMedia[bathClubMediaIdx].id"
+                :src="getMediaUrl(bathClubMedia[bathClubMediaIdx].id)"
+                v-autoplay autoplay loop playsinline
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(bathClubMedia[bathClubMediaIdx].id); lightboxType = 'VIDEO'"
+              />
+              <img v-else :src="getMediaUrl(bathClubMedia[bathClubMediaIdx].id)" class="absolute inset-0 w-full h-full object-cover cursor-pointer" @click="lightboxUrl = getMediaUrl(bathClubMedia[bathClubMediaIdx].id); lightboxType = 'PHOTO'" @error="onImgError" />
+              <div v-if="bathClubMedia.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
+                <div v-for="(_, i) in bathClubMedia" :key="i" @click="bathClubMediaIdx = i"
+                  :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === bathClubMediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']" />
               </div>
-              <div class="flex-1 min-w-0">
-                <h2 class="font-semibold text-gray-900 text-[15px] truncate">
-                  {{ businessBathContent.title }}
-                </h2>
-              </div>
+            </template>
+            <div v-else class="absolute inset-0 flex items-center justify-center">
+              <Images class="h-8 w-8 text-[#c2a886]/30" />
             </div>
           </div>
 
-          <div class="p-4 space-y-4">
-            <!-- Цена -->
-            <div v-if="businessBathContent.price" class="flex items-center">
-              <div
-                class="bg-[#d9cebc] px-4 py-2.5 rounded-xl border border-[#c2a886]/30 flex items-center gap-2"
-              >
-                <div
-                  class="h-8 w-8 bg-[#c2a886]/30 rounded-lg flex items-center justify-center"
-                >
-                  <Wallet class="h-4 w-4 text-[#202c27]" />
-                </div>
-                <div>
-                  <div class="font-semibold text-gray-900 text-base">
-                    {{ formatPrice(businessBathContent.price) }}
-                  </div>
-                  <div class="text-xs text-gray-600">с участника</div>
-                </div>
+          <!-- Инфо -->
+          <div class="flex-1 p-3 flex flex-col gap-2 border-l border-[#c2a886]/15 overflow-hidden">
+            <div v-if="bathClubContent.price" class="inline-flex">
+              <div class="bg-[#d9cebc] border border-[#c2a886]/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <Wallet class="h-3.5 w-3.5 text-[#202c27] flex-shrink-0" />
+                <span class="font-bold text-sm text-gray-900">{{ formatPrice(bathClubContent.price) }}</span>
+                <span class="text-xs text-gray-600">/ уч.</span>
               </div>
             </div>
-
-            <!-- Контент из API с разворачиванием -->
-            <div
-              v-if="businessBathContent.content"
-              class="bg-[#d9cebc]/40 rounded-xl p-4"
-            >
-              <div
-                :class="[
-                  'text-sm text-gray-700 leading-relaxed prose-content transition-all duration-300',
-                  !expandedBusinessBath &&
-                  isContentLong(businessBathContent.content)
-                    ? 'line-clamp-4'
-                    : '',
-                ]"
-                v-html="formatContent(businessBathContent.content)"
-              ></div>
-
-              <!-- Кнопка развернуть/свернуть -->
-              <button
-                v-if="isContentLong(businessBathContent.content)"
-                @click="expandedBusinessBath = !expandedBusinessBath"
-                class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
-              >
-                <span>{{
-                  expandedBusinessBath ? "Свернуть" : "Развернуть"
-                }}</span>
-                <ChevronDown
-                  :class="[
-                    'h-4 w-4 transition-transform duration-300',
-                    expandedBusinessBath ? 'rotate-180' : '',
-                  ]"
-                />
+            <div v-if="bathClubContent.content" class="flex-1 overflow-hidden">
+              <div :class="['text-xs text-gray-600 leading-relaxed prose-content', !expandedBathClub && isContentLong(bathClubContent.content) ? 'line-clamp-4' : '']"
+                v-html="formatContent(bathClubContent.content)" />
+              <button v-if="isContentLong(bathClubContent.content)" @click="toggleBathClub"
+                class="mt-1 text-xs text-[#c2a886] font-medium flex items-center gap-0.5">
+                {{ expandedBathClub ? "Свернуть" : "Развернуть" }}
+                <ChevronDown :class="['h-3 w-3 transition-transform', expandedBathClub ? 'rotate-180' : '']" />
               </button>
             </div>
-
-            <!-- Если контента нет -->
-            <div
-              v-else
-              class="bg-[#d9cebc]/40 rounded-xl p-4 text-center text-gray-500 text-sm"
-            >
-              Информация о бизнес-бане скоро появится
+            <div v-else class="flex-1 flex items-center justify-center">
+              <p class="text-gray-400 text-xs text-center">Информация скоро появится</p>
             </div>
-
-            <!-- Кнопка записи -->
-            <button
-              @click="
-                openBooking(
-                  'BUSINESS_BATH',
-                  businessBathContent.title || 'Бизнес-баня'
-                )
-              "
-              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] hover:from-[#b5976e] hover:to-[#a68a5f] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
-            >
-              <CalendarCheck class="h-5 w-5 mr-2" />
-              <span class="text-[15px]">Записаться</span>
+            <button @click="openBooking('BATH_CLUB', bathClubContent.title || 'Банный клуб')"
+              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white text-sm font-medium py-2.5 rounded-xl flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mt-auto">
+              <CalendarCheck class="h-4 w-4" /><span>Записаться</span>
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Карточка: Бизнес-баня -->
+      <div
+        v-if="businessBathContent && businessBathContent.title"
+        class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden"
+      >
+        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/30">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0">
+              <Briefcase class="h-4 w-4 text-white" />
+            </div>
+            <h2 class="font-semibold text-gray-900 text-[15px] truncate">{{ businessBathContent.title }}</h2>
+          </div>
+        </div>
+
+        <div class="flex">
+          <!-- Фото -->
+          <div
+            ref="businessBathPhoto"
+            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden"
+            :style="businessBathPhotoH ? { height: businessBathPhotoH + 'px' } : {}"
+          >
+            <template v-if="businessBathMedia.length > 0">
+              <video
+                v-if="businessBathMedia[businessBathMediaIdx].media_type === 'VIDEO'"
+                :key="businessBathMedia[businessBathMediaIdx].id"
+                :src="getMediaUrl(businessBathMedia[businessBathMediaIdx].id)"
+                v-autoplay autoplay loop playsinline
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(businessBathMedia[businessBathMediaIdx].id); lightboxType = 'VIDEO'"
+              />
+              <img v-else :src="getMediaUrl(businessBathMedia[businessBathMediaIdx].id)" class="absolute inset-0 w-full h-full object-cover cursor-pointer" @click="lightboxUrl = getMediaUrl(businessBathMedia[businessBathMediaIdx].id); lightboxType = 'PHOTO'" @error="onImgError" />
+              <div v-if="businessBathMedia.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
+                <div v-for="(_, i) in businessBathMedia" :key="i" @click="businessBathMediaIdx = i"
+                  :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === businessBathMediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']" />
+              </div>
+            </template>
+            <div v-else class="absolute inset-0 flex items-center justify-center">
+              <Images class="h-8 w-8 text-[#c2a886]/30" />
+            </div>
+          </div>
+
+          <!-- Инфо -->
+          <div class="flex-1 p-3 flex flex-col gap-2 border-l border-[#c2a886]/15 overflow-hidden">
+            <div v-if="businessBathContent.price" class="inline-flex">
+              <div class="bg-[#d9cebc] border border-[#c2a886]/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <Wallet class="h-3.5 w-3.5 text-[#202c27] flex-shrink-0" />
+                <span class="font-bold text-sm text-gray-900">{{ formatPrice(businessBathContent.price) }}</span>
+                <span class="text-xs text-gray-600">/ уч.</span>
+              </div>
+            </div>
+            <div v-if="businessBathContent.content" class="flex-1 overflow-hidden">
+              <div :class="['text-xs text-gray-600 leading-relaxed prose-content', !expandedBusinessBath && isContentLong(businessBathContent.content) ? 'line-clamp-4' : '']"
+                v-html="formatContent(businessBathContent.content)" />
+              <button v-if="isContentLong(businessBathContent.content)" @click="toggleBusinessBath"
+                class="mt-1 text-xs text-[#c2a886] font-medium flex items-center gap-0.5">
+                {{ expandedBusinessBath ? "Свернуть" : "Развернуть" }}
+                <ChevronDown :class="['h-3 w-3 transition-transform', expandedBusinessBath ? 'rotate-180' : '']" />
+              </button>
+            </div>
+            <div v-else class="flex-1 flex items-center justify-center">
+              <p class="text-gray-400 text-xs text-center">Информация скоро появится</p>
+            </div>
+            <button @click="openBooking('BUSINESS_BATH', businessBathContent.title || 'Бизнес-баня')"
+              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white text-sm font-medium py-2.5 rounded-xl flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mt-auto">
+              <CalendarCheck class="h-4 w-4" /><span>Записаться</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Контент: Фотогалерея -->
-    <div v-else-if="activeTab === 'gallery'">
-      <MediaGallery
-        :sections="gallerySections"
-        :show-media-type-filter="true"
-        :category-labels="categoryLabels"
-      />
-    </div>
+    <!-- Лайтбокс -->
+    <transition
+      enter-active-class="transition-opacity duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="lightboxUrl"
+        class="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center"
+        @click="lightboxUrl = null"
+      >
+        <video
+          v-if="lightboxType === 'VIDEO'"
+          :key="lightboxUrl"
+          :src="lightboxUrl"
+          controls
+          autoplay
+          playsinline
+          class="max-w-full max-h-full"
+          @click.stop
+        />
+        <img v-else :src="lightboxUrl" class="max-w-full max-h-full object-contain" @click.stop />
+        <button
+          @click="lightboxUrl = null"
+          class="absolute top-5 right-5 text-white/70 hover:text-white bg-black/40 rounded-full p-1.5"
+        >
+          <X class="h-6 w-6" />
+        </button>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -312,13 +242,12 @@
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
 import { openBookingModal } from "@/utils/eventBus";
-import MediaGallery from "@/components/MediaGallery.vue";
+import { mediaAPI } from "@/utils/api";
 import icons from "@/utils/icons";
 
 export default {
   name: "ClubEventsPage",
   components: {
-    MediaGallery,
     ...icons,
   },
   data() {
@@ -327,36 +256,28 @@ export default {
       error: null,
       bathClubContent: null,
       businessBathContent: null,
-      activeTab: "info",
       expandedBathClub: false,
       expandedBusinessBath: false,
+      bathClubMedia: [],
+      bathClubMediaIdx: 0,
+      businessBathMedia: [],
+      businessBathMediaIdx: 0,
+      bathClubPhotoH: 0,
+      businessBathPhotoH: 0,
+      bathClubInterval: null,
+      businessBathInterval: null,
+      lightboxUrl: null,
+      lightboxType: 'PHOTO',
     };
   },
   computed: {
     ...mapState(useAppStore, [
-      "programs",
-      "programsLoaded",
       "selectedBranch",
       "contentData",
     ]),
 
-    pageTitle() {
-      return this.contentData?.["CLUB_EVENTS"]?.title || "Клубные мероприятия";
-    },
-
     bathClubSubtitle() {
       return this.contentData?.["BATH_CLUB"]?.subtitle || "";
-    },
-
-    gallerySections() {
-      return ["BATH_CLUB", "BUSINESS_BATH"];
-    },
-
-    categoryLabels() {
-      return {
-        BATH_CLUB: "Банный клуб",
-        BUSINESS_BATH: "Бизнес-баня",
-      };
     },
   },
   methods: {
@@ -387,9 +308,66 @@ export default {
       return textLength > 200 || lineBreaks > 3;
     },
 
+    startSlideIntervals() {
+      if (this.bathClubMedia.length > 1) {
+        this.bathClubInterval = setInterval(() => {
+          this.bathClubMediaIdx = (this.bathClubMediaIdx + 1) % this.bathClubMedia.length;
+        }, 4000);
+      }
+      if (this.businessBathMedia.length > 1) {
+        this.businessBathInterval = setInterval(() => {
+          this.businessBathMediaIdx = (this.businessBathMediaIdx + 1) % this.businessBathMedia.length;
+        }, 4000);
+      }
+    },
+
+    stopSlideIntervals() {
+      clearInterval(this.bathClubInterval);
+      clearInterval(this.businessBathInterval);
+    },
+
+    toggleBathClub() {
+      if (!this.expandedBathClub) {
+        this.bathClubPhotoH = this.$refs.bathClubPhoto?.offsetHeight || 0;
+      } else {
+        this.bathClubPhotoH = 0;
+      }
+      this.expandedBathClub = !this.expandedBathClub;
+    },
+
+    toggleBusinessBath() {
+      if (!this.expandedBusinessBath) {
+        this.businessBathPhotoH = this.$refs.businessBathPhoto?.offsetHeight || 0;
+      } else {
+        this.businessBathPhotoH = 0;
+      }
+      this.expandedBusinessBath = !this.expandedBusinessBath;
+    },
+
     openBooking(eventKey, title) {
-      console.log("ClubEventsPage: Opening booking", { eventKey, title });
       openBookingModal(null, eventKey, title);
+    },
+
+    getMediaUrl(mediaId) {
+      return mediaAPI.getDownloadUrl(mediaId);
+    },
+
+    onImgError(e) {
+      e.target.style.display = "none";
+    },
+
+    async loadMedia() {
+      const params = this.selectedBranch?.id ? { branch_id: this.selectedBranch.id } : {};
+      const [bcRes, bbRes] = await Promise.allSettled([
+        mediaAPI.getBySection("BATH_CLUB", params),
+        mediaAPI.getBySection("BUSINESS_BATH", params),
+      ]);
+      this.bathClubMedia = bcRes.status === "fulfilled"
+        ? (bcRes.value.items || []).filter(i => i.is_active)
+        : [];
+      this.businessBathMedia = bbRes.status === "fulfilled"
+        ? (bbRes.value.items || []).filter(i => i.is_active)
+        : [];
     },
 
     async loadClubEvents() {
@@ -433,17 +411,19 @@ export default {
     },
   },
   async created() {
-    console.log("ClubEventsPage created");
-
     try {
       await this.loadClubEvents();
-      console.log("Страница загружена успешно");
+      await this.loadMedia();
+      this.startSlideIntervals();
     } catch (error) {
-      console.error("Ошибка при загрузке страницы:", error);
       this.error = error.message || "Ошибка при загрузке страницы";
     } finally {
       this.isLoading = false;
     }
+  },
+
+  beforeUnmount() {
+    this.stopSlideIntervals();
   },
 
   watch: {
@@ -482,6 +462,7 @@ export default {
 .line-clamp-4 {
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

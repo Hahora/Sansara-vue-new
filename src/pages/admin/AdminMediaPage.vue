@@ -470,13 +470,13 @@ export default {
       editingMedia: null,
 
       menuSections: [
+        { value: "INTRO", label: "Интро (видео)" },
+        { value: "HOME", label: "Главная (фото)" },
         { value: "BACHELOR", label: "Коллективная баня" },
         { value: "BACHELORETTE", label: "Девичник" },
-        { value: "COLLECTIVE", label: "Коллективная программа" },
-        { value: "AUTHOR", label: "Авторская программа" },
-        { value: "CERTIFICATE", label: "Сертификаты" },
         { value: "BATH_CLUB", label: "Банный клуб" },
         { value: "BUSINESS_BATH", label: "Бизнес-баня" },
+        { value: "CERTIFICATE", label: "Сертификаты" },
         { value: "FIRST_TIME", label: "Первый раз" },
         { value: "LOYALTY", label: "Лояльность" },
       ],
@@ -540,30 +540,26 @@ export default {
 
         console.log("Загрузка медиа...");
 
-        // Если выбран раздел - используем эндпоинт с секцией
-        if (this.filters.section) {
-          const params = {};
-          if (this.filters.branch_id !== null)
-            params.branch_id = this.filters.branch_id;
-          if (this.filters.media_type)
-            params.media_type = this.filters.media_type;
+        // Всегда используем admin getAll с фильтрами
+        const params = {};
+        if (this.filters.section) params.section = this.filters.section;
+        if (this.filters.branch_id !== null) params.branch_id = this.filters.branch_id;
+        if (this.filters.media_type) params.media_type = this.filters.media_type;
 
-          const data = await mediaAPI.getBySection(
-            this.filters.section,
-            params
-          );
-          this.mediaItems = Array.isArray(data.items) ? data.items : [];
-        } else {
-          // Иначе используем общий список
-          const data = await mediaAPI.getAll();
-          this.mediaItems = Array.isArray(data) ? data : [];
-        }
+        const data = await mediaAPI.getAll(params);
+        this.mediaItems = Array.isArray(data) ? data : [];
 
         console.log("Загружено медиа:", this.mediaItems.length);
       } catch (error) {
-        console.error("Ошибка при загрузке медиа:", error);
-        this.error = error.message || "Не удалось загрузить медиа";
-        this.mediaItems = [];
+        const msg = (error.message || "").toLowerCase();
+        if (msg.includes("no media found") || msg.includes("not found")) {
+          // Медиа для раздела просто нет — показываем пустое состояние
+          this.mediaItems = [];
+        } else {
+          console.error("Ошибка при загрузке медиа:", error);
+          this.error = error.message || "Не удалось загрузить медиа";
+          this.mediaItems = [];
+        }
       } finally {
         this.isLoading = false;
       }

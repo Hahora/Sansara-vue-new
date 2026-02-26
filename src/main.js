@@ -13,4 +13,16 @@ pinia.use(persistedstate);
 app.use(pinia);
 app.use(router);
 
+app.directive("autoplay", {
+  beforeMount(el) {
+    el.setAttribute("muted", "");
+    el.muted = true;
+  },
+  mounted(el) {
+    el.setAttribute("muted", "");
+    el.muted = true;
+    el.play().catch(() => {});
+  },
+});
+
 app.mount("#app");

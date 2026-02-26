@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#edeae6] pb-20">
+  <div class="min-h-screen bg-[#edeae6] pb-36">
     <!-- Индикатор загрузки -->
     <div
       v-if="isLoading"
@@ -159,10 +159,13 @@
           </div>
         </div>
 
-        <!-- Кнопка записи -->
+      </div>
+
+      <!-- Фиксированная кнопка записи -->
+      <div class="fixed bottom-20 left-0 right-0 px-5 z-40">
         <button
           @click="openBooking"
-          class="block w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] hover:from-[#b5976e] hover:to-[#a68a5f] text-white font-medium py-4 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
+          class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white font-medium py-4 px-4 rounded-xl flex items-center justify-center shadow-xl active:scale-[0.98]"
         >
           <CalendarCheck class="h-5 w-5 mr-2 text-white" />
           <span class="text-[15px]">Записаться</span>

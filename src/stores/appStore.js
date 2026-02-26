@@ -318,6 +318,9 @@ export const useAppStore = defineStore("app", {
         // Просто сохраняем выбранный филиал в store
         this.selectedBranch = branch;
 
+        // Сбрасываем данные контента — при следующем запросе загрузится для нового филиала
+        this.contentData = {};
+
         // Сохраняем в localStorage для восстановления при перезагрузке
         localStorage.setItem("selectedBranchId", branch.id.toString());
         localStorage.setItem("selectedBranchName", branch.name);
@@ -377,18 +380,18 @@ export const useAppStore = defineStore("app", {
 
         this.siteContent = content;
 
-        // Используем безопасный reduce с проверкой item и item.key
-        this.contentData = content.reduce((acc, item) => {
+        // Мёрджим новый контент в существующий (не затираем другие страницы)
+        const newPageData = content.reduce((acc, item) => {
           if (item && typeof item === "object" && item.key) {
             acc[item.key] = item;
           } else if (item && typeof item === "object") {
-            // Если нет key, используем page как ключ
             acc[page] = item;
           } else {
             console.warn("Skipping invalid content item:", item);
           }
           return acc;
         }, {});
+        this.contentData = { ...this.contentData, ...newPageData };
 
         this.contentLoaded = true;
         console.log(

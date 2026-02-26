@@ -190,7 +190,7 @@
                     </div>
                     <p
                       v-if="event.description"
-                      class="text-sm text-gray-600 line-clamp-2"
+                      class="text-sm text-gray-600 line-clamp-4"
                     >
                       {{ event.description }}
                     </p>
@@ -628,9 +628,10 @@ export default {
 }
 
 /* Line clamp для описания */
-.line-clamp-2 {
+.line-clamp-4 {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

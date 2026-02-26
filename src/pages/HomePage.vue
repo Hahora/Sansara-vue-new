@@ -2,7 +2,23 @@
   <div class="min-h-screen bg-[#edeae6]">
     <!-- Шапка -->
     <div class="relative overflow-hidden bg-[#202c27] text-white">
-      <div class="relative px-5 pt-6 pb-8">
+
+      <!-- Слайдер фоновых фото -->
+      <div class="absolute inset-0 z-0">
+        <img
+          v-for="(photo, i) in bgPhotos"
+          :key="photo"
+          :src="photo"
+          class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+          :class="i === currentSlide ? 'opacity-100' : 'opacity-0'"
+          :alt="''"
+          aria-hidden="true"
+        />
+        <!-- Затемнение для читаемости текста -->
+        <div class="absolute inset-0 bg-black/50" />
+      </div>
+
+      <div class="relative z-10 px-5 pt-6 pb-8">
         <!-- Верхняя строка с логотипом -->
         <div class="flex justify-between items-start mb-6">
           <!-- Логотип - только изображение -->
@@ -11,7 +27,7 @@
             <img
               :src="logo"
               alt="САНСАРА"
-              class="h-12 w-auto filter brightness-0 invert opacity-95"
+              class="h-12 w-auto filter brightness-0 invert opacity-95 transition-none"
             />
           </div>
 
@@ -157,6 +173,30 @@
             class="text-sm text-white/80 leading-relaxed font-light max-w-2xl"
             v-html="welcomeSubtitle"
           ></p>
+
+          <!-- Счётчики фактов -->
+          <div class="flex items-start justify-between pt-2">
+            <div class="flex flex-col items-center gap-0.5 flex-1">
+              <span class="text-[#c2a886] text-lg font-light leading-none">10К+</span>
+              <span class="text-white/50 text-[9px] font-light text-center leading-tight">гостей</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 flex-1">
+              <span class="text-[#c2a886] text-lg font-light leading-none">8</span>
+              <span class="text-white/50 text-[9px] font-light text-center leading-tight">пар-мастеров</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 flex-1">
+              <span class="text-[#c2a886] text-lg font-light leading-none">12</span>
+              <span class="text-white/50 text-[9px] font-light text-center leading-tight">программ</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 flex-1">
+              <span class="text-[#c2a886] text-lg font-light leading-none">2</span>
+              <span class="text-white/50 text-[9px] font-light text-center leading-tight">филиала</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 flex-1">
+              <span class="text-[#c2a886] text-lg font-light leading-none">1</span>
+              <span class="text-white/50 text-[9px] font-light text-center leading-tight">философия</span>
+            </div>
+          </div>
 
           <!-- Приветствие пользователя -->
           <div v-if="user" class="pt-4 mt-4 border-t border-white/10">
@@ -513,6 +553,7 @@
 <script>
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
+import { mediaAPI } from "@/utils/api";
 import icons from "@/utils/icons";
 import logo from "@/assets/logo.svg";
 
@@ -526,6 +567,9 @@ export default {
       showBranchSelect: false,
       isLoadingContent: true,
       logo,
+      currentSlide: 0,
+      slideInterval: null,
+      bgPhotos: [],
     };
   },
   computed: {
@@ -543,17 +587,15 @@ export default {
     },
 
     welcomeTitle() {
-      if (this.homeContent?.title) {
-        return this.homeContent.title;
-      }
-      return "Добро пожаловать";
+      const text = this.homeContent?.title || "Добро пожаловать";
+      return text.replace(/\n/g, "<br>");
     },
 
     welcomeSubtitle() {
-      return (
+      const text =
         this.homeContent?.content ||
-        "Первый городской ретрит-центр, где банные традиции встречаются с заботой о себе."
-      );
+        "Первый городской ретрит-центр, где банные традиции встречаются с заботой о себе.";
+      return text.replace(/\n/g, "<br>");
     },
   },
   methods: {
@@ -570,7 +612,7 @@ export default {
 
       if (this.showBranchSelect) {
         try {
-          await this.loadBranches(true);
+          await this.loadBranches();
         } catch (error) {
           console.error("Failed to load branches:", error);
           this.showBranchSelect = false;
@@ -584,14 +626,13 @@ export default {
 
       try {
         await this.selectBranch(branch);
-        await this.loadSiteContent("HOME", true);
-
-        // Небольшая задержка для плавности
-        setTimeout(() => {
-          this.isLoadingContent = false;
-        }, 300);
+        await Promise.all([
+          this.loadSiteContent("HOME", true),
+          this.loadHomeBgPhotos(),
+        ]);
       } catch (error) {
         console.error("Error selecting branch:", error);
+      } finally {
         this.isLoadingContent = false;
       }
     },
@@ -601,27 +642,51 @@ export default {
         this.showBranchSelect = false;
       }
     },
+
+    async loadHomeBgPhotos() {
+      try {
+        const branchId = this.selectedBranch?.id;
+        const params = branchId ? { branch_id: branchId } : {};
+        const data = await mediaAPI.getBySection("HOME", params);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        if (items.length > 0) {
+          this.bgPhotos = items.map((item) => mediaAPI.getDownloadUrl(item.id));
+        }
+      } catch (e) {
+        console.warn("Не удалось загрузить фото для главной:", e.message);
+      }
+    },
+
+    async refreshData() {
+      this.isLoadingContent = true;
+      try {
+        await this.authenticate();
+        await this.loadBranches();
+        await Promise.all([
+          this.loadSiteContent("HOME"),
+          this.loadHomeBgPhotos(),
+        ]);
+      } catch (error) {
+        console.error("Ошибка при загрузке данных:", error);
+      } finally {
+        this.isLoadingContent = false;
+      }
+    },
   },
   async created() {
-    try {
-      await this.authenticate();
-      await this.loadBranches();
-      await this.loadSiteContent("HOME");
-
-      // Имитация загрузки для плавности
-      setTimeout(() => {
-        this.isLoadingContent = false;
-      }, 500);
-    } catch (error) {
-      console.error("Ошибка при загрузке данных:", error);
-      this.isLoadingContent = false;
-    }
+    await this.refreshData();
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
+    this.slideInterval = setInterval(() => {
+      if (this.bgPhotos.length > 1) {
+        this.currentSlide = (this.currentSlide + 1) % this.bgPhotos.length;
+      }
+    }, 10000);
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
+    clearInterval(this.slideInterval);
   },
 };
 </script>
@@ -631,6 +696,7 @@ export default {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

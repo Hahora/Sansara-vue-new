@@ -459,6 +459,34 @@ export const programAPI = {
     apiRequest(`/api/v1/admin/programs/${programId}`, {
       method: "DELETE",
     }),
+
+  // GET /api/v1/programs/{id}/media?media_type=PHOTO|VIDEO
+  getMediaUrl: (programId, mediaType) =>
+    `${API_BASE_URL}/api/v1/programs/${programId}/media?media_type=${mediaType}`,
+
+  // Shorthand helpers
+  getImageUrl: (programId) =>
+    `${API_BASE_URL}/api/v1/programs/${programId}/media?media_type=PHOTO`,
+
+  getVideoUrl: (programId) =>
+    `${API_BASE_URL}/api/v1/programs/${programId}/media?media_type=VIDEO`,
+
+  // POST /api/v1/admin/programs/{id}/media  (file + media_type)
+  adminUploadMedia: (programId, file, mediaType) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("media_type", mediaType);
+    return apiRequest(`/api/v1/admin/programs/${programId}/media`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  // DELETE /api/v1/admin/programs/{id}/media?media_type=PHOTO|VIDEO
+  adminDeleteMedia: (programId, mediaType) =>
+    apiRequest(`/api/v1/admin/programs/${programId}/media?media_type=${mediaType}`, {
+      method: "DELETE",
+    }),
 };
 
 // ============================================

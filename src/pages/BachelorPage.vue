@@ -40,43 +40,6 @@
       </div>
     </div>
 
-    <!-- Переключатель вкладок -->
-    <div class="px-5 py-3 bg-[#e3ded3] border-b border-[#c2a886]/20">
-      <div class="flex rounded-xl bg-[#d9cebc] p-1 gap-1">
-        <button
-          @click="activeTab = 'info'"
-          :class="[
-            'flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-300',
-            activeTab === 'info'
-              ? 'bg-[#c2a886] shadow-md text-white'
-              : 'text-gray-700 hover:text-gray-900',
-          ]"
-        >
-          <div class="flex items-center justify-center gap-1.5">
-            <FileText
-              :class="['h-4 w-4', activeTab === 'info' ? 'text-white' : '']"
-            />
-            <span>Инфо</span>
-          </div>
-        </button>
-        <button
-          @click="activeTab = 'gallery'"
-          :class="[
-            'flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-300',
-            activeTab === 'gallery'
-              ? 'bg-[#c2a886] shadow-md text-white'
-              : 'text-gray-700 hover:text-gray-900',
-          ]"
-        >
-          <div class="flex items-center justify-center gap-1.5">
-            <Images
-              :class="['h-4 w-4', activeTab === 'gallery' ? 'text-white' : '']"
-            />
-            <span>Галерея</span>
-          </div>
-        </button>
-      </div>
-    </div>
 
     <!-- Индикатор загрузки -->
     <div v-if="isLoading" class="flex justify-center items-center py-16">
@@ -114,239 +77,203 @@
       </div>
     </transition>
 
-    <!-- Контент: Основная информация -->
-    <div v-if="!isLoading && activeTab === 'info'" class="px-5 py-5 space-y-4">
-      <!-- Мальчишники -->
+    <!-- Контент -->
+    <div v-if="!isLoading" class="px-5 py-5 space-y-4">
+
+      <!-- Карточка: Коллективная баня -->
       <div
         v-if="bachelorContent && bachelorContent.title"
         class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
       >
         <!-- Заголовок -->
-        <div class="p-4 bg-[#d9cebc] border-b border-[#c2a886]/20">
+        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
           <div class="flex items-center gap-3">
-            <div
-              class="h-11 w-11 rounded-xl bg-gradient-to-br from-[#c2a886] to-[#b5976e] flex items-center justify-center shadow-sm flex-shrink-0"
-            >
-              <Users class="h-5 w-5 text-white" />
+            <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-[#c2a886] to-[#b5976e] flex items-center justify-center shadow-sm flex-shrink-0">
+              <Users class="h-4 w-4 text-white" />
             </div>
-            <div class="flex-1 min-w-0">
-              <h2 class="font-semibold text-gray-900 text-[15px] leading-tight">
-                {{ bachelorContent.title || "Коллективная баня" }}
-              </h2>
-            </div>
+            <h2 class="font-semibold text-gray-900 text-[15px] leading-tight">
+              {{ bachelorContent.title || "Коллективная баня" }}
+            </h2>
           </div>
         </div>
 
-        <!-- Контент -->
-        <div class="p-4 space-y-3">
-          <!-- Цена -->
-          <div v-if="bachelorContent.price">
-            <div
-              class="bg-[#d9cebc] border border-[#c2a886]/30 px-4 py-3 rounded-xl inline-flex items-center"
-            >
-              <div class="flex items-center gap-2">
+        <!-- Двухколоночный контент -->
+        <div class="flex">
+          <!-- Фото слайдер -->
+          <div
+            ref="bachelorPhoto"
+            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden"
+            :style="bachelorPhotoH ? { height: bachelorPhotoH + 'px' } : {}"
+          >
+            <template v-if="bachelorMedia.length > 0">
+              <video
+                v-if="bachelorMedia[bachelorMediaIdx].media_type === 'VIDEO'"
+                :key="bachelorMedia[bachelorMediaIdx].id"
+                :src="getMediaUrl(bachelorMedia[bachelorMediaIdx].id)"
+                v-autoplay autoplay loop playsinline
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(bachelorMedia[bachelorMediaIdx].id); lightboxType = 'VIDEO'"
+              />
+              <img
+                v-else
+                :src="getMediaUrl(bachelorMedia[bachelorMediaIdx].id)"
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(bachelorMedia[bachelorMediaIdx].id); lightboxType = 'PHOTO'"
+                @error="onImgError"
+              />
+              <div v-if="bachelorMedia.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
                 <div
-                  class="h-6 w-6 rounded-full bg-[#c2a886]/30 flex items-center justify-center"
-                >
-                  <Wallet class="h-3.5 w-3.5 text-[#202c27]" />
-                </div>
-                <div>
-                  <span class="font-bold text-base text-gray-900">{{
-                    formatPrice(bachelorContent.price)
-                  }}</span>
-                  <span class="text-xs ml-1 text-gray-600">/ гость</span>
-                </div>
+                  v-for="(_, i) in bachelorMedia" :key="i"
+                  @click="bachelorMediaIdx = i"
+                  :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === bachelorMediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
+                />
               </div>
+            </template>
+            <div v-else class="absolute inset-0 flex items-center justify-center">
+              <Images class="h-8 w-8 text-[#c2a886]/30" />
             </div>
           </div>
 
-          <!-- Описание с кнопкой "Развернуть" -->
-          <div
-            v-if="bachelorContent.content"
-            class="bg-[#d9cebc]/40 backdrop-blur-sm rounded-xl p-4 border border-[#c2a886]/20"
-          >
-            <div
-              :class="[
-                'prose prose-sm max-w-none text-sm leading-relaxed text-gray-700 transition-all duration-300',
-                !expandedBachelor && isContentLong(bachelorContent.content)
-                  ? 'line-clamp-4'
-                  : '',
-              ]"
-              v-html="formatContent(bachelorContent.content)"
-            ></div>
+          <!-- Инфо -->
+          <div class="flex-1 p-3 flex flex-col gap-2 border-l border-[#c2a886]/15 overflow-hidden">
+            <div v-if="bachelorContent.price" class="inline-flex">
+              <div class="bg-[#d9cebc] border border-[#c2a886]/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <Wallet class="h-3.5 w-3.5 text-[#202c27] flex-shrink-0" />
+                <span class="font-bold text-sm text-gray-900">{{ formatPrice(bachelorContent.price) }}</span>
+                <span class="text-xs text-gray-600">/ гость</span>
+              </div>
+            </div>
 
-            <!-- Кнопка развернуть -->
-            <button
-              v-if="isContentLong(bachelorContent.content)"
-              @click="expandedBachelor = !expandedBachelor"
-              class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
-            >
-              <span>{{ expandedBachelor ? "Свернуть" : "Развернуть" }}</span>
-              <ChevronDown
-                :class="[
-                  'h-4 w-4 transition-transform duration-300',
-                  expandedBachelor ? 'rotate-180' : '',
-                ]"
+            <div v-if="bachelorContent.content" class="flex-1 overflow-hidden">
+              <div
+                :class="['text-xs text-gray-600 leading-relaxed prose prose-xs max-w-none', !expandedBachelor && isContentLong(bachelorContent.content) ? 'line-clamp-4' : '']"
+                v-html="formatContent(bachelorContent.content)"
               />
+              <button
+                v-if="isContentLong(bachelorContent.content)"
+                @click="toggleBachelor"
+                class="mt-1 text-xs text-[#c2a886] font-medium flex items-center gap-0.5"
+              >
+                {{ expandedBachelor ? "Свернуть" : "Развернуть" }}
+                <ChevronDown :class="['h-3 w-3 transition-transform', expandedBachelor ? 'rotate-180' : '']" />
+              </button>
+            </div>
+            <div v-else class="flex-1 flex items-center justify-center">
+              <p class="text-gray-400 text-xs text-center">Информация скоро появится</p>
+            </div>
+
+            <button
+              @click="openBooking('BACHELOR', 'Коллективная баня')"
+              class="w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white text-sm font-medium py-2.5 rounded-xl flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mt-auto"
+            >
+              <CalendarCheck class="h-4 w-4" />
+              <span>Забронировать</span>
             </button>
           </div>
-
-          <!-- Если контента нет -->
-          <div
-            v-else
-            class="bg-[#d9cebc]/40 backdrop-blur-sm rounded-xl p-5 text-center border border-[#c2a886]/20"
-          >
-            <Calendar class="h-7 w-7 text-gray-400 mx-auto mb-2" />
-            <p class="text-gray-500 text-xs">Информация скоро появится</p>
-          </div>
-
-          <!-- Кнопка бронирования -->
-          <button
-            @click="openBooking('BACHELOR', 'Коллективная баня')"
-            class="group w-full bg-gradient-to-r from-[#c2a886] to-[#b5976e] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
-          >
-            <CalendarCheck class="h-5 w-5 mr-2 text-white" />
-            <span class="text-[15px] text-white">Забронировать</span>
-            <ChevronRight
-              class="h-5 w-5 ml-2 group-active:translate-x-1 transition-transform text-white"
-            />
-          </button>
         </div>
       </div>
 
-      <!-- Девичники -->
+      <!-- Карточка: Девичники -->
       <div
         v-if="bacheloretteContent && bacheloretteContent.title"
         class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
       >
         <!-- Заголовок -->
-        <div class="p-4 bg-[#d9cebc] border-b border-[#c2a886]/20">
+        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
           <div class="flex items-center gap-3">
-            <div
-              class="h-11 w-11 rounded-xl bg-gradient-to-br from-[#d4b896] to-[#c2a886] flex items-center justify-center shadow-sm flex-shrink-0"
-            >
-              <Flower2 class="h-5 w-5 text-white" />
+            <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-[#d4b896] to-[#c2a886] flex items-center justify-center shadow-sm flex-shrink-0">
+              <Flower2 class="h-4 w-4 text-white" />
             </div>
-            <div class="flex-1 min-w-0">
-              <h2 class="font-semibold text-gray-900 text-[15px] leading-tight">
-                {{ bacheloretteContent.title || "Девичники" }}
-              </h2>
-            </div>
+            <h2 class="font-semibold text-gray-900 text-[15px] leading-tight">
+              {{ bacheloretteContent.title || "Девичники" }}
+            </h2>
           </div>
         </div>
 
-        <!-- Контент -->
-        <div class="p-4 space-y-3">
-          <!-- Цена -->
-          <div v-if="bacheloretteContent.price">
-            <div
-              class="bg-[#d9cebc] border border-[#c2a886]/30 px-4 py-3 rounded-xl inline-flex items-center"
-            >
-              <div class="flex items-center gap-2">
+        <!-- Двухколоночный контент -->
+        <div class="flex">
+          <!-- Фото слайдер -->
+          <div
+            ref="bachelorettePhoto"
+            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden"
+            :style="bachelorettePhotoH ? { height: bachelorettePhotoH + 'px' } : {}"
+          >
+            <template v-if="bacheloretteMedia.length > 0">
+              <video
+                v-if="bacheloretteMedia[bacheloretteMediaIdx].media_type === 'VIDEO'"
+                :key="bacheloretteMedia[bacheloretteMediaIdx].id"
+                :src="getMediaUrl(bacheloretteMedia[bacheloretteMediaIdx].id)"
+                v-autoplay autoplay loop playsinline
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(bacheloretteMedia[bacheloretteMediaIdx].id); lightboxType = 'VIDEO'"
+              />
+              <img
+                v-else
+                :src="getMediaUrl(bacheloretteMedia[bacheloretteMediaIdx].id)"
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(bacheloretteMedia[bacheloretteMediaIdx].id); lightboxType = 'PHOTO'"
+                @error="onImgError"
+              />
+              <div v-if="bacheloretteMedia.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
                 <div
-                  class="h-6 w-6 rounded-full bg-[#c2a886]/30 flex items-center justify-center"
-                >
-                  <Wallet class="h-3.5 w-3.5 text-[#202c27]" />
-                </div>
-                <div>
-                  <span class="font-bold text-base text-gray-900">{{
-                    formatPrice(bacheloretteContent.price)
-                  }}</span>
-                  <span class="text-xs ml-1 text-gray-600">/ гость</span>
-                </div>
+                  v-for="(_, i) in bacheloretteMedia" :key="i"
+                  @click="bacheloretteMediaIdx = i"
+                  :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === bacheloretteMediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
+                />
+              </div>
+            </template>
+            <div v-else class="absolute inset-0 flex items-center justify-center">
+              <Images class="h-8 w-8 text-[#c2a886]/30" />
+            </div>
+          </div>
+
+          <!-- Инфо -->
+          <div class="flex-1 p-3 flex flex-col gap-2 border-l border-[#c2a886]/15 overflow-hidden">
+            <div v-if="bacheloretteContent.price" class="inline-flex">
+              <div class="bg-[#d9cebc] border border-[#c2a886]/30 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <Wallet class="h-3.5 w-3.5 text-[#202c27] flex-shrink-0" />
+                <span class="font-bold text-sm text-gray-900">{{ formatPrice(bacheloretteContent.price) }}</span>
+                <span class="text-xs text-gray-600">/ гость</span>
               </div>
             </div>
-          </div>
 
-          <!-- Описание с кнопкой "Развернуть" -->
-          <div
-            v-if="bacheloretteContent.content"
-            class="bg-[#d9cebc]/40 backdrop-blur-sm rounded-xl p-4 border border-[#c2a886]/20"
-          >
-            <div
-              :class="[
-                'prose prose-sm max-w-none text-sm leading-relaxed text-gray-700 transition-all duration-300',
-                !expandedBachelorette &&
-                isContentLong(bacheloretteContent.content)
-                  ? 'line-clamp-4'
-                  : '',
-              ]"
-              v-html="formatContent(bacheloretteContent.content)"
-            ></div>
-
-            <!-- Кнопка развернуть -->
-            <button
-              v-if="isContentLong(bacheloretteContent.content)"
-              @click="expandedBachelorette = !expandedBachelorette"
-              class="mt-3 text-sm text-[#c2a886] hover:text-[#b5976e] font-medium flex items-center gap-1 transition-colors"
-            >
-              <span>{{
-                expandedBachelorette ? "Свернуть" : "Развернуть"
-              }}</span>
-              <ChevronDown
-                :class="[
-                  'h-4 w-4 transition-transform duration-300',
-                  expandedBachelorette ? 'rotate-180' : '',
-                ]"
+            <div v-if="bacheloretteContent.content" class="flex-1 overflow-hidden">
+              <div
+                :class="['text-xs text-gray-600 leading-relaxed prose prose-xs max-w-none', !expandedBachelorette && isContentLong(bacheloretteContent.content) ? 'line-clamp-4' : '']"
+                v-html="formatContent(bacheloretteContent.content)"
               />
+              <button
+                v-if="isContentLong(bacheloretteContent.content)"
+                @click="toggleBachelorette"
+                class="mt-1 text-xs text-[#c2a886] font-medium flex items-center gap-0.5"
+              >
+                {{ expandedBachelorette ? "Свернуть" : "Развернуть" }}
+                <ChevronDown :class="['h-3 w-3 transition-transform', expandedBachelorette ? 'rotate-180' : '']" />
+              </button>
+            </div>
+            <div v-else class="flex-1 flex items-center justify-center">
+              <p class="text-gray-400 text-xs text-center">Информация скоро появится</p>
+            </div>
+
+            <button
+              @click="openBooking('BACHELORETTE', 'Девичник')"
+              class="w-full bg-gradient-to-r from-[#d4b896] to-[#c2a886] text-white text-sm font-medium py-2.5 rounded-xl flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mt-auto"
+            >
+              <CalendarCheck class="h-4 w-4" />
+              <span>Забронировать</span>
             </button>
           </div>
-
-          <!-- Если контента нет -->
-          <div
-            v-else
-            class="bg-[#d9cebc]/40 backdrop-blur-sm rounded-xl p-5 text-center border border-[#c2a886]/20"
-          >
-            <Calendar class="h-7 w-7 text-gray-400 mx-auto mb-2" />
-            <p class="text-gray-500 text-xs">Информация скоро появится</p>
-          </div>
-
-          <!-- Кнопка бронирования -->
-          <button
-            @click="openBooking('BACHELORETTE', 'Девичник')"
-            class="group w-full bg-gradient-to-r from-[#d4b896] to-[#c2a886] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md active:scale-[0.98]"
-          >
-            <CalendarCheck class="h-5 w-5 mr-2 text-white" />
-            <span class="text-[15px] text-white">Забронировать</span>
-            <ChevronRight
-              class="h-5 w-5 ml-2 group-active:translate-x-1 transition-transform text-white"
-            />
-          </button>
         </div>
       </div>
 
-      <!-- Если оба раздела пустые -->
+      <!-- Если оба пустые -->
       <div
-        v-if="
-          (!bachelorContent || !bachelorContent.title) &&
-          (!bacheloretteContent || !bacheloretteContent.title)
-        "
-        class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 p-6 text-center"
+        v-if="(!bachelorContent || !bachelorContent.title) && (!bacheloretteContent || !bacheloretteContent.title)"
+        class="bg-[#e3ded3] rounded-2xl p-6 text-center border border-gray-200/80"
       >
-        <div
-          class="w-14 h-14 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-full flex items-center justify-center mx-auto mb-3"
-        >
-          <PartyPopper class="h-7 w-7 text-[#c2a886]" />
-        </div>
-        <h3 class="text-base font-semibold text-gray-900 mb-1.5">
-          Коллективная баня и девичники
-        </h3>
-        <p class="text-gray-600 text-sm leading-relaxed">
-          Информация скоро появится
-        </p>
+        <PartyPopper class="h-7 w-7 text-[#c2a886] mx-auto mb-3" />
+        <p class="text-gray-600 text-sm">Информация скоро появится</p>
       </div>
-    </div>
-
-    <!-- Контент: Фотогалерея -->
-    <div v-else-if="!isLoading && activeTab === 'gallery'">
-      <MediaGallery
-        :sections="['BACHELOR', 'BACHELORETTE']"
-        :show-media-type-filter="true"
-        :category-labels="{
-          BACHELOR: 'Коллективная баня',
-          BACHELORETTE: 'Девичники',
-        }"
-      />
     </div>
 
     <!-- Декоративный элемент внизу -->
@@ -357,6 +284,45 @@
         ></div>
       </div>
     </div>
+
+    <!-- Лайтбокс -->
+    <transition
+      enter-active-class="transition-opacity duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="lightboxUrl"
+        class="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center"
+        @click="lightboxUrl = null"
+      >
+        <video
+          v-if="lightboxType === 'VIDEO'"
+          :key="lightboxUrl"
+          :src="lightboxUrl"
+          controls
+          autoplay
+          playsinline
+          class="max-w-full max-h-full"
+          @click.stop
+        />
+        <img
+          v-else
+          :src="lightboxUrl"
+          class="max-w-full max-h-full object-contain"
+          @click.stop
+        />
+        <button
+          @click="lightboxUrl = null"
+          class="absolute top-5 right-5 text-white/70 hover:text-white bg-black/40 rounded-full p-1.5"
+        >
+          <X class="h-6 w-6" />
+        </button>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -364,13 +330,12 @@
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
 import { openBookingModal } from "@/utils/eventBus";
-import MediaGallery from "@/components/MediaGallery.vue";
+import { mediaAPI } from "@/utils/api";
 import icons from "@/utils/icons";
 
 export default {
   name: "BachelorPage",
   components: {
-    MediaGallery,
     ...icons,
   },
   data() {
@@ -379,10 +344,18 @@ export default {
       error: null,
       bachelorContent: null,
       bacheloretteContent: null,
-      activeTab: "info",
-      selectedEventType: null,
       expandedBachelor: false,
       expandedBachelorette: false,
+      bachelorMedia: [],
+      bachelorMediaIdx: 0,
+      bacheloretteMedia: [],
+      bacheloretteMediaIdx: 0,
+      bachelorPhotoH: 0,
+      bachelorettePhotoH: 0,
+      bachelorInterval: null,
+      bacheloretteInterval: null,
+      lightboxUrl: null,
+      lightboxType: 'PHOTO',
     };
   },
   computed: {
@@ -465,22 +438,84 @@ export default {
       }
     },
 
+    startSlideIntervals() {
+      if (this.bachelorMedia.length > 1) {
+        this.bachelorInterval = setInterval(() => {
+          this.bachelorMediaIdx = (this.bachelorMediaIdx + 1) % this.bachelorMedia.length;
+        }, 4000);
+      }
+      if (this.bacheloretteMedia.length > 1) {
+        this.bacheloretteInterval = setInterval(() => {
+          this.bacheloretteMediaIdx = (this.bacheloretteMediaIdx + 1) % this.bacheloretteMedia.length;
+        }, 4000);
+      }
+    },
+
+    stopSlideIntervals() {
+      clearInterval(this.bachelorInterval);
+      clearInterval(this.bacheloretteInterval);
+    },
+
+    toggleBachelor() {
+      if (!this.expandedBachelor) {
+        this.bachelorPhotoH = this.$refs.bachelorPhoto?.offsetHeight || 0;
+      } else {
+        this.bachelorPhotoH = 0;
+      }
+      this.expandedBachelor = !this.expandedBachelor;
+    },
+
+    toggleBachelorette() {
+      if (!this.expandedBachelorette) {
+        this.bachelorettePhotoH = this.$refs.bachelorettePhoto?.offsetHeight || 0;
+      } else {
+        this.bachelorettePhotoH = 0;
+      }
+      this.expandedBachelorette = !this.expandedBachelorette;
+    },
+
     openBooking(eventKey, title) {
-      console.log("BachelorPage: Opening booking", { eventKey, title });
-      this.selectedEventType = eventKey;
       openBookingModal(null, eventKey, title);
+    },
+
+    getMediaUrl(mediaId) {
+      return mediaAPI.getDownloadUrl(mediaId);
+    },
+
+    onImgError(e) {
+      e.target.style.display = "none";
+    },
+
+    async loadMedia() {
+      const params = this.selectedBranch?.id ? { branch_id: this.selectedBranch.id } : {};
+      try {
+        const [bRes, brRes] = await Promise.allSettled([
+          mediaAPI.getBySection("BACHELOR", params),
+          mediaAPI.getBySection("BACHELORETTE", params),
+        ]);
+        this.bachelorMedia = bRes.status === "fulfilled"
+          ? (bRes.value.items || []).filter(i => i.is_active)
+          : [];
+        this.bacheloretteMedia = brRes.status === "fulfilled"
+          ? (brRes.value.items || []).filter(i => i.is_active)
+          : [];
+      } catch (e) {
+        // медиа не критично
+      }
     },
   },
   async created() {
-    console.log("BachelorPage created");
-
     try {
       await this.loadContent();
-      console.log("Страница загружена успешно");
+      await this.loadMedia();
+      this.startSlideIntervals();
     } catch (error) {
-      console.error("Ошибка при загрузке страницы:", error);
       this.error = error.message || "Ошибка при загрузке страницы";
     }
+  },
+
+  beforeUnmount() {
+    this.stopSlideIntervals();
   },
 
   watch: {
@@ -502,6 +537,7 @@ export default {
 .line-clamp-4 {
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
