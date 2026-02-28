@@ -277,7 +277,7 @@
                 <label
                   class="block text-sm font-medium text-gray-900 mb-2 mt-4"
                 >
-                  Желаемое время <span class="text-red-500">*</span>
+                  Желаемое время
                 </label>
                 <input
                   v-model="form.desired_time"
@@ -1001,11 +1001,13 @@ export default {
             }
           }
         } else {
-          const dateTime = `${this.form.desired_date}T${this.form.desired_time}:00`;
+          const timeStr = this.form.desired_time || "00:00";
+          const dateTime = `${this.form.desired_date}T${timeStr}:00`;
           bookingData.desired_datetime = new Date(dateTime).toISOString();
-
           bookingData.booking_date = this.form.desired_date;
-          bookingData.booking_time = this.form.desired_time;
+          if (this.form.desired_time) {
+            bookingData.booking_time = this.form.desired_time;
+          }
         }
 
         if (this.form.promo_code && this.form.promo_code.trim()) {
@@ -1157,6 +1159,8 @@ export default {
 .scrollbar-thin-modal {
   scrollbar-width: thin;
   scrollbar-color: rgba(194, 168, 134, 0.5) rgba(194, 168, 134, 0.1);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* Цвет курсора в полях ввода */
