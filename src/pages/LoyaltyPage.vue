@@ -579,9 +579,19 @@ export default {
 
     async loadAllPrograms() {
       try {
-        // Загружаем полные объекты программ всех филиалов (short=false чтобы получить id)
-        const data = await programAPI.getAll(null, false);
-        this.allPrograms = Array.isArray(data) ? data : [];
+        // API требует branch_id — делаем запрос для каждого филиала и объединяем
+        const branches = this.allBranches.length
+          ? this.allBranches
+          : (await branchAPI.getAll()).filter((b) => b.is_active !== false);
+
+        const results = await Promise.all(
+          branches.map((b) => programAPI.getAll(b.id, false).catch(() => []))
+        );
+
+        // Объединяем и дедуплицируем по id
+        const map = new Map();
+        results.flat().forEach((p) => map.set(p.id, p));
+        this.allPrograms = Array.from(map.values());
       } catch (e) {
         this.allPrograms = [];
       }
@@ -612,7 +622,8 @@ export default {
     console.log("LoyaltyPage created");
 
     try {
-      await Promise.all([this.loadData(), this.loadAllBranches()]);
+      await this.loadAllBranches();
+      await this.loadData();
       console.log("Страница лояльности загружена успешно");
     } catch (error) {
       console.error("Ошибка при загрузке страницы лояльности:", error);
