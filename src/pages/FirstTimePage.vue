@@ -49,77 +49,61 @@
 
     <!-- Контент -->
     <div v-else class="px-5 py-5 space-y-4">
-      <!-- Приветствие с контентом из API -->
-      <div
-        class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 p-4 space-y-3"
-      >
-        <div class="flex items-center gap-3">
-          <div
-            class="h-10 w-10 bg-gradient-to-br from-[#c2a886]/20 to-[#c2a886]/10 rounded-xl flex items-center justify-center flex-shrink-0"
-          >
-            <Star class="h-5 w-5 text-[#c2a886]" />
-          </div>
-          <div>
-            <h2 class="font-semibold text-gray-900 text-[15px]">
+      <!-- Карточка: приветствие + галерея -->
+      <div class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
+        <!-- Заголовок -->
+        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-[#c2a886] to-[#b5976e] flex items-center justify-center shadow-sm flex-shrink-0">
+              <Star class="h-4 w-4 text-white" />
+            </div>
+            <h2 class="font-semibold text-gray-900 text-[15px] leading-tight">
               {{ pageTitle || "Добро пожаловать в САНСАРУ!" }}
             </h2>
           </div>
         </div>
 
-        <!-- Контент из API -->
-        <div
-          v-if="pageContent"
-          class="bg-[#d9cebc]/60 backdrop-blur-sm border border-[#c2a886]/30 rounded-xl p-4"
-        >
+        <!-- Тело: медиа слева + текст справа -->
+        <div class="flex">
+          <!-- Медиа-слайдер (если есть) -->
           <div
-            class="text-sm text-gray-700 leading-relaxed whitespace-pre-line"
-            v-html="formatContent(pageContent)"
-          ></div>
-        </div>
-      </div>
-
-      <!-- Галерея -->
-      <div
-        v-if="media.length > 0"
-        class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
-      >
-        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
-          <div class="flex items-center gap-2">
-            <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-[#c2a886] to-[#b5976e] flex items-center justify-center shadow-sm flex-shrink-0">
-              <Images class="h-4 w-4 text-white" />
-            </div>
-            <span class="font-semibold text-gray-900 text-[14px]">Фото и видео</span>
-          </div>
-        </div>
-
-        <!-- Слайдер -->
-        <div class="relative bg-[#202c27] overflow-hidden" style="height: 220px">
-          <video
-            v-if="media[mediaIdx].media_type === 'VIDEO'"
-            :key="media[mediaIdx].id"
-            :src="getMediaUrl(media[mediaIdx].id)"
-            v-autoplay autoplay loop playsinline
-            class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-            @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
-          />
-          <img
-            v-else
-            :src="getMediaUrl(media[mediaIdx].id)"
-            class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-            @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
-            @error="(e) => e.target.style.display = 'none'"
-          />
-          <!-- Точки-пагинация -->
-          <div v-if="media.length > 1" class="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
-            <div
-              v-for="(_, i) in media" :key="i"
-              @click="mediaIdx = i"
-              :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-5' : 'bg-white/50 w-1.5']"
+            v-if="media.length > 0"
+            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden"
+            style="min-height: 160px"
+          >
+            <video
+              v-if="media[mediaIdx].media_type === 'VIDEO'"
+              :key="media[mediaIdx].id"
+              :src="getMediaUrl(media[mediaIdx].id)"
+              v-autoplay autoplay loop playsinline
+              class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+              @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
             />
+            <img
+              v-else
+              :src="getMediaUrl(media[mediaIdx].id)"
+              class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+              @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
+              @error="(e) => e.target.style.display = 'none'"
+            />
+            <!-- Точки -->
+            <div v-if="media.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
+              <div
+                v-for="(_, i) in media" :key="i"
+                @click="mediaIdx = i"
+                :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
+              />
+            </div>
           </div>
-          <!-- Счётчик -->
-          <div v-if="media.length > 1" class="absolute top-3 right-3 bg-black/40 text-white text-[10px] px-2 py-0.5 rounded-full">
-            {{ mediaIdx + 1 }} / {{ media.length }}
+
+          <!-- Контент -->
+          <div class="flex-1 p-3 flex flex-col gap-2 border-l border-[#c2a886]/15 overflow-hidden">
+            <div
+              v-if="pageContent"
+              class="text-xs text-gray-600 leading-relaxed"
+              v-html="formatContent(pageContent)"
+            />
+            <p v-else class="text-xs text-gray-400">Информация скоро появится</p>
           </div>
         </div>
       </div>
