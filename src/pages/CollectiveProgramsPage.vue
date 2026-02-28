@@ -100,12 +100,12 @@
 
             <!-- Низ: цена + кнопка -->
             <div>
-              <div class="flex items-baseline gap-1.5 mb-2">
-                <span v-if="getPriceRange(program)" class="text-white font-bold text-[15px]">
+              <div class="mb-2">
+                <span v-if="getPriceRange(program)" class="block text-white font-bold text-[15px]">
                   {{ getPriceRange(program) }}
                 </span>
-                <span v-if="getDurationRange(program)" class="text-white/50 text-[10px]">
-                  · {{ getDurationRange(program) }}
+                <span v-if="getDurationRange(program)" class="block text-white/50 text-[10px]">
+                  {{ getDurationRange(program) }}
                 </span>
               </div>
               <div class="flex items-center justify-center gap-1.5 bg-[#c2a886] text-white text-[11px] font-semibold px-3 py-1.5 rounded-lg shadow">

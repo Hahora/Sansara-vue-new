@@ -78,6 +78,52 @@
         </div>
       </div>
 
+      <!-- Галерея -->
+      <div
+        v-if="media.length > 0"
+        class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
+      >
+        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-[#c2a886] to-[#b5976e] flex items-center justify-center shadow-sm flex-shrink-0">
+              <Images class="h-4 w-4 text-white" />
+            </div>
+            <span class="font-semibold text-gray-900 text-[14px]">Фото и видео</span>
+          </div>
+        </div>
+
+        <!-- Слайдер -->
+        <div class="relative bg-[#202c27] overflow-hidden" style="height: 220px">
+          <video
+            v-if="media[mediaIdx].media_type === 'VIDEO'"
+            :key="media[mediaIdx].id"
+            :src="getMediaUrl(media[mediaIdx].id)"
+            v-autoplay autoplay loop playsinline
+            class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+            @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
+          />
+          <img
+            v-else
+            :src="getMediaUrl(media[mediaIdx].id)"
+            class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+            @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
+            @error="(e) => e.target.style.display = 'none'"
+          />
+          <!-- Точки-пагинация -->
+          <div v-if="media.length > 1" class="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
+            <div
+              v-for="(_, i) in media" :key="i"
+              @click="mediaIdx = i"
+              :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-5' : 'bg-white/50 w-1.5']"
+            />
+          </div>
+          <!-- Счётчик -->
+          <div v-if="media.length > 1" class="absolute top-3 right-3 bg-black/40 text-white text-[10px] px-2 py-0.5 rounded-full">
+            {{ mediaIdx + 1 }} / {{ media.length }}
+          </div>
+        </div>
+      </div>
+
       <!-- Кнопки действий -->
       <div class="space-y-3">
         <!-- Кнопка позвонить -->
@@ -115,13 +161,49 @@
         </button>
       </div>
     </div>
+
+    <!-- Лайтбокс -->
+    <transition
+      enter-active-class="transition-opacity duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="lightboxUrl"
+        class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+        @click="lightboxUrl = null"
+      >
+        <video
+          v-if="lightboxType === 'VIDEO'"
+          :src="lightboxUrl"
+          controls autoplay
+          class="max-w-full max-h-full"
+          @click.stop
+        />
+        <img
+          v-else
+          :src="lightboxUrl"
+          class="max-w-full max-h-full object-contain"
+          @click.stop
+        />
+        <button
+          @click="lightboxUrl = null"
+          class="absolute top-5 right-5 text-white/70 hover:text-white bg-black/40 rounded-full p-1.5"
+        >
+          <X class="h-6 w-6" />
+        </button>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
-import { branchAPI } from "@/utils/api";
+import { branchAPI, mediaAPI } from "@/utils/api";
 import icons from "@/utils/icons";
 
 export default {
@@ -131,13 +213,18 @@ export default {
   },
   data() {
     return {
-      isLoading: true, // Начинаем с загрузки
+      isLoading: true,
       error: null,
       pageTitle: null,
       pageContent: null,
       isTelegramWebApp: false,
       telegramWebApp: null,
       allBranches: [],
+      media: [],
+      mediaIdx: 0,
+      mediaInterval: null,
+      lightboxUrl: null,
+      lightboxType: 'PHOTO',
     };
   },
   computed: {
@@ -467,31 +554,41 @@ export default {
           "Добро пожаловать в САНСАРУ! Свяжитесь с нами для получения специального предложения для новых гостей.";
       }
     },
+
+    getMediaUrl(mediaId) {
+      return mediaAPI.getDownloadUrl(mediaId);
+    },
+
+    async loadMedia() {
+      const params = this.selectedBranch?.id ? { branch_id: this.selectedBranch.id } : {};
+      try {
+        const res = await mediaAPI.getBySection("FIRST_TIME", params);
+        this.media = (res.items || []).filter(i => i.is_active);
+        if (this.media.length > 1) {
+          this.mediaInterval = setInterval(() => {
+            this.mediaIdx = (this.mediaIdx + 1) % this.media.length;
+          }, 4000);
+        }
+      } catch {
+        // медиа не критично
+      }
+    },
   },
   async created() {
-    console.log("=== FirstTimePage created ===");
-    console.log("selectedBranch из store при создании:", this.selectedBranch);
-
     this.checkTelegramWebApp();
 
     try {
-      // Загружаем данные последовательно
       await this.loadAllBranches();
-
-      console.log("Актуальный currentBranch:", this.currentBranch);
-      console.log("branchPhoneNumber:", this.branchPhoneNumber);
-      console.log("branchTelegramUrl:", this.branchTelegramUrl);
-
-      await this.loadPageContent();
-
-      console.log("Страница 'Я первый раз' загружена успешно");
+      await Promise.all([this.loadPageContent(), this.loadMedia()]);
     } catch (error) {
-      console.error("Ошибка при загрузке страницы 'Я первый раз':", error);
       this.error = error.message || "Ошибка при загрузке страницы";
     } finally {
-      // Убираем загрузку только после завершения всех операций
       this.isLoading = false;
     }
+  },
+
+  beforeUnmount() {
+    clearInterval(this.mediaInterval);
   },
 
   watch: {
