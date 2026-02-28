@@ -93,26 +93,31 @@
                 </div>
               </div>
 
-              <!-- Инфо: название + цена -->
-              <div class="flex-1 p-3 flex flex-col justify-center border-l border-[#c2a886]/15 min-h-[160px]">
-                <div class="flex items-center gap-2 mb-2">
-                  <div class="h-8 w-8 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Gift class="h-4 w-4 text-white" />
+              <!-- Инфо: название + описание + цена -->
+              <div class="flex-1 p-3 flex flex-col border-l border-[#c2a886]/15 min-h-[160px] overflow-hidden">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <div class="h-7 w-7 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Gift class="h-3.5 w-3.5 text-white" />
                   </div>
-                  <h4 class="font-semibold text-gray-900 text-[14px] leading-tight">
+                  <h4 class="font-semibold text-gray-900 text-[13px] leading-tight">
                     {{ certificate.title }}
                   </h4>
                 </div>
-                <p v-if="certificate.subtitle" class="text-xs text-gray-600 mb-2 leading-snug">
+                <p v-if="certificate.subtitle" class="text-[11px] text-gray-500 mb-1 leading-snug">
                   {{ certificate.subtitle }}
                 </p>
-                <div v-if="certificate.price" class="mt-auto">
-                  <span class="text-[#c2a886] font-bold text-lg">{{ formatPrice(certificate.price) }}</span>
-                  <span class="text-gray-500 text-xs ml-1">руб.</span>
-                </div>
-                <div v-if="certificate.validity" class="flex items-center gap-1 mt-1">
-                  <Calendar class="h-3 w-3 text-[#c2a886] flex-shrink-0" />
-                  <span class="text-xs text-gray-600">{{ certificate.validity }}</span>
+                <p v-if="certificate.description" class="text-[11px] text-gray-600 leading-snug line-clamp-4 flex-1">
+                  {{ certificate.description }}
+                </p>
+                <div class="mt-auto pt-1.5">
+                  <div v-if="certificate.price">
+                    <span class="text-[#c2a886] font-bold text-base">{{ formatPrice(certificate.price) }}</span>
+                    <span class="text-gray-500 text-[11px] ml-1">руб.</span>
+                  </div>
+                  <div v-if="certificate.validity" class="flex items-center gap-1 mt-0.5">
+                    <Calendar class="h-3 w-3 text-[#c2a886] flex-shrink-0" />
+                    <span class="text-[11px] text-gray-600">{{ certificate.validity }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,19 +131,6 @@
                 <span class="text-xs text-gray-600">Номинальная стоимость:</span>
                 <div class="text-base font-semibold text-gray-900 mt-1">
                   {{ formatPrice(certificate.nominal) }} руб.
-                </div>
-              </div>
-
-              <!-- Описание -->
-              <div
-                v-if="certificate.description"
-                class="bg-[#d9cebc]/40 rounded-xl p-4"
-              >
-                <div class="text-sm font-medium text-gray-900 mb-2">
-                  Что включает:
-                </div>
-                <div class="text-sm text-gray-700 leading-relaxed">
-                  {{ certificate.description }}
                 </div>
               </div>
 
