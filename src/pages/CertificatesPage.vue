@@ -61,107 +61,71 @@
             :key="certificate.id"
             class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden hover:shadow-md transition-all duration-300"
           >
-            <!-- Медиа-слайдер карточки -->
-            <div
-              v-if="media.length > 0"
-              class="relative bg-[#202c27] overflow-hidden"
-              style="height: 180px"
-            >
-              <video
-                v-if="media[mediaIdx].media_type === 'VIDEO'"
-                :key="media[mediaIdx].id + '_cert'"
-                :src="getMediaUrl(media[mediaIdx].id)"
-                v-autoplay autoplay loop playsinline
-                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
-              />
-              <img
-                v-else
-                :src="getMediaUrl(media[mediaIdx].id)"
-                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
-                @error="(e) => e.target.style.display = 'none'"
-              />
-              <div v-if="media.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
-                <div
-                  v-for="(_, i) in media" :key="i"
-                  @click="mediaIdx = i"
-                  :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
+            <!-- Медиа слева + инфо справа -->
+            <div class="flex bg-[#d9cebc] border-b border-[#c2a886]/30">
+              <!-- Медиа-слайдер -->
+              <div
+                v-if="media.length > 0"
+                class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden self-start"
+                style="height: 160px"
+              >
+                <video
+                  v-if="media[mediaIdx].media_type === 'VIDEO'"
+                  :key="media[mediaIdx].id + '_cert'"
+                  :src="getMediaUrl(media[mediaIdx].id)"
+                  v-autoplay autoplay loop playsinline
+                  class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                  @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
                 />
-              </div>
-            </div>
-
-            <!-- Заголовок с градиентом -->
-            <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
-              <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
+                <img
+                  v-else
+                  :src="getMediaUrl(media[mediaIdx].id)"
+                  class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                  @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
+                  @error="(e) => e.target.style.display = 'none'"
+                />
+                <div v-if="media.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
                   <div
-                    class="h-12 w-12 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0"
-                  >
-                    <Gift class="h-6 w-6 text-white" />
+                    v-for="(_, i) in media" :key="i"
+                    @click="mediaIdx = i"
+                    :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
+                  />
+                </div>
+              </div>
+
+              <!-- Инфо: название + цена -->
+              <div class="flex-1 p-3 flex flex-col justify-center border-l border-[#c2a886]/15 min-h-[160px]">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="h-8 w-8 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Gift class="h-4 w-4 text-white" />
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <h4
-                      class="font-semibold text-gray-900 text-base leading-tight"
-                    >
-                      {{ certificate.title }}
-                    </h4>
-                    <p
-                      v-if="certificate.subtitle"
-                      class="text-sm text-gray-600 mt-0.5 truncate"
-                    >
-                      {{ certificate.subtitle }}
-                    </p>
-                  </div>
+                  <h4 class="font-semibold text-gray-900 text-[14px] leading-tight">
+                    {{ certificate.title }}
+                  </h4>
+                </div>
+                <p v-if="certificate.subtitle" class="text-xs text-gray-600 mb-2 leading-snug">
+                  {{ certificate.subtitle }}
+                </p>
+                <div v-if="certificate.price" class="mt-auto">
+                  <span class="text-[#c2a886] font-bold text-lg">{{ formatPrice(certificate.price) }}</span>
+                  <span class="text-gray-500 text-xs ml-1">руб.</span>
+                </div>
+                <div v-if="certificate.validity" class="flex items-center gap-1 mt-1">
+                  <Calendar class="h-3 w-3 text-[#c2a886] flex-shrink-0" />
+                  <span class="text-xs text-gray-600">{{ certificate.validity }}</span>
                 </div>
               </div>
             </div>
 
             <div class="p-4 space-y-4">
-              <!-- Цена -->
-              <div
-                v-if="certificate.price"
-                class="flex items-center justify-center"
-              >
-                <div
-                  class="bg-gradient-to-br from-[#c2a886] to-[#b5976e] text-white px-6 py-3 rounded-xl shadow-md"
-                >
-                  <div class="flex items-center">
-                    <span class="font-bold text-2xl">{{
-                      formatPrice(certificate.price)
-                    }}</span>
-                    <span class="text-sm ml-2 opacity-90">руб.</span>
-                  </div>
-                </div>
-              </div>
-
               <!-- Номинал (если отличается от цены) -->
               <div
-                v-if="
-                  certificate.nominal &&
-                  certificate.nominal !== certificate.price
-                "
+                v-if="certificate.nominal && certificate.nominal !== certificate.price"
                 class="text-center bg-[#d9cebc]/40 rounded-xl p-3"
               >
-                <span class="text-xs text-gray-600"
-                  >Номинальная стоимость:</span
-                >
+                <span class="text-xs text-gray-600">Номинальная стоимость:</span>
                 <div class="text-base font-semibold text-gray-900 mt-1">
                   {{ formatPrice(certificate.nominal) }} руб.
-                </div>
-              </div>
-
-              <!-- Срок действия -->
-              <div
-                v-if="certificate.validity"
-                class="flex items-center justify-center"
-              >
-                <div
-                  class="bg-[#d9cebc]/60 text-gray-700 px-4 py-2 rounded-xl border border-[#c2a886]/20 flex items-center gap-2"
-                >
-                  <Calendar class="h-4 w-4 text-[#c2a886]" />
-                  <span class="font-medium text-sm">Срок действия:</span>
-                  <span class="text-sm">{{ certificate.validity }}</span>
                 </div>
               </div>
 
