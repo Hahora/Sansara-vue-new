@@ -24,7 +24,7 @@
       >
         <div
           v-if="visible"
-          class="bg-[#edeae6] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl"
+          class="bg-[#edeae6] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
         >
           <!-- Заголовок -->
           <div
@@ -174,12 +174,12 @@
                 <!-- Список событий -->
                 <div v-else-if="availableEvents.length > 0" class="space-y-2">
                   <div
-                    v-for="event in availableEvents"
-                    :key="event.id"
+                    v-for="(event, eIdx) in availableEvents"
+                    :key="event.id || eIdx"
                     @click="selectEvent(event)"
                     :class="[
                       'bg-[#e3ded3] rounded-xl p-3 border-2 cursor-pointer transition-all duration-200',
-                      selectedEvent?.id === event.id
+                      selectedEvent === event
                         ? 'border-[#c2a886] bg-[#d9cebc]'
                         : 'border-[#c2a886]/20 hover:border-[#c2a886]/40',
                       isEventFullSlots(event)
@@ -191,7 +191,7 @@
                       <div
                         :class="[
                           'h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0',
-                          selectedEvent?.id === event.id
+                          selectedEvent === event
                             ? 'bg-gradient-to-br from-[#c2a886] to-[#b5976e]'
                             : 'bg-[#c2a886]/20',
                         ]"
@@ -199,7 +199,7 @@
                         <CalendarDays
                           :class="[
                             'h-5 w-5',
-                            selectedEvent?.id === event.id
+                            selectedEvent === event
                               ? 'text-white'
                               : 'text-[#c2a886]',
                           ]"
@@ -235,10 +235,7 @@
                         </div>
                       </div>
                       <div
-                        v-if="
-                          selectedEvent?.id === event.id &&
-                          !isEventFullSlots(event)
-                        "
+                        v-if="selectedEvent === event && !isEventFullSlots(event)"
                         class="flex-shrink-0"
                       >
                         <CheckCircle class="h-5 w-5 text-[#c2a886]" />
@@ -615,8 +612,8 @@ export default {
         return true;
       }
 
-      // Для остальных типов нужна дата и время
-      return !!(this.form.desired_date && this.form.desired_time);
+      // Для остальных типов нужна дата (время опционально)
+      return !!this.form.desired_date;
     },
 
     // Текст кнопки бронирования
@@ -955,11 +952,8 @@ export default {
           return;
         }
 
-        if (
-          !this.isEventBasedType &&
-          (!this.form.desired_date || !this.form.desired_time)
-        ) {
-          alert("Укажите желаемую дату и время");
+        if (!this.isEventBasedType && !this.form.desired_date) {
+          alert("Укажите желаемую дату");
           return;
         }
 
