@@ -579,7 +579,9 @@ export default {
 
     async loadAllPrograms() {
       try {
-        const data = await programAPI.getAll(this.selectedBranch?.id);
+        // Загружаем программы всех филиалов (без фильтра), чтобы показать названия
+        // программ из любого филиала в промокодах
+        const data = await programAPI.getAll(null, true);
         this.allPrograms = Array.isArray(data) ? data : [];
       } catch (e) {
         this.allPrograms = [];
@@ -637,6 +639,7 @@ export default {
 .line-clamp-4 {
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
