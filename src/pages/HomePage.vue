@@ -35,20 +35,13 @@
           <div class="relative">
             <button
               @click.stop="toggleBranchSelect"
-              class="group bg-[#c2a886]/90 hover:bg-[#c2a886] backdrop-blur-sm border border-[#c2a886]/40 rounded-xl px-4 py-2.5 text-sm flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+              class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-3 py-2 flex items-center gap-1.5 transition-all duration-200"
             >
-              <MapPin class="h-4 w-4 text-white mr-2 text-black" />
-              <span
-                class="max-w-[100px] truncate text-white font-medium text-black"
-              >
-                {{
-                  selectedBranch?.short_name || selectedBranch?.name || "Филиал"
-                }}
+              <MapPin class="h-3.5 w-3.5 text-[#c2a886]" />
+              <span class="max-w-[90px] truncate text-white font-medium text-[13px]">
+                {{ selectedBranch?.short_name || selectedBranch?.name || "Филиал" }}
               </span>
-              <ChevronDown
-                class="h-4 w-4 text-white/80 ml-1.5 transition-transform duration-200 group-hover:rotate-180 text-black"
-                :class="{ 'rotate-180': showBranchSelect }"
-              />
+              <ChevronDown :class="['h-3.5 w-3.5 text-white/70 transition-transform', showBranchSelect ? 'rotate-180' : '']" />
             </button>
 
             <!-- Dropdown с филиалами -->

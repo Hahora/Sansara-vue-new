@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#edeae6] pb-20">
     <!-- Шапка -->
-    <div class="relative overflow-hidden bg-[#202c27] text-white">
+    <div class="relative z-10 bg-[#202c27] text-white">
       <!-- Декоративная текстура -->
       <div class="absolute inset-0 opacity-5">
         <div

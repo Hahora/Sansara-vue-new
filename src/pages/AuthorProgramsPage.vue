@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#edeae6] pb-20">
     <!-- Шапка -->
-    <div class="bg-[#202c27] text-white px-5 py-6">
+    <div class="bg-[#202c27] text-white px-5 py-6 relative z-10">
       <div class="flex items-center justify-between mb-4">
         <button @click="$router.go(-1)" class="flex items-center text-white/80 hover:text-white transition-colors">
           <ChevronLeft class="h-6 w-6 mr-1" />
