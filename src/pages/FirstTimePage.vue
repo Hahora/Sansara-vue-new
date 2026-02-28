@@ -68,8 +68,8 @@
           <!-- Медиа-слайдер (если есть) -->
           <div
             v-if="media.length > 0"
-            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden"
-            style="min-height: 160px"
+            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden self-start"
+            style="height: 160px"
           >
             <video
               v-if="media[mediaIdx].media_type === 'VIDEO'"
