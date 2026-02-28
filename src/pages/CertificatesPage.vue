@@ -106,9 +106,11 @@
                 <p v-if="certificate.subtitle" class="text-[11px] text-gray-500 mb-1 leading-snug">
                   {{ certificate.subtitle }}
                 </p>
-                <p v-if="certificate.description" class="text-[11px] text-gray-600 leading-snug line-clamp-4 flex-1">
-                  {{ certificate.description }}
-                </p>
+                <div
+                  v-if="certificate.content || certificate.description"
+                  class="text-[11px] text-gray-600 leading-snug line-clamp-4 flex-1 prose-content"
+                  v-html="formatContent(certificate.content || certificate.description)"
+                />
                 <div class="mt-auto pt-1.5">
                   <div v-if="certificate.price">
                     <span class="text-[#c2a886] font-bold text-base">{{ formatPrice(certificate.price) }}</span>
@@ -132,20 +134,6 @@
                 <div class="text-base font-semibold text-gray-900 mt-1">
                   {{ formatPrice(certificate.nominal) }} руб.
                 </div>
-              </div>
-
-              <!-- Контент (HTML) -->
-              <div
-                v-if="certificate.content"
-                class="bg-[#d9cebc]/40 rounded-xl p-4"
-              >
-                <div class="text-sm font-medium text-gray-900 mb-2">
-                  Подробности:
-                </div>
-                <div
-                  v-html="formatContent(certificate.content)"
-                  class="text-sm text-gray-700 leading-relaxed prose-content"
-                ></div>
               </div>
 
               <!-- Преимущества -->
