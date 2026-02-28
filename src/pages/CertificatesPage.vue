@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#edeae6] pb-20">
     <!-- Шапка - статичная -->
     <div class="bg-[#202c27] text-white px-5 py-6">
-      <div class="flex items-center mb-4">
+      <div class="flex items-center justify-between mb-4">
         <button
           @click="$router.go(-1)"
           class="flex items-center text-white/80 hover:text-white transition-colors"
@@ -10,6 +10,45 @@
           <ChevronLeft class="h-6 w-6 mr-1" />
           <span class="font-light">Назад</span>
         </button>
+        <!-- Выбор филиала -->
+        <div class="relative">
+          <button
+            @click.stop="showBranchSelect = !showBranchSelect"
+            class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-3 py-2 flex items-center gap-1.5 transition-all duration-200"
+          >
+            <MapPin class="h-3.5 w-3.5 text-[#c2a886]" />
+            <span class="text-white font-medium text-[13px] max-w-[90px] truncate">
+              {{ selectedBranch?.short_name || selectedBranch?.name || "Филиал" }}
+            </span>
+            <ChevronDown :class="['h-3.5 w-3.5 text-white/70 transition-transform', showBranchSelect ? 'rotate-180' : '']" />
+          </button>
+          <div v-if="showBranchSelect" class="fixed inset-0 z-40" @click="showBranchSelect = false" />
+          <transition enter-active-class="transition-all duration-200 ease-out" enter-from-class="opacity-0 translate-y-1" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition-all duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-1">
+            <div v-if="showBranchSelect" class="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/50 z-50 max-h-72 overflow-y-auto">
+              <div class="py-2">
+                <p class="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Выберите филиал</p>
+                <div class="space-y-0.5">
+                  <div
+                    v-for="branch in allBranches" :key="branch.id"
+                    @click="handleSelectBranch(branch)"
+                    class="px-4 py-2.5 mx-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all"
+                    :class="{ 'bg-[#c2a886]/10 border-l-2 border-[#c2a886]': selectedBranch?.id === branch.id }"
+                  >
+                    <div class="flex items-center gap-2.5">
+                      <div class="h-7 w-7 rounded-full bg-[#202c27]/5 flex items-center justify-center flex-shrink-0">
+                        <MapPin class="h-3 w-3 text-[#202c27]" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-900 text-sm">{{ branch.name }}</div>
+                        <div v-if="branch.address" class="text-xs text-gray-500 truncate">{{ branch.address }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </div>
       </div>
 
       <div class="flex items-center">
@@ -295,6 +334,7 @@ export default {
       selectedCertificate: null,
       isCalling: false,
       authorPrograms: [],
+      showBranchSelect: false,
       media: [],
       mediaIdx: 0,
       mediaInterval: null,
@@ -325,7 +365,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(useAppStore, ["loadSiteContent"]),
+    ...mapActions(useAppStore, ["loadSiteContent", "selectBranch"]),
 
     async loadAllBranches() {
       try {
@@ -505,6 +545,11 @@ export default {
 
     handlePurchaseComplete() {
       console.log("Покупка сертификата завершена");
+    },
+
+    async handleSelectBranch(branch) {
+      this.showBranchSelect = false;
+      await this.selectBranch(branch);
     },
 
     toggleCertExpand(id) {
