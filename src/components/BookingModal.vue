@@ -927,6 +927,7 @@ export default {
     },
 
     async submitBooking() {
+      if (!this.canSubmit) return;
       try {
         if (!this.userHasRequiredData) {
           alert("Заполните данные профиля для бронирования");
@@ -1188,26 +1189,9 @@ textarea::placeholder {
   /* Специальные стили для date и time на мобильных */
   .date-input,
   .time-input {
-    -webkit-appearance: none;
-    -moz-appearance: none;
     appearance: none;
     max-width: 100%;
     overflow: hidden;
-  }
-
-  /* Убираем стандартные иконки календаря и часов на iOS */
-  input[type="date"]::-webkit-calendar-picker-indicator,
-  input[type="time"]::-webkit-calendar-picker-indicator {
-    background: transparent;
-    bottom: 0;
-    color: transparent;
-    cursor: pointer;
-    height: auto;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: auto;
   }
 
   /* Делаем поля более компактными на маленьких экранах */

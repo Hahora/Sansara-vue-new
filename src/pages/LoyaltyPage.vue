@@ -579,9 +579,8 @@ export default {
 
     async loadAllPrograms() {
       try {
-        // Загружаем программы всех филиалов (без фильтра), чтобы показать названия
-        // программ из любого филиала в промокодах
-        const data = await programAPI.getAll(null, true);
+        // Загружаем полные объекты программ всех филиалов (short=false чтобы получить id)
+        const data = await programAPI.getAll(null, false);
         this.allPrograms = Array.isArray(data) ? data : [];
       } catch (e) {
         this.allPrograms = [];
@@ -591,7 +590,7 @@ export default {
     getProgramNames(ids) {
       if (!ids || ids.length === 0) return [];
       return ids.map((id) => {
-        const prog = this.allPrograms.find((p) => p.id === id);
+        const prog = this.allPrograms.find((p) => Number(p.id) === Number(id));
         return prog ? prog.name : `#${id}`;
       });
     },
