@@ -61,8 +61,21 @@
             :key="certificate.id"
             class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden hover:shadow-md transition-all duration-300"
           >
-            <!-- Медиа слева + инфо справа -->
-            <div class="flex bg-[#d9cebc] border-b border-[#c2a886]/30">
+            <!-- Название сверху -->
+            <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
+              <div class="flex items-center gap-3">
+                <div class="h-9 w-9 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Gift class="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-900 text-[15px] leading-tight">{{ certificate.title }}</h4>
+                  <p v-if="certificate.subtitle" class="text-xs text-gray-500 mt-0.5">{{ certificate.subtitle }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Медиа слева + описание справа -->
+            <div class="flex">
               <!-- Медиа-слайдер -->
               <div
                 v-if="media.length > 0"
@@ -93,25 +106,23 @@
                 </div>
               </div>
 
-              <!-- Инфо: название + описание + цена -->
-              <div class="flex-1 p-3 flex flex-col border-l border-[#c2a886]/15 min-h-[160px] overflow-hidden">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <div class="h-7 w-7 bg-gradient-to-br from-[#c2a886] to-[#b5976e] rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Gift class="h-3.5 w-3.5 text-white" />
-                  </div>
-                  <h4 class="font-semibold text-gray-900 text-[13px] leading-tight">
-                    {{ certificate.title }}
-                  </h4>
+              <!-- Описание + цена -->
+              <div class="flex-1 p-3 flex flex-col border-l border-[#c2a886]/15 overflow-hidden" style="min-height: 160px">
+                <div v-if="certificate.content || certificate.description" class="flex flex-col flex-1 overflow-hidden">
+                  <div
+                    :class="['text-xs text-gray-600 leading-relaxed prose-content', !expandedCerts[certificate.id] && isContentLong(certificate.content || certificate.description) ? 'line-clamp-6' : '']"
+                    v-html="formatContent(certificate.content || certificate.description)"
+                  />
+                  <button
+                    v-if="isContentLong(certificate.content || certificate.description)"
+                    @click="toggleCertExpand(certificate.id)"
+                    class="mt-auto pt-1 text-xs text-[#c2a886] font-medium flex items-center gap-0.5 flex-shrink-0"
+                  >
+                    {{ expandedCerts[certificate.id] ? 'Свернуть' : 'Развернуть' }}
+                    <ChevronDown :class="['h-3 w-3 transition-transform', expandedCerts[certificate.id] ? 'rotate-180' : '']" />
+                  </button>
                 </div>
-                <p v-if="certificate.subtitle" class="text-[11px] text-gray-500 mb-1 leading-snug">
-                  {{ certificate.subtitle }}
-                </p>
-                <div
-                  v-if="certificate.content || certificate.description"
-                  class="text-[11px] text-gray-600 leading-snug line-clamp-4 flex-1 prose-content"
-                  v-html="formatContent(certificate.content || certificate.description)"
-                />
-                <div class="mt-auto pt-1.5">
+                <div class="mt-auto pt-1.5 flex-shrink-0">
                   <div v-if="certificate.price">
                     <span class="text-[#c2a886] font-bold text-base">{{ formatPrice(certificate.price) }}</span>
                     <span class="text-gray-500 text-[11px] ml-1">руб.</span>
@@ -291,6 +302,7 @@ export default {
       lightboxType: 'PHOTO',
       certPageContent: null,
       certExpanded: false,
+      expandedCerts: {},
     };
   },
   computed: {
@@ -493,6 +505,10 @@ export default {
 
     handlePurchaseComplete() {
       console.log("Покупка сертификата завершена");
+    },
+
+    toggleCertExpand(id) {
+      this.expandedCerts = { ...this.expandedCerts, [id]: !this.expandedCerts[id] };
     },
 
     isContentLong(content) {
