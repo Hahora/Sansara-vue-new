@@ -272,6 +272,11 @@
 
             <!-- Информация -->
             <div class="space-y-2">
+              <!-- Описание -->
+              <div v-if="promo.description" class="text-xs text-gray-600 italic bg-gray-50 rounded px-2 py-1.5">
+                {{ promo.description }}
+              </div>
+
               <!-- Использование -->
               <div class="flex items-center text-sm text-gray-600">
                 <svg
@@ -336,13 +341,27 @@
                 </div>
               </div>
 
-              <!-- Типы программ -->
-              <div
-                v-if="promo.program_types && promo.program_types.length > 0"
-                class="pt-2"
-              >
+              <!-- Применяется к -->
+              <div class="pt-2">
                 <p class="text-xs text-gray-500 mb-1">Применяется к:</p>
-                <div class="flex flex-wrap gap-1">
+                <!-- Конкретные программы (приоритет) -->
+                <div
+                  v-if="promo.program_ids && promo.program_ids.length > 0"
+                  class="flex flex-wrap gap-1"
+                >
+                  <span
+                    v-for="name in getProgramNames(promo.program_ids)"
+                    :key="name"
+                    class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-200"
+                  >
+                    {{ name }}
+                  </span>
+                </div>
+                <!-- Типы программ -->
+                <div
+                  v-else-if="promo.program_types && promo.program_types.length > 0"
+                  class="flex flex-wrap gap-1"
+                >
                   <span
                     v-for="type in promo.program_types"
                     :key="type"
@@ -351,12 +370,9 @@
                     {{ getProgramTypeLabel(type) }}
                   </span>
                 </div>
-              </div>
-              <div
-                v-else-if="promo.program_types === null"
-                class="text-xs text-gray-500"
-              >
-                Применяется ко всем программам
+                <div v-else class="text-xs text-gray-500">
+                  Все программы
+                </div>
               </div>
             </div>
 
@@ -449,7 +465,7 @@
 </template>
 
 <script>
-import { promoAPI } from "@/utils/api";
+import { promoAPI, programAPI } from "@/utils/api";
 import CreatePromoModal from "@/components/CreatePromoModal.vue";
 import EditPromoModal from "@/components/EditPromoModal.vue";
 
@@ -464,6 +480,7 @@ export default {
       isLoading: false,
       error: null,
       promos: [],
+      allPrograms: [],
       searchQuery: "",
       showCreateModal: false,
       editingPromo: null,
@@ -613,6 +630,23 @@ export default {
       return "bg-green-500";
     },
 
+    async loadAllPrograms() {
+      try {
+        const data = await programAPI.adminGetAll();
+        this.allPrograms = Array.isArray(data) ? data : [];
+      } catch (e) {
+        this.allPrograms = [];
+      }
+    },
+
+    getProgramNames(ids) {
+      if (!ids || ids.length === 0) return [];
+      return ids.map((id) => {
+        const prog = this.allPrograms.find((p) => p.id === id);
+        return prog ? prog.name : `#${id}`;
+      });
+    },
+
     getProgramTypeLabel(type) {
       const labels = {
         COLLECTIVE: "Коллективные",
@@ -628,7 +662,7 @@ export default {
 
   async created() {
     console.log("AdminPromoPage created");
-    await this.loadPromos();
+    await Promise.all([this.loadPromos(), this.loadAllPrograms()]);
   },
 };
 </script>

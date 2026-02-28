@@ -260,6 +260,14 @@
               </div>
 
               <div class="px-4 pb-4 space-y-3">
+                <!-- Описание -->
+                <div
+                  v-if="promo.description"
+                  class="text-sm text-gray-700 leading-relaxed"
+                >
+                  {{ promo.description }}
+                </div>
+
                 <!-- Типы программ -->
                 <div>
                   <div
@@ -268,8 +276,22 @@
                     <Target class="h-3 w-3 text-[#c2a886]" />
                     Применяется к:
                   </div>
+                  <!-- Конкретные программы (приоритет) -->
                   <div
-                    v-if="promo.program_types && promo.program_types.length > 0"
+                    v-if="promo.program_ids && promo.program_ids.length > 0"
+                    class="flex flex-wrap gap-1.5"
+                  >
+                    <span
+                      v-for="name in getProgramNames(promo.program_ids)"
+                      :key="name"
+                      class="text-xs bg-[#d9cebc]/60 text-gray-700 px-2 py-1 rounded-lg border border-[#c2a886]/20"
+                    >
+                      {{ name }}
+                    </span>
+                  </div>
+                  <!-- Типы программ -->
+                  <div
+                    v-else-if="promo.program_types && promo.program_types.length > 0"
                     class="flex flex-wrap gap-1.5"
                   >
                     <span
@@ -347,7 +369,7 @@
 <script>
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
-import { loyaltyAPI } from "@/utils/api";
+import { loyaltyAPI, programAPI } from "@/utils/api";
 import icons from "@/utils/icons";
 
 export default {
@@ -361,6 +383,7 @@ export default {
       error: null,
       loyaltyInfo: null,
       promoCodes: [],
+      allPrograms: [],
       activeTab: "loyalty",
       expandedLoyalty: false,
     };
@@ -512,11 +535,28 @@ export default {
       }
     },
 
+    async loadAllPrograms() {
+      try {
+        const data = await programAPI.getAll();
+        this.allPrograms = Array.isArray(data) ? data : [];
+      } catch (e) {
+        this.allPrograms = [];
+      }
+    },
+
+    getProgramNames(ids) {
+      if (!ids || ids.length === 0) return [];
+      return ids.map((id) => {
+        const prog = this.allPrograms.find((p) => p.id === id);
+        return prog ? prog.name : `#${id}`;
+      });
+    },
+
     async loadData() {
       try {
         console.log("Загрузка данных для страницы лояльности");
 
-        await Promise.all([this.loadLoyaltyInfo(), this.loadPromoCodes()]);
+        await Promise.all([this.loadLoyaltyInfo(), this.loadPromoCodes(), this.loadAllPrograms()]);
 
         console.log("Все данные загружены успешно");
       } catch (error) {

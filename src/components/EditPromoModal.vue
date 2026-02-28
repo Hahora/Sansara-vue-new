@@ -43,6 +43,19 @@
             </div>
           </div>
 
+          <!-- Описание -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Описание
+            </label>
+            <textarea
+              v-model="formData.description"
+              rows="2"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4e5d51] focus:border-transparent outline-none resize-none"
+              placeholder="Краткое описание промокода для пользователей"
+            />
+          </div>
+
           <!-- Размер скидки -->
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">
@@ -168,6 +181,48 @@
             </p>
           </div>
 
+          <!-- Конкретные программы -->
+          <div v-if="formData.program_types && formData.program_types.length > 0" class="pt-2 border-t border-gray-200">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-semibold text-gray-900">Конкретные программы</h3>
+              <button
+                v-if="formData.program_ids && formData.program_ids.length > 0"
+                type="button"
+                @click="formData.program_ids = []"
+                class="text-xs text-red-500 hover:text-red-700"
+              >
+                Сбросить
+              </button>
+            </div>
+            <div v-if="loadingPrograms" class="text-xs text-gray-500 py-2">
+              Загрузка программ...
+            </div>
+            <div v-else-if="availablePrograms.length === 0" class="text-xs text-gray-500 py-1">
+              Нет программ для выбранных типов
+            </div>
+            <div v-else class="space-y-1 max-h-40 overflow-y-auto pr-1">
+              <div
+                v-for="program in availablePrograms"
+                :key="program.id"
+                class="flex items-center"
+              >
+                <input
+                  v-model="formData.program_ids"
+                  :value="program.id"
+                  type="checkbox"
+                  :id="'eprog_' + program.id"
+                  class="h-4 w-4 text-[#4e5d51] focus:ring-[#4e5d51] border-gray-300 rounded"
+                />
+                <label :for="'eprog_' + program.id" class="ml-2 text-xs text-gray-700">
+                  {{ program.name }}
+                </label>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+              Если не выбрано ни одной программы, скидка применяется ко всем программам выбранных типов
+            </p>
+          </div>
+
           <!-- Ошибка -->
           <div
             v-if="error"
@@ -225,7 +280,7 @@
 </template>
 
 <script>
-import { promoAPI } from "@/utils/api";
+import { promoAPI, programAPI } from "@/utils/api";
 
 export default {
   name: "EditPromoModal",
@@ -244,6 +299,9 @@ export default {
       isUpdating: false,
       error: null,
       formData: {},
+      allPrograms: [],
+      availablePrograms: [],
+      loadingPrograms: false,
       availableProgramTypes: [
         { value: "COLLECTIVE", label: "Коллективные" },
         { value: "AUTHOR", label: "Авторские" },
@@ -268,11 +326,11 @@ export default {
       immediate: true,
       handler(newVal) {
         if (newVal) {
-          // Если program_types равен null, преобразуем в пустой массив
           const programTypes =
             newVal.program_types === null ? [] : newVal.program_types || [];
 
           this.formData = {
+            description: newVal.description || "",
             discount_percent: newVal.discount_percent,
             max_uses: newVal.max_uses || 0,
             valid_from: this.formatDateForInput(newVal.valid_from),
@@ -280,8 +338,20 @@ export default {
             is_active: newVal.is_active,
             for_first_visit_only: newVal.for_first_visit_only,
             program_types: programTypes,
+            program_ids: newVal.program_ids || [],
           };
+
+          if (programTypes.length > 0) {
+            this.filterPrograms(programTypes);
+          }
         }
+      },
+    },
+    "formData.program_types": {
+      deep: true,
+      handler(types) {
+        this.formData.program_ids = [];
+        this.filterPrograms(types);
       },
     },
     isOpen(newVal) {
@@ -293,6 +363,33 @@ export default {
     },
   },
   methods: {
+    async loadAllPrograms() {
+      if (this.allPrograms.length > 0) return;
+      try {
+        this.loadingPrograms = true;
+        const data = await programAPI.adminGetAll();
+        this.allPrograms = Array.isArray(data) ? data : [];
+      } catch (e) {
+        console.error("Ошибка загрузки программ:", e);
+        this.allPrograms = [];
+      } finally {
+        this.loadingPrograms = false;
+      }
+    },
+
+    async filterPrograms(types) {
+      if (!types || types.length === 0) {
+        this.availablePrograms = [];
+        return;
+      }
+      if (this.allPrograms.length === 0) {
+        await this.loadAllPrograms();
+      }
+      this.availablePrograms = this.allPrograms.filter((p) =>
+        types.includes(p.program_type)
+      );
+    },
+
     // Блокировка прокрутки тела документа
     lockBodyScroll() {
       this.scrollY = window.scrollY;
@@ -354,16 +451,20 @@ export default {
 
         // Подготовка данных для отправки
         const dataToSend = {
+          description: this.formData.description || null,
           discount_percent: this.formData.discount_percent,
           max_uses: this.formData.max_uses > 0 ? this.formData.max_uses : null,
           valid_from: this.formData.valid_from || null,
           valid_until: this.formData.valid_until || null,
           is_active: this.formData.is_active,
           for_first_visit_only: this.formData.for_first_visit_only,
-          // Если выбраны все типы или пустой список - отправляем null
           program_types:
             this.formData.program_types.length > 0
               ? this.formData.program_types
+              : null,
+          program_ids:
+            this.formData.program_ids && this.formData.program_ids.length > 0
+              ? this.formData.program_ids
               : null,
         };
 
