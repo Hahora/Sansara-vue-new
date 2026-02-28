@@ -98,11 +98,20 @@
 
           <!-- Контент -->
           <div class="flex-1 p-3 flex flex-col gap-2 border-l border-[#c2a886]/15 overflow-hidden">
-            <div
-              v-if="pageContent"
-              class="text-xs text-gray-600 leading-relaxed"
-              v-html="formatContent(pageContent)"
-            />
+            <div v-if="pageContent" class="flex-1 overflow-hidden">
+              <div
+                :class="['text-xs text-gray-600 leading-relaxed prose prose-xs max-w-none', !expanded && isContentLong(pageContent) ? 'line-clamp-4' : '']"
+                v-html="formatContent(pageContent)"
+              />
+              <button
+                v-if="isContentLong(pageContent)"
+                @click="expanded = !expanded"
+                class="mt-1 text-xs text-[#c2a886] font-medium flex items-center gap-0.5"
+              >
+                {{ expanded ? "Свернуть" : "Развернуть" }}
+                <ChevronDown :class="['h-3 w-3 transition-transform', expanded ? 'rotate-180' : '']" />
+              </button>
+            </div>
             <p v-else class="text-xs text-gray-400">Информация скоро появится</p>
           </div>
         </div>
@@ -210,6 +219,7 @@ export default {
       mediaInterval: null,
       lightboxUrl: null,
       lightboxType: 'PHOTO',
+      expanded: false,
     };
   },
   computed: {
@@ -540,6 +550,13 @@ export default {
       }
     },
 
+    isContentLong(content) {
+      if (!content) return false;
+      const textLength = content.replace(/<[^>]*>/g, "").length;
+      const lineBreaks = (content.match(/\n|<br>/gi) || []).length;
+      return textLength > 200 || lineBreaks > 3;
+    },
+
     getMediaUrl(mediaId) {
       return mediaAPI.getDownloadUrl(mediaId);
     },
@@ -628,4 +645,18 @@ export default {
 .animate-fade-out {
   animation: fade-out 0.3s ease-out;
 }
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.prose :deep(p) { margin-bottom: 0.5em; color: #374151; }
+.prose :deep(ul) { margin-bottom: 0.5em; padding-left: 1.25em; list-style-type: disc; }
+.prose :deep(li) { margin-bottom: 0.25em; color: #4b5563; }
+.prose :deep(strong) { font-weight: 600; color: #111827; }
+.prose :deep(br) { content: ""; display: block; margin-bottom: 0.25em; }
 </style>
