@@ -626,14 +626,17 @@ export default {
 
         let errorMessage = error.message || "Не удалось активировать билет";
 
+        if (errorMessage.toLowerCase().includes("already have ticket")) {
+          // Уже есть билет — перезагружаем, покажется карточка с номером
+          await this.loadData();
+          return;
+        }
+
         if (errorMessage.toLowerCase().includes("invalid code")) {
           errorMessage = "Неправильный код. Проверьте код и попробуйте снова";
         }
         if (errorMessage.toLowerCase().includes("already used")) {
           errorMessage = "Этот код уже был использован";
-        }
-        if (errorMessage.toLowerCase().includes("already have ticket")) {
-          errorMessage = "У вас уже есть активированный билет в этой лотерее";
         }
 
         this.error = errorMessage;
