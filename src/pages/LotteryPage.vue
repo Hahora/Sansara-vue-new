@@ -184,7 +184,7 @@
                     <div
                       class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#c2a886] to-[#b5976e] mb-4"
                     >
-                      #{{ lastTicket.ticket_number }}
+                      #{{ activeTicketNumber }}
                     </div>
 
                     <div class="border-t-2 border-dashed border-gray-300 pt-4">
@@ -192,9 +192,10 @@
                         class="flex items-center justify-center text-sm text-gray-600"
                       >
                         <CheckCircle class="h-4 w-4 mr-1.5 text-green-500" />
-                        <span class="font-semibold">
-                          Активирован: {{ formatDate(lastTicket.created_at) }}
+                        <span v-if="activeTicketDate" class="font-semibold">
+                          Активирован: {{ formatDate(activeTicketDate) }}
                         </span>
+                        <span v-else class="font-semibold">Билет активирован</span>
                       </div>
                     </div>
                   </div>
@@ -534,7 +535,15 @@ export default {
     },
 
     hasActiveTicket() {
-      return this.lastTicket && !this.lastTicket.prize;
+      return !!(this.lotteryStatus?.ticket_number || (this.lastTicket && !this.lastTicket.prize));
+    },
+
+    activeTicketNumber() {
+      return this.lastTicket?.ticket_number || this.lotteryStatus?.ticket_number || null;
+    },
+
+    activeTicketDate() {
+      return this.lastTicket?.created_at || null;
     },
   },
   watch: {

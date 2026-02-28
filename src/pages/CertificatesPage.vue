@@ -52,70 +52,48 @@
     <!-- Контент страницы -->
     <div v-else class="px-5 py-5 space-y-4">
 
-      <!-- Карточка: галерея + описание -->
-      <div class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden">
-        <!-- Заголовок -->
-        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
-          <div class="flex items-center gap-3">
-            <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-[#c2a886] to-[#b5976e] flex items-center justify-center shadow-sm flex-shrink-0">
-              <Gift class="h-4 w-4 text-white" />
-            </div>
-            <h2 class="font-semibold text-gray-900 text-[15px] leading-tight">
-              Подарочные сертификаты
-            </h2>
-          </div>
-        </div>
-
-        <!-- Тело: медиа слева + текст справа -->
-        <div class="flex">
-          <!-- Медиа-слайдер -->
+      <!-- Медиа-баннер (если есть медиа) -->
+      <div
+        v-if="media.length > 0"
+        class="rounded-2xl overflow-hidden relative bg-[#202c27] shadow-sm"
+        style="height: 200px"
+      >
+        <video
+          v-if="media[mediaIdx].media_type === 'VIDEO'"
+          :key="media[mediaIdx].id"
+          :src="getMediaUrl(media[mediaIdx].id)"
+          v-autoplay autoplay loop playsinline
+          class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+          @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
+        />
+        <img
+          v-else
+          :src="getMediaUrl(media[mediaIdx].id)"
+          class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+          @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
+          @error="(e) => e.target.style.display = 'none'"
+        />
+        <!-- Затемнение снизу + текст (если есть контент) -->
+        <div v-if="certPageContent" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
           <div
-            v-if="media.length > 0"
-            class="w-[42%] flex-shrink-0 relative bg-[#202c27] overflow-hidden self-start"
-            style="height: 160px"
+            :class="['text-xs text-white/90 leading-relaxed', !certExpanded && isContentLong(certPageContent) ? 'line-clamp-2' : '']"
+            v-html="formatContent(certPageContent)"
+          />
+          <button
+            v-if="isContentLong(certPageContent)"
+            @click.stop="certExpanded = !certExpanded"
+            class="text-xs text-[#c2a886] font-medium mt-0.5"
           >
-            <video
-              v-if="media[mediaIdx].media_type === 'VIDEO'"
-              :key="media[mediaIdx].id"
-              :src="getMediaUrl(media[mediaIdx].id)"
-              v-autoplay autoplay loop playsinline
-              class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-              @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
-            />
-            <img
-              v-else
-              :src="getMediaUrl(media[mediaIdx].id)"
-              class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-              @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
-              @error="(e) => e.target.style.display = 'none'"
-            />
-            <div v-if="media.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
-              <div
-                v-for="(_, i) in media" :key="i"
-                @click="mediaIdx = i"
-                :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
-              />
-            </div>
-          </div>
-
-          <!-- Контент -->
-          <div class="flex-1 p-3 flex flex-col border-l border-[#c2a886]/15 overflow-hidden" :style="media.length > 0 ? 'min-height: 160px' : ''">
-            <div v-if="certPageContent" class="flex flex-col flex-1 overflow-hidden">
-              <div
-                :class="['text-xs text-gray-600 leading-relaxed prose prose-xs max-w-none', !certExpanded && isContentLong(certPageContent) ? 'line-clamp-6' : '']"
-                v-html="formatContent(certPageContent)"
-              />
-              <button
-                v-if="isContentLong(certPageContent)"
-                @click="certExpanded = !certExpanded"
-                class="mt-auto pt-1 text-xs text-[#c2a886] font-medium flex items-center gap-0.5 flex-shrink-0"
-              >
-                {{ certExpanded ? "Свернуть" : "Развернуть" }}
-                <ChevronDown :class="['h-3 w-3 transition-transform', certExpanded ? 'rotate-180' : '']" />
-              </button>
-            </div>
-            <p v-else class="text-xs text-gray-400">Информация скоро появится</p>
-          </div>
+            {{ certExpanded ? "Свернуть" : "Развернуть" }}
+          </button>
+        </div>
+        <!-- Точки навигации -->
+        <div v-if="media.length > 1" class="absolute top-3 inset-x-0 flex justify-center gap-1">
+          <div
+            v-for="(_, i) in media" :key="i"
+            @click="mediaIdx = i"
+            :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
+          />
         </div>
       </div>
 
