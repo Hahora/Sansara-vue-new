@@ -51,6 +51,49 @@
 
     <!-- Контент страницы -->
     <div v-else class="px-5 py-5 space-y-4">
+
+      <!-- Галерея -->
+      <div
+        v-if="media.length > 0"
+        class="bg-[#e3ded3] rounded-2xl shadow-sm border border-gray-200/80 overflow-hidden"
+      >
+        <div class="px-4 py-3 bg-[#d9cebc] border-b border-[#c2a886]/20">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-[#c2a886] to-[#b5976e] flex items-center justify-center shadow-sm flex-shrink-0">
+              <Images class="h-4 w-4 text-white" />
+            </div>
+            <span class="font-semibold text-gray-900 text-[14px]">Фото и видео</span>
+          </div>
+        </div>
+        <div class="relative bg-[#202c27] overflow-hidden" style="height: 220px">
+          <video
+            v-if="media[mediaIdx].media_type === 'VIDEO'"
+            :key="media[mediaIdx].id"
+            :src="getMediaUrl(media[mediaIdx].id)"
+            v-autoplay autoplay loop playsinline
+            class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+            @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
+          />
+          <img
+            v-else
+            :src="getMediaUrl(media[mediaIdx].id)"
+            class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+            @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
+            @error="(e) => e.target.style.display = 'none'"
+          />
+          <div v-if="media.length > 1" class="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
+            <div
+              v-for="(_, i) in media" :key="i"
+              @click="mediaIdx = i"
+              :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-5' : 'bg-white/50 w-1.5']"
+            />
+          </div>
+          <div v-if="media.length > 1" class="absolute top-3 right-3 bg-black/40 text-white text-[10px] px-2 py-0.5 rounded-full">
+            {{ mediaIdx + 1 }} / {{ media.length }}
+          </div>
+        </div>
+      </div>
+
       <!-- Список сертификатов -->
       <div v-if="certificates && certificates.length > 0">
         <div class="space-y-4">
@@ -237,6 +280,43 @@
       </div>
     </div>
 
+    <!-- Лайтбокс -->
+    <transition
+      enter-active-class="transition-opacity duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="lightboxUrl"
+        class="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center"
+        @click="lightboxUrl = null"
+      >
+        <video
+          v-if="lightboxType === 'VIDEO'"
+          :key="lightboxUrl"
+          :src="lightboxUrl"
+          controls autoplay playsinline
+          class="max-w-full max-h-full"
+          @click.stop
+        />
+        <img
+          v-else
+          :src="lightboxUrl"
+          class="max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain"
+          @click.stop
+        />
+        <button
+          @click="lightboxUrl = null"
+          class="absolute top-5 right-5 text-white/70 hover:text-white bg-black/40 rounded-full p-1.5"
+        >
+          <X class="h-6 w-6" />
+        </button>
+      </div>
+    </transition>
+
     <!-- Модальное окно покупки сертификата -->
     <CertificatePurchaseModal
       v-model:visible="showCertificateModal"
@@ -252,7 +332,7 @@
 <script>
 import { mapState, mapActions } from "pinia";
 import { useAppStore } from "@/stores/appStore";
-import { programAPI, branchAPI } from "@/utils/api";
+import { programAPI, branchAPI, mediaAPI } from "@/utils/api";
 import CertificatePurchaseModal from "@/components/CertificatePurchaseModal.vue";
 import icons from "@/utils/icons";
 
@@ -272,6 +352,11 @@ export default {
       selectedCertificate: null,
       isCalling: false,
       authorPrograms: [],
+      media: [],
+      mediaIdx: 0,
+      mediaInterval: null,
+      lightboxUrl: null,
+      lightboxType: 'PHOTO',
     };
   },
   computed: {
@@ -473,8 +558,26 @@ export default {
     },
 
     handlePurchaseComplete() {
-      // Обработка успешной покупки
       console.log("Покупка сертификата завершена");
+    },
+
+    getMediaUrl(mediaId) {
+      return mediaAPI.getDownloadUrl(mediaId);
+    },
+
+    async loadMedia() {
+      const params = this.selectedBranch?.id ? { branch_id: this.selectedBranch.id } : {};
+      try {
+        const res = await mediaAPI.getBySection("CERTIFICATE", params);
+        this.media = (res.items || []).filter(i => i.is_active);
+        if (this.media.length > 1) {
+          this.mediaInterval = setInterval(() => {
+            this.mediaIdx = (this.mediaIdx + 1) % this.media.length;
+          }, 4000);
+        }
+      } catch {
+        // медиа не критично
+      }
     },
   },
   async created() {
@@ -482,7 +585,7 @@ export default {
 
     try {
       await this.loadAllBranches();
-      await this.loadCertificates();
+      await Promise.all([this.loadCertificates(), this.loadMedia()]);
 
       console.log("Страница подарочных сертификатов загружена успешно");
     } catch (error) {
@@ -491,6 +594,10 @@ export default {
     } finally {
       this.isLoading = false;
     }
+  },
+
+  beforeUnmount() {
+    clearInterval(this.mediaInterval);
   },
 
   watch: {
