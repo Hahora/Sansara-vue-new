@@ -513,7 +513,7 @@ export default {
 
     async loadPromoCodes() {
       try {
-        const promos = await loyaltyAPI.getPromos();
+        const promos = await loyaltyAPI.getPromos(this.selectedBranch?.id);
         console.log("Получены промокоды из API:", promos);
 
         if (Array.isArray(promos)) {
@@ -537,7 +537,7 @@ export default {
 
     async loadAllPrograms() {
       try {
-        const data = await programAPI.getAll();
+        const data = await programAPI.getAll(this.selectedBranch?.id);
         this.allPrograms = Array.isArray(data) ? data : [];
       } catch (e) {
         this.allPrograms = [];

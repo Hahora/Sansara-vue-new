@@ -782,7 +782,10 @@ export const loyaltyAPI = {
   // PUBLIC
   getInfo: () => apiRequest("/api/v1/loyalty", { method: "GET" }),
 
-  getPromos: () => apiRequest("/api/v1/loyalty/promos", { method: "GET" }),
+  getPromos: (branchId = null) => {
+    const params = branchId ? `?branch_id=${branchId}` : "";
+    return apiRequest(`/api/v1/loyalty/promos${params}`, { method: "GET" });
+  },
 
   applyPromo: (bookingId, promoCode) =>
     apiRequest(`/api/v1/loyalty/apply-promo/${bookingId}`, {
