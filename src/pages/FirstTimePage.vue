@@ -157,20 +157,21 @@
     >
       <div
         v-if="lightboxUrl"
-        class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+        class="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center"
         @click="lightboxUrl = null"
       >
         <video
           v-if="lightboxType === 'VIDEO'"
+          :key="lightboxUrl"
           :src="lightboxUrl"
-          controls autoplay
+          controls autoplay playsinline
           class="max-w-full max-h-full"
           @click.stop
         />
         <img
           v-else
           :src="lightboxUrl"
-          class="max-w-full max-h-full object-contain"
+          class="max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain"
           @click.stop
         />
         <button
