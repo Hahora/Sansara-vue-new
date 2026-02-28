@@ -97,7 +97,7 @@
           </div>
 
           <!-- Контент -->
-          <div class="flex-1 p-3 flex flex-col border-l border-[#c2a886]/15 overflow-hidden" style="height: 160px">
+          <div class="flex-1 p-3 flex flex-col border-l border-[#c2a886]/15 overflow-hidden" style="min-height: 160px">
             <div v-if="pageContent" class="flex flex-col flex-1 overflow-hidden">
               <div
                 :class="['text-xs text-gray-600 leading-relaxed prose prose-xs max-w-none', !expanded && isContentLong(pageContent) ? 'line-clamp-6' : '']"
