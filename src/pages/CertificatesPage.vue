@@ -52,51 +52,6 @@
     <!-- Контент страницы -->
     <div v-else class="px-5 py-5 space-y-4">
 
-      <!-- Медиа-баннер (если есть медиа) -->
-      <div
-        v-if="media.length > 0"
-        class="rounded-2xl overflow-hidden relative bg-[#202c27] shadow-sm"
-        style="height: 200px"
-      >
-        <video
-          v-if="media[mediaIdx].media_type === 'VIDEO'"
-          :key="media[mediaIdx].id"
-          :src="getMediaUrl(media[mediaIdx].id)"
-          v-autoplay autoplay loop playsinline
-          class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-          @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
-        />
-        <img
-          v-else
-          :src="getMediaUrl(media[mediaIdx].id)"
-          class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-          @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
-          @error="(e) => e.target.style.display = 'none'"
-        />
-        <!-- Затемнение снизу + текст (если есть контент) -->
-        <div v-if="certPageContent" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
-          <div
-            :class="['text-xs text-white/90 leading-relaxed', !certExpanded && isContentLong(certPageContent) ? 'line-clamp-2' : '']"
-            v-html="formatContent(certPageContent)"
-          />
-          <button
-            v-if="isContentLong(certPageContent)"
-            @click.stop="certExpanded = !certExpanded"
-            class="text-xs text-[#c2a886] font-medium mt-0.5"
-          >
-            {{ certExpanded ? "Свернуть" : "Развернуть" }}
-          </button>
-        </div>
-        <!-- Точки навигации -->
-        <div v-if="media.length > 1" class="absolute top-3 inset-x-0 flex justify-center gap-1">
-          <div
-            v-for="(_, i) in media" :key="i"
-            @click="mediaIdx = i"
-            :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
-          />
-        </div>
-      </div>
-
       <!-- Список сертификатов -->
       <div v-if="certificates && certificates.length > 0">
         <div class="space-y-4">
@@ -106,6 +61,36 @@
             :key="certificate.id"
             class="bg-[#e3ded3] rounded-xl border border-[#c2a886]/20 overflow-hidden hover:shadow-md transition-all duration-300"
           >
+            <!-- Медиа-слайдер карточки -->
+            <div
+              v-if="media.length > 0"
+              class="relative bg-[#202c27] overflow-hidden"
+              style="height: 180px"
+            >
+              <video
+                v-if="media[mediaIdx].media_type === 'VIDEO'"
+                :key="media[mediaIdx].id + '_cert'"
+                :src="getMediaUrl(media[mediaIdx].id)"
+                v-autoplay autoplay loop playsinline
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'VIDEO'"
+              />
+              <img
+                v-else
+                :src="getMediaUrl(media[mediaIdx].id)"
+                class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                @click="lightboxUrl = getMediaUrl(media[mediaIdx].id); lightboxType = 'PHOTO'"
+                @error="(e) => e.target.style.display = 'none'"
+              />
+              <div v-if="media.length > 1" class="absolute bottom-2 inset-x-0 flex justify-center gap-1">
+                <div
+                  v-for="(_, i) in media" :key="i"
+                  @click="mediaIdx = i"
+                  :class="['h-1.5 rounded-full cursor-pointer transition-all duration-200', i === mediaIdx ? 'bg-[#c2a886] w-4' : 'bg-white/60 w-1.5']"
+                />
+              </div>
+            </div>
+
             <!-- Заголовок с градиентом -->
             <div class="px-4 py-4 bg-[#d9cebc] border-b border-[#c2a886]/30">
               <div class="flex items-center justify-between gap-3">
