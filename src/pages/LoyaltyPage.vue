@@ -513,7 +513,10 @@ export default {
       const labels = {
         COLLECTIVE: "Коллективные программы",
         AUTHOR: "Авторские программы",
-        BACHELOR: "Батчеллы",
+        BACHELOR: "Коллективная баня",
+        BACHELORETTE: "Девичник",
+        BATH_CLUB: "Банный клуб",
+        BUSINESS_BATH: "Бизнес-баня",
         CLUB_EVENT: "Клубные мероприятия",
         CERTIFICATE: "Подарочные сертификаты",
       };

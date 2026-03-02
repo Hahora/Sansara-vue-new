@@ -229,7 +229,7 @@
                                 : 'text-gray-600'
                             "
                           >
-                            Мест: {{ getEventAvailableSlots(event) }} /
+                            Занято: {{ event.occupied_slots || 0 }} /
                             {{ event.max_participants }}
                           </span>
                         </div>

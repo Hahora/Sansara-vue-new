@@ -272,9 +272,14 @@
                     ID: {{ booking.user_id }}
                   </span>
                 </div>
-                <p class="text-sm text-gray-600">
-                  {{ booking.title || "Без названия" }}
-                </p>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm text-gray-600">
+                    {{ booking.title || "Без названия" }}
+                  </p>
+                  <span :class="getBookingTypeClass(booking)" class="text-xs px-1.5 py-0.5 rounded font-medium">
+                    {{ getBookingTypeLabel(booking) }}
+                  </span>
+                </div>
                 <!-- Филиал -->
                 <p
                   v-if="getBranchName(booking.branch_id)"
@@ -557,15 +562,17 @@ export default {
         }
 
         if (Array.isArray(data)) {
-          // Сортируем по дате посещения если есть, иначе по дате создания
+          const statusOrder = { PENDING: 0, CONFIRMED: 1, CANCELLED: 2 };
           this.allBookings = data.sort((a, b) => {
+            const statusDiff = (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
+            if (statusDiff !== 0) return statusDiff;
             const dateA = a.booking_date
               ? new Date(a.booking_date + " " + (a.booking_time || "00:00"))
               : new Date(a.created_at);
             const dateB = b.booking_date
               ? new Date(b.booking_date + " " + (b.booking_time || "00:00"))
               : new Date(b.created_at);
-            return dateB - dateA; // Новые сверху
+            return dateB - dateA;
           });
 
           // Применяем поиск по имени
@@ -730,80 +737,18 @@ export default {
       }
     },
 
-    formatBookingDateTime(bookingDate, bookingTime) {
-      if (!bookingDate) {
-        return "Дата не указана";
-      }
-
-      try {
-        const [year, month, day] = bookingDate.split("-");
-        const dateObj = new Date(year, month - 1, day);
-
-        const formattedDate = dateObj.toLocaleDateString("ru-RU", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
-
-        if (bookingTime) {
-          return `${formattedDate}, ${bookingTime}`;
-        }
-
-        return formattedDate;
-      } catch (e) {
-        console.error("Ошибка форматирования даты бронирования:", e);
-        return bookingDate;
-      }
+    getBookingTypeLabel(booking) {
+      if (booking.program_id) return "Программа";
+      if (booking.event_id) return "Мероприятие";
+      if (booking.event_calendar_id) return "По расписанию";
+      return "";
     },
 
-    formatCreatedDate(dateString) {
-      if (!dateString) return "";
-      try {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = now - date;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-        // Если сегодня
-        if (diffDays === 0) {
-          return (
-            date.toLocaleTimeString("ru-RU", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }) + " (сегодня)"
-          );
-        }
-
-        // Если вчера
-        if (diffDays === 1) {
-          return (
-            date.toLocaleTimeString("ru-RU", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }) + " (вчера)"
-          );
-        }
-
-        // Если в этом году
-        if (date.getFullYear() === now.getFullYear()) {
-          return date.toLocaleDateString("ru-RU", {
-            day: "numeric",
-            month: "short",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-        }
-
-        // Полная дата
-        return date.toLocaleDateString("ru-RU", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        });
-      } catch (error) {
-        console.error("Error formatting created date:", error);
-        return dateString;
-      }
+    getBookingTypeClass(booking) {
+      if (booking.program_id) return "bg-blue-50 text-blue-700 border border-blue-200";
+      if (booking.event_id) return "bg-pink-50 text-pink-700 border border-pink-200";
+      if (booking.event_calendar_id) return "bg-purple-50 text-purple-700 border border-purple-200";
+      return "hidden";
     },
 
     getGuestWord(count) {

@@ -140,9 +140,14 @@
             <!-- Заголовок и статус -->
             <div class="flex items-start justify-between mb-3">
               <div class="flex-1">
-                <h3 class="font-semibold text-gray-900 text-[15px] mb-1">
-                  {{ booking.title }}
-                </h3>
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  <h3 class="font-semibold text-gray-900 text-[15px]">
+                    {{ booking.title || "Без названия" }}
+                  </h3>
+                  <span :class="getBookingTypeClass(booking)" class="text-xs px-1.5 py-0.5 rounded font-medium">
+                    {{ getBookingTypeLabel(booking) }}
+                  </span>
+                </div>
                 <!-- Филиал -->
                 <p
                   v-if="getBranchName(booking.branch_id)"
@@ -527,6 +532,20 @@ export default {
     getGuestWord(count) {
       if (!count) count = 1;
       return "чел.";
+    },
+
+    getBookingTypeLabel(booking) {
+      if (booking.program_id) return "Программа";
+      if (booking.event_id) return "Мероприятие";
+      if (booking.event_calendar_id) return "По расписанию";
+      return "";
+    },
+
+    getBookingTypeClass(booking) {
+      if (booking.program_id) return "bg-blue-50 text-blue-700 border border-blue-200";
+      if (booking.event_id) return "bg-pink-50 text-pink-700 border border-pink-200";
+      if (booking.event_calendar_id) return "bg-purple-50 text-purple-700 border border-purple-200";
+      return "hidden";
     },
 
     getStatusLabel(status) {
